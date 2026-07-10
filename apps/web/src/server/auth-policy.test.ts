@@ -15,6 +15,8 @@ function environment(invitationId: string | null): Env {
   }
   return {
     ADMIN_EMAIL: 'chris.kafrouni@gmail.com',
+    GOOGLE_CLIENT_ID: '',
+    GOOGLE_CLIENT_SECRET: '',
     DB: {
       prepare: vi.fn(() => statement),
     } as unknown as D1Database,
@@ -22,12 +24,22 @@ function environment(invitationId: string | null): Env {
 }
 
 describe('closed signup policy', () => {
-  it('normalizes and grants the configured deployment admin', async () => {
+  it('normalizes the configured deployment admin email', () => {
     const env = environment(null)
     expect(normalizeEmail('  Chris.Kafrouni@GMAIL.com ')).toBe(
       'chris.kafrouni@gmail.com',
     )
     expect(isPlatformAdmin(env, 'Chris.Kafrouni@gmail.com')).toBe(true)
+  })
+
+  it('grants the configured admin only when verified OAuth is enabled', async () => {
+    await expect(
+      authorizeNewUser(environment(null), 'chris.kafrouni@gmail.com'),
+    ).rejects.toThrow('Signups are disabled')
+
+    const env = environment(null)
+    env.GOOGLE_CLIENT_ID = 'client-id'
+    env.GOOGLE_CLIENT_SECRET = 'client-secret'
     await expect(
       authorizeNewUser(env, 'Chris.Kafrouni@gmail.com'),
     ).resolves.toBe('admin')

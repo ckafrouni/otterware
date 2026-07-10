@@ -19,6 +19,7 @@ import {
   uploadFile,
 } from '#/server/artifacts'
 import { createAuth } from '#/server/auth'
+import { isGoogleAuthEnabled } from '#/server/auth-policy'
 import { errorResponse, HttpError, json } from '#/server/http'
 
 async function handler({ request }: { request: Request }): Promise<Response> {
@@ -31,20 +32,11 @@ async function handler({ request }: { request: Request }): Promise<Response> {
       .map(decodeURIComponent)
 
     if (segments[0] === 'auth-config' && request.method === 'GET') {
-      const googleEnabled = Boolean(
-        env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET,
-      )
-      const admin = await env.DB.prepare(
-        'SELECT id FROM user WHERE lower(email) = lower(?) LIMIT 1',
-      )
-        .bind(env.ADMIN_EMAIL)
-        .first<{ id: string }>()
+      const googleEnabled = isGoogleAuthEnabled(env)
       return json({
         data: {
           googleEnabled,
           passwordEnabled: !googleEnabled,
-          bootstrapRequired: !admin,
-          adminEmail: env.ADMIN_EMAIL,
         },
       })
     }
