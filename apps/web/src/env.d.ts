@@ -11,6 +11,7 @@ declare global {
     GOOGLE_CLIENT_SECRET: string
     DB: D1Database
     ARTIFACTS: R2Bucket
+    ASSETS: Fetcher
   }
 
   interface Env extends OtterwareEnv {}
