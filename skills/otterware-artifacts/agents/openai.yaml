@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Otterware Artifacts'
+  short_description: 'Manage private, versioned artifacts safely'
+  default_prompt: 'Use $otterware-artifacts to publish this static site as a private versioned artifact.'

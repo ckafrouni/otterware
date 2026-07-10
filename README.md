@@ -58,6 +58,26 @@ After a future npm release, installation becomes:
 npm install --global otterware
 ```
 
+## Install the agent skill
+
+The repository includes the `otterware-artifacts` skill for Codex, Claude Code, OpenClaw, Hermes, and other agents supported by skills.sh. After the repository is published to GitHub, install it with:
+
+```bash
+npx skills@latest add <github-owner>/otterware \
+  --skill otterware-artifacts
+```
+
+The installer detects available agents and lets you select the targets. To install directly for Codex without prompts:
+
+```bash
+npx skills@latest add <github-owner>/otterware \
+  --skill otterware-artifacts \
+  --agent codex \
+  --yes
+```
+
+From a local clone, use `npx skills@latest add . --skill otterware-artifacts`. The skill teaches agents to use private versus organization scope correctly, inspect before mutating, publish curated output directories, protect credentials, and push immutable versions with concurrency checks.
+
 Authenticate a human-controlled machine with the browser device flow:
 
 ```bash
