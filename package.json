@@ -15,6 +15,7 @@
     "deploy": "pnpm --filter @otterware/web deploy",
     "db:migrate:local": "pnpm --dir apps/web db:migrate:local",
     "db:migrate:remote": "pnpm --dir apps/web db:migrate:remote",
+    "admin:seed": "pnpm --dir apps/web admin:seed",
     "migrate:legacy": "node scripts/migrate-legacy.mjs",
     "format": "prettier --write .",
     "lint": "oxlint apps packages scripts",
