@@ -31,6 +31,9 @@ async function handler({ request }: { request: Request }): Promise<Response> {
       .map(decodeURIComponent)
 
     if (segments[0] === 'auth-config' && request.method === 'GET') {
+      const googleEnabled = Boolean(
+        env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET,
+      )
       const admin = await env.DB.prepare(
         'SELECT id FROM user WHERE lower(email) = lower(?) LIMIT 1',
       )
@@ -38,10 +41,8 @@ async function handler({ request }: { request: Request }): Promise<Response> {
         .first<{ id: string }>()
       return json({
         data: {
-          googleEnabled: Boolean(
-            env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET,
-          ),
-          passwordEnabled: !env.GOOGLE_CLIENT_ID,
+          googleEnabled,
+          passwordEnabled: !googleEnabled,
           bootstrapRequired: !admin,
           adminEmail: env.ADMIN_EMAIL,
         },
