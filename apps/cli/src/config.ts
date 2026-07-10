@@ -10,6 +10,30 @@ export interface Profile {
   organizationId?: string | undefined
 }
 
+export function mergeProfile(
+  existing: Profile | undefined,
+  update: Partial<Profile>,
+): Profile {
+  const profile: Profile = {
+    apiUrl: DEFAULT_API_URL,
+    ...existing,
+    ...update,
+  }
+  if (
+    Object.prototype.hasOwnProperty.call(update, 'accessToken') &&
+    update.accessToken === undefined
+  ) {
+    delete profile.accessToken
+  }
+  if (
+    Object.prototype.hasOwnProperty.call(update, 'apiKey') &&
+    update.apiKey === undefined
+  ) {
+    delete profile.apiKey
+  }
+  return profile
+}
+
 interface ConfigFile {
   activeProfile: string
   profiles: Record<string, Profile>
@@ -75,13 +99,7 @@ export async function updateProfile(
   makeActive = true,
 ): Promise<Profile> {
   const config = await readConfig()
-  const profile = {
-    apiUrl: DEFAULT_API_URL,
-    ...config.profiles[name],
-    ...update,
-  }
-  if (update.accessToken === undefined) delete profile.accessToken
-  if (update.apiKey === undefined) delete profile.apiKey
+  const profile = mergeProfile(config.profiles[name], update)
   config.profiles[name] = profile
   if (makeActive) config.activeProfile = name
   await writeConfig(config)

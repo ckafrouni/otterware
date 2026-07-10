@@ -12,6 +12,30 @@ interface Organization {
   createdAt: string
 }
 
+export function resolveOrganizationReference(
+  organizations: Organization[],
+  reference: string,
+): Organization {
+  const normalized = reference.trim().toLowerCase()
+  const exact = organizations.find(
+    (organization) =>
+      organization.id === reference ||
+      organization.slug.toLowerCase() === normalized,
+  )
+  if (exact) return exact
+
+  const byName = organizations.filter(
+    (organization) => organization.name.toLowerCase() === normalized,
+  )
+  if (byName.length === 1) return byName[0]!
+  if (byName.length > 1) {
+    throw new Error(
+      `More than one organization is named "${reference}". Use its ID or slug.`,
+    )
+  }
+  throw new Error(`Organization "${reference}" was not found.`)
+}
+
 function globals(command: Command): GlobalOptions {
   return command.optsWithGlobals<GlobalOptions>()
 }
@@ -65,22 +89,28 @@ export function registerOrganizationCommands(program: Command): void {
 
   organizations
     .command('use')
-    .argument('<organization>', 'Organization ID')
-    .action(
-      async (organizationId: string, _options: unknown, command: Command) => {
-        const current = await getProfile(globals(command).profile)
-        const client = new ApiClient({ ...current.profile, organizationId })
-        const me = await client.get<{ data: { organizationId: string } }>(
-          '/api/v1/me',
+    .argument('<organization>', 'Organization ID, slug, or unique name')
+    .action(async (reference: string, _options: unknown, command: Command) => {
+      const current = await getProfile(globals(command).profile)
+      const organizations = await new ApiClient(current.profile).get<
+        Organization[]
+      >('/api/auth/organization/list')
+      const organization = resolveOrganizationReference(
+        organizations,
+        reference,
+      )
+      const organizationId = organization.id
+      const client = new ApiClient({ ...current.profile, organizationId })
+      const me = await client.get<{ data: { organizationId: string } }>(
+        '/api/v1/me',
+      )
+      if (me.data.organizationId !== organizationId) {
+        throw new Error(
+          'The selected organization was not accepted by the server.',
         )
-        if (me.data.organizationId !== organizationId) {
-          throw new Error(
-            'The selected organization was not accepted by the server.',
-          )
-        }
-        await updateProfile(current.name, { organizationId })
-        if (globals(command).json) printJson({ data: { organizationId } })
-        else success(`Selected organization ${pc.bold(organizationId)}.`)
-      },
-    )
+      }
+      await updateProfile(current.name, { organizationId })
+      if (globals(command).json) printJson({ data: { organizationId } })
+      else success(`Selected organization ${pc.bold(organization.name)}.`)
+    })
 }
