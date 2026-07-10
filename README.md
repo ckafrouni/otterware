@@ -46,9 +46,12 @@ pnpm build
 On macOS, Linux, or an agent VM:
 
 ```bash
-pnpm install
+git clone https://github.com/ckafrouni/otterware.git
+cd otterware
+pnpm install --frozen-lockfile
 pnpm --dir apps/cli build
-pnpm --dir apps/cli link --global
+npm install --global ./apps/cli
+otterware --cli-version
 otterware --help
 ```
 
