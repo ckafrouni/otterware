@@ -19,7 +19,6 @@ import {
   uploadFile,
 } from '#/server/artifacts'
 import { createAuth } from '#/server/auth'
-import { isGoogleAuthEnabled } from '#/server/auth-policy'
 import { errorResponse, HttpError, json } from '#/server/http'
 
 async function handler({ request }: { request: Request }): Promise<Response> {
@@ -32,7 +31,9 @@ async function handler({ request }: { request: Request }): Promise<Response> {
       .map(decodeURIComponent)
 
     if (segments[0] === 'auth-config' && request.method === 'GET') {
-      const googleEnabled = isGoogleAuthEnabled(env)
+      const googleEnabled = Boolean(
+        env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET,
+      )
       return json({
         data: {
           googleEnabled,

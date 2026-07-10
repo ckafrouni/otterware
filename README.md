@@ -18,7 +18,7 @@ Uploaded HTML is served from `usercontent.otterware.dev`, not the authenticated 
 - Node.js 24 Active LTS
 - pnpm 11.9 or newer
 - A Cloudflare account with Workers, D1, and R2 enabled
-- Google OAuth credentials for verified production administrator login
+- Optional Google OAuth credentials for invited collaborators
 
 ## Local development
 
@@ -31,7 +31,7 @@ pnpm db:migrate:local
 pnpm dev
 ```
 
-The development server runs at `http://localhost:3000`. When Google credentials are omitted, email/password authentication is available only to users following a pending organization invitation; there is no public administrator bootstrap. In production, configure Google OAuth: the verified identity matching `ADMIN_EMAIL` becomes the platform administrator, while every other new identity must match a pending invitation.
+The development server runs at `http://localhost:3000`. There is no public administrator bootstrap: the deployment operator seeds the initial account directly into D1. Every other new identity must match a pending organization invitation. When Google credentials are configured, invited collaborators may authenticate with Google instead of a password.
 
 Run all verification:
 
@@ -149,7 +149,13 @@ pnpm exec wrangler secret put BETTER_AUTH_SECRET
 pnpm exec wrangler secret put CONTENT_SIGNING_KEY
 ```
 
-Set `ADMIN_EMAIL` in `wrangler.jsonc` to the verified Google identity that owns the deployment, then set the OAuth secrets:
+Set `ADMIN_EMAIL` in `wrangler.jsonc`, apply the migrations, and seed the administrator from an authenticated deployment checkout. The command prompts for a password without accepting it in arguments or environment variables and refuses to overwrite an existing account:
+
+```bash
+pnpm admin:seed -- --remote --name "Chris Kafrouni"
+```
+
+Google OAuth is optional. To enable it for invited collaborators, set:
 
 ```bash
 pnpm exec wrangler secret put GOOGLE_CLIENT_ID
@@ -171,7 +177,7 @@ pnpm deploy
 
 Attach `app.otterware.dev` and `usercontent.otterware.dev` as Worker custom domains. The raw-content handlers reject production requests that do not arrive on the configured content hostname.
 
-The configured administrator signs in with Google and then creates the first organization from Settings. Later users must follow an organization invitation link and authenticate as the invited identity; arbitrary public signup is rejected by the server even if a client calls the authentication endpoint directly.
+The seeded administrator signs in normally and creates the first organization from Settings. Later users must follow an organization invitation link and authenticate as the invited identity; arbitrary public signup is rejected by the server even if a client calls the authentication endpoint directly.
 
 For the legacy hostname, configure `artifacts.otterware.dev/a/*` and `/l` to redirect to the corresponding `app.otterware.dev` routes after migration. Remove Cloudflare Access from the new app only after Better Auth is verified.
 
