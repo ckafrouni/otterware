@@ -28,7 +28,9 @@ function runWrangler(args) {
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
   })
-  if (result.status !== 0) fail(result.stderr || result.stdout)
+  if (result.status !== 0) {
+    throw new Error(result.stderr || result.stdout || 'Wrangler failed.')
+  }
   return result.stdout
 }
 
@@ -114,7 +116,6 @@ const accountId = crypto.randomUUID()
 const now = Date.now()
 const passwordHash = await hashPassword(password)
 const statement = `
-BEGIN TRANSACTION;
 INSERT INTO user
   (id, name, email, emailVerified, image, createdAt, updatedAt, role, banned)
 VALUES
@@ -123,11 +124,11 @@ INSERT INTO account
   (id, accountId, providerId, userId, password, createdAt, updatedAt)
 VALUES
   (${sql(accountId)}, ${sql(userId)}, 'credential', ${sql(userId)}, ${sql(passwordHash)}, ${now}, ${now});
-COMMIT;
 `
 
 const temporaryDirectory = mkdtempSync(resolve(tmpdir(), 'otterware-seed-'))
 const sqlPath = resolve(temporaryDirectory, 'seed.sql')
+let seedError
 try {
   writeFileSync(sqlPath, statement, { encoding: 'utf8', mode: 0o600 })
   runWrangler([
@@ -139,8 +140,27 @@ try {
     '--file',
     sqlPath,
   ])
+} catch (error) {
+  seedError = error instanceof Error ? error.message : String(error)
+  try {
+    runWrangler([
+      'd1',
+      'execute',
+      'DB',
+      databaseTarget,
+      '--yes',
+      '--command',
+      `DELETE FROM account WHERE id = ${sql(accountId)}; DELETE FROM user WHERE id = ${sql(userId)};`,
+    ])
+  } catch (cleanupError) {
+    seedError += `\nAutomatic cleanup also failed: ${
+      cleanupError instanceof Error ? cleanupError.message : cleanupError
+    }`
+  }
 } finally {
   rmSync(temporaryDirectory, { recursive: true, force: true })
 }
+
+if (seedError) fail(seedError)
 
 process.stdout.write(`Administrator seeded: ${email}\n`)
