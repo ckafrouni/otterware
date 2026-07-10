@@ -11,9 +11,6 @@ const legacy = resolve(
 )
 const registryPath = resolve(legacy, 'public/artifacts.json')
 
-if (!process.env.OTTERWARE_TOKEN) {
-  throw new Error('OTTERWARE_TOKEN is required')
-}
 if (!existsSync(cli)) {
   throw new Error('Build the CLI first with pnpm --dir apps/cli build')
 }
