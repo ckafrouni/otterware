@@ -1,0 +1,27 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "otterware",
+  "compatibility_date": "2026-07-10",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "@tanstack/react-start/server-entry",
+  "observability": { "enabled": true },
+  "upload_source_maps": true,
+  "vars": {
+    "APP_URL": "https://app.otterware.dev",
+    "CONTENT_URL": "https://usercontent.otterware.dev",
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "otterware",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations",
+    },
+  ],
+  "r2_buckets": [
+    {
+      "binding": "ARTIFACTS",
+      "bucket_name": "otterware-artifacts",
+    },
+  ],
+}

@@ -1,0 +1,36 @@
+{
+  "name": "otterware",
+  "version": "0.1.0",
+  "description": "The CLI for Otterware",
+  "type": "module",
+  "bin": {
+    "otterware": "dist/index.mjs"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "rolldown -c && chmod +x dist/index.mjs",
+    "check": "tsc --noEmit",
+    "dev": "tsx src/index.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "commander": "15.0.0",
+    "mime-types": "3.0.2",
+    "open": "11.0.0",
+    "picocolors": "1.1.1",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@otterware/contracts": "workspace:*",
+    "@types/mime-types": "3.0.1",
+    "@types/node": "26.1.1",
+    "rolldown": "1.1.5",
+    "tsx": "4.23.0",
+    "typescript": "7.0.2",
+    "vitest": "4.1.10"
+  }
+}

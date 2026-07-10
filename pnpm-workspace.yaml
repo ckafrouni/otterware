@@ -1,0 +1,17 @@
+packages:
+  - apps/*
+  - packages/*
+
+allowBuilds:
+  esbuild: true
+  lightningcss: true
+  sharp: true
+  unrs-resolver: true
+  workerd: true
+
+minimumReleaseAgeExclude:
+  - '@cloudflare/vite-plugin@1.44.0'
+  - '@cloudflare/workers-types@5.20260710.1'
+  - miniflare@4.20260708.1
+  - prettier@3.9.5
+  - wrangler@4.110.0
