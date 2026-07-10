@@ -9,7 +9,7 @@ Otterware is a private, organization-aware artifact platform for people and agen
 - `packages/contracts` — Zod request and response contracts shared by both clients.
 - Cloudflare D1 — users, sessions, organizations, memberships, API keys, artifact metadata, versions, uploads, and audit events.
 - Private Cloudflare R2 — immutable artifact file bodies.
-- Better Auth — Google login, organizations, invitations, device authorization, and hashed organization API keys.
+- Better Auth — closed registration, optional Google login, organizations, invitations, device authorization, and hashed organization API keys.
 
 Uploaded HTML is served from `usercontent.otterware.dev`, not the authenticated application origin. Short-lived, version-scoped grants protect the private R2 objects and keep executable content away from application cookies.
 
@@ -18,7 +18,7 @@ Uploaded HTML is served from `usercontent.otterware.dev`, not the authenticated 
 - Node.js 24 Active LTS
 - pnpm 11.9 or newer
 - A Cloudflare account with Workers, D1, and R2 enabled
-- Google OAuth credentials for production login
+- Optional Google OAuth credentials when Google-only login is desired
 
 ## Local development
 
@@ -31,7 +31,7 @@ pnpm db:migrate:local
 pnpm dev
 ```
 
-The development server runs at `http://localhost:3000`. When Google credentials are omitted, local email/password authentication is enabled. Production enables Google OAuth and disables password authentication.
+The development server runs at `http://localhost:3000`. When Google credentials are omitted, email/password authentication is enabled. Registration remains closed: only the configured administrator can create the initial account, and everyone else must have a pending organization invitation. When Google credentials are configured, Google login replaces password authentication while the same closed-registration policy remains in force.
 
 Run all verification:
 
@@ -147,6 +147,11 @@ Configure production secrets:
 ```bash
 pnpm exec wrangler secret put BETTER_AUTH_SECRET
 pnpm exec wrangler secret put CONTENT_SIGNING_KEY
+```
+
+Set `ADMIN_EMAIL` in `wrangler.jsonc` to the one email allowed to bootstrap the deployment. To use Google-only login, also set the optional OAuth secrets:
+
+```bash
 pnpm exec wrangler secret put GOOGLE_CLIENT_ID
 pnpm exec wrangler secret put GOOGLE_CLIENT_SECRET
 ```
@@ -165,6 +170,8 @@ pnpm deploy
 ```
 
 Attach `app.otterware.dev` and `usercontent.otterware.dev` as Worker custom domains. The raw-content handlers reject production requests that do not arrive on the configured content hostname.
+
+On the first visit to `/login`, the configured administrator creates the deployment's initial account and then creates the first organization from Settings. Later users must follow an organization invitation link; arbitrary public signup is rejected by the server even if a client calls the authentication endpoint directly.
 
 For the legacy hostname, configure `artifacts.otterware.dev/a/*` and `/l` to redirect to the corresponding `app.otterware.dev` routes after migration. Remove Cloudflare Access from the new app only after Better Auth is verified.
 

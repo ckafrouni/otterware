@@ -13,6 +13,7 @@ function testEnv(): Env {
     GOOGLE_CLIENT_SECRET: '',
     DB: {} as D1Database,
     ARTIFACTS: {} as R2Bucket,
+    ASSETS: {} as Fetcher,
   }
 }
 
