@@ -1,4 +1,5 @@
 import { Command } from 'commander'
+import packageJson from '../package.json' with { type: 'json' }
 import { registerArtifactCommands } from './artifacts'
 import { registerAuthCommands } from './auth'
 import { registerOrganizationCommands } from './organizations'
@@ -6,7 +7,7 @@ import { registerOrganizationCommands } from './organizations'
 const program = new Command()
   .name('otterware')
   .description('Build and collaborate with Otterware')
-  .version('0.1.0', '-V, --cli-version', 'Show the CLI version')
+  .version(packageJson.version, '-V, --cli-version', 'Show the CLI version')
   .option('--json', 'Emit machine-readable JSON')
   .option('--profile <name>', 'Use a named configuration profile')
   .showSuggestionAfterError()
