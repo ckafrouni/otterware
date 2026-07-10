@@ -2,6 +2,15 @@
   "name": "otterware",
   "version": "0.1.0",
   "description": "The CLI for Otterware",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ckafrouni/otterware.git",
+    "directory": "apps/cli"
+  },
+  "homepage": "https://github.com/ckafrouni/otterware#readme",
+  "bugs": {
+    "url": "https://github.com/ckafrouni/otterware/issues"
+  },
   "type": "module",
   "bin": {
     "otterware": "dist/index.mjs"

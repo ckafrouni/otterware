@@ -23,7 +23,7 @@ Uploaded HTML is served from `usercontent.otterware.dev`, not the authenticated 
 ## Local development
 
 ```bash
-git clone <repository-url> otterware
+git clone https://github.com/ckafrouni/otterware.git
 cd otterware
 pnpm install
 cp apps/web/.dev.vars.example apps/web/.dev.vars
@@ -60,17 +60,17 @@ npm install --global otterware
 
 ## Install the agent skill
 
-The repository includes the `otterware-artifacts` skill for Codex, Claude Code, OpenClaw, Hermes, and other agents supported by skills.sh. After the repository is published to GitHub, install it with:
+The repository includes the `otterware-artifacts` skill for Codex, Claude Code, OpenClaw, Hermes, and other agents supported by skills.sh. Install it with:
 
 ```bash
-npx skills@latest add <github-owner>/otterware \
+npx skills@latest add ckafrouni/otterware \
   --skill otterware-artifacts
 ```
 
 The installer detects available agents and lets you select the targets. To install directly for Codex without prompts:
 
 ```bash
-npx skills@latest add <github-owner>/otterware \
+npx skills@latest add ckafrouni/otterware \
   --skill otterware-artifacts \
   --agent codex \
   --yes
