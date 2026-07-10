@@ -23,8 +23,6 @@ function safeCallback(value?: string): string {
 interface AuthConfig {
   googleEnabled: boolean
   passwordEnabled: boolean
-  bootstrapRequired: boolean
-  adminEmail: string
 }
 
 function LoginPage() {
@@ -46,10 +44,6 @@ function LoginPage() {
     api<{ data: AuthConfig }>('/api/v1/auth-config')
       .then(({ data }) => {
         setConfig(data)
-        if (data.bootstrapRequired) {
-          setName('Chris Kafrouni')
-          setEmail(data.adminEmail)
-        }
       })
       .catch((cause: unknown) =>
         setError(
@@ -61,8 +55,8 @@ function LoginPage() {
   async function submit(event: React.FormEvent) {
     event.preventDefault()
     setError(null)
-    const signingUp = config?.bootstrapRequired || invitationSignup
-    const callbackURL = config?.bootstrapRequired ? '/settings' : destination
+    const signingUp = invitationSignup
+    const callbackURL = destination
     const result = signingUp
       ? await authClient.signUp.email({ name, email, password, callbackURL })
       : await authClient.signIn.email({ email, password, callbackURL })
@@ -70,12 +64,8 @@ function LoginPage() {
     else location.assign(callbackURL)
   }
 
-  const signingUp = config?.bootstrapRequired || invitationSignup
-  const heading = config?.bootstrapRequired
-    ? 'Set up administrator'
-    : invitationSignup
-      ? 'Accept your invitation'
-      : 'Welcome back'
+  const signingUp = invitationSignup
+  const heading = invitationSignup ? 'Accept your invitation' : 'Welcome back'
 
   return (
     <main className="auth-page">
@@ -87,9 +77,8 @@ function LoginPage() {
           <p className="eyebrow">Private collaboration</p>
           <h1>{heading}</h1>
           <p>
-            {config?.bootstrapRequired
-              ? 'Create the initial account for this private deployment.'
-              : 'Access is invitation-only. Use the account your administrator invited.'}
+            Access is invitation-only. Use the account your administrator
+            invited.
           </p>
         </div>
         {config?.googleEnabled && (
@@ -99,9 +88,7 @@ function LoginPage() {
             onClick={() =>
               void authClient.signIn.social({
                 provider: 'google',
-                callbackURL: config.bootstrapRequired
-                  ? '/settings'
-                  : destination,
+                callbackURL: destination,
               })
             }
           >
@@ -130,7 +117,6 @@ function LoginPage() {
                 Email
                 <input
                   required
-                  readOnly={config.bootstrapRequired}
                   type="email"
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}

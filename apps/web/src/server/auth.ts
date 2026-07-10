@@ -7,7 +7,11 @@ import {
   organization,
 } from 'better-auth/plugins'
 import { tanstackStartCookies } from 'better-auth/tanstack-start'
-import { authorizeNewUser, normalizeEmail } from './auth-policy'
+import {
+  authorizeNewUser,
+  isGoogleAuthEnabled,
+  normalizeEmail,
+} from './auth-policy'
 import type { Env } from './types'
 import {
   accessControl,
@@ -18,9 +22,7 @@ import {
 } from './permissions'
 
 export function createAuth(env: Env) {
-  const googleEnabled = Boolean(
-    env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET,
-  )
+  const googleEnabled = isGoogleAuthEnabled(env)
   const socialProviders =
     env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET
       ? {
