@@ -189,12 +189,12 @@ Production deployment belongs in a protected CI environment. After cutover, rota
 
 ## Legacy migration
 
-Once the new deployment is available and `OTTERWARE_TOKEN` is set, import the current static hub:
+Once the new deployment is available, authenticate the CLI, select the destination organization, and import the current static hub:
 
 ```bash
-OTTERWARE_URL=https://app.otterware.dev \
-OTTERWARE_TOKEN=otw_... \
+otterware auth login --url https://app.otterware.dev
+otterware organizations use <organization>
 pnpm migrate:legacy
 ```
 
-The importer creates each artifact from version 1 and pushes every later immutable version in order. It never edits the old deployment.
+The importer uses the CLI's stored device session or `OTTERWARE_TOKEN` override, creates each artifact from version 1, and pushes every later immutable version in order. It never edits the old deployment.
