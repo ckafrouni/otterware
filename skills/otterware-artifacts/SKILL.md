@@ -16,18 +16,14 @@ Use the installed `otterware` CLI as the only boundary for artifact operations. 
    otterware --cli-version
    ```
 
-2. If it is missing, install it from the public Otterware repository. Require Node.js 24 LTS, Git, and pnpm 11.9 or newer. Use a user-approved installation directory and do not delete or overwrite an existing checkout.
+2. If it is missing, require Node.js 24 LTS and install the official npm package:
 
    ```bash
-   git clone https://github.com/ckafrouni/otterware.git
-   cd otterware
-   pnpm install --frozen-lockfile
-   pnpm --dir apps/cli build
-   npm install --global ./apps/cli
+   npm install --global otterware@latest
    otterware --cli-version
    ```
 
-   If already inside a clean Otterware checkout, start at `pnpm install --frozen-lockfile`. If the checkout contains changes, preserve them and do not update or replace it automatically. Do not install the unrelated npm package named `otterware` until this repository documents an official npm release.
+   The official package is `otterware` and its repository metadata points to `https://github.com/ckafrouni/otterware`. When developing the CLI itself inside a clean Otterware checkout, use `pnpm install --frozen-lockfile`, `pnpm --dir apps/cli build`, and `npm install --global ./apps/cli`. Preserve existing checkout changes and never replace them automatically.
 
 3. Check authentication before doing work:
 

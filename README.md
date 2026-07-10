@@ -41,9 +41,16 @@ pnpm test
 pnpm build
 ```
 
-## Install the CLI from a clone
+## Install the CLI
 
-On macOS, Linux, or an agent VM:
+With Node.js 24 LTS installed:
+
+```bash
+npm install --global otterware
+otterware --cli-version
+```
+
+To build and install from a source checkout instead:
 
 ```bash
 git clone https://github.com/ckafrouni/otterware.git
@@ -53,12 +60,6 @@ pnpm --dir apps/cli build
 npm install --global ./apps/cli
 otterware --cli-version
 otterware --help
-```
-
-After a future npm release, installation becomes:
-
-```bash
-npm install --global otterware
 ```
 
 ## Install the agent skill
