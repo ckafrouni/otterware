@@ -11,6 +11,9 @@
   "bugs": {
     "url": "https://github.com/ckafrouni/otterware/issues"
   },
+  "engines": {
+    "node": "24.x"
+  },
   "type": "module",
   "bin": {
     "otterware": "dist/index.mjs"
@@ -36,7 +39,7 @@
   "devDependencies": {
     "@otterware/contracts": "workspace:*",
     "@types/mime-types": "3.0.1",
-    "@types/node": "26.1.1",
+    "@types/node": "24.13.3",
     "rolldown": "1.1.5",
     "tsx": "4.23.0",
     "typescript": "7.0.2",

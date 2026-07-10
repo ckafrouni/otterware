@@ -15,7 +15,7 @@ Uploaded HTML is served from `usercontent.otterware.dev`, not the authenticated 
 
 ## Requirements
 
-- Node.js 22 or newer
+- Node.js 24 Active LTS
 - pnpm 11.9 or newer
 - A Cloudflare account with Workers, D1, and R2 enabled
 - Google OAuth credentials for production login
