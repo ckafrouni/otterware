@@ -18,6 +18,9 @@ import {
 } from './permissions'
 
 export function createAuth(env: Env) {
+  const googleEnabled = Boolean(
+    env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET,
+  )
   const socialProviders =
     env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET
       ? {
@@ -37,8 +40,8 @@ export function createAuth(env: Env) {
     trustedOrigins: [env.APP_URL],
     socialProviders,
     emailAndPassword: {
-      enabled: !env.GOOGLE_CLIENT_ID,
-      disableSignUp: Boolean(env.GOOGLE_CLIENT_ID),
+      enabled: !googleEnabled,
+      disableSignUp: googleEnabled,
     },
     databaseHooks: {
       user: {

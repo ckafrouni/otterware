@@ -23,14 +23,33 @@ import { errorResponse, HttpError, json } from '#/server/http'
 
 async function handler({ request }: { request: Request }): Promise<Response> {
   try {
-    const auth = createAuth(env)
-    const actor = await authenticate(request, env, auth)
     const url = new URL(request.url)
     const segments = url.pathname
       .slice('/api/v1/'.length)
       .split('/')
       .filter(Boolean)
       .map(decodeURIComponent)
+
+    if (segments[0] === 'auth-config' && request.method === 'GET') {
+      const admin = await env.DB.prepare(
+        'SELECT id FROM user WHERE lower(email) = lower(?) LIMIT 1',
+      )
+        .bind(env.ADMIN_EMAIL)
+        .first<{ id: string }>()
+      return json({
+        data: {
+          googleEnabled: Boolean(
+            env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET,
+          ),
+          passwordEnabled: !env.GOOGLE_CLIENT_ID,
+          bootstrapRequired: !admin,
+          adminEmail: env.ADMIN_EMAIL,
+        },
+      })
+    }
+
+    const auth = createAuth(env)
+    const actor = await authenticate(request, env, auth)
 
     if (segments[0] === 'me' && request.method === 'GET') {
       return json({

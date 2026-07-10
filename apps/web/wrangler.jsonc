@@ -6,6 +6,10 @@
   "main": "@tanstack/react-start/server-entry",
   "observability": { "enabled": true },
   "upload_source_maps": true,
+  "routes": [
+    { "pattern": "app.otterware.dev", "custom_domain": true },
+    { "pattern": "usercontent.otterware.dev", "custom_domain": true },
+  ],
   "vars": {
     "APP_URL": "https://app.otterware.dev",
     "CONTENT_URL": "https://usercontent.otterware.dev",
@@ -15,7 +19,7 @@
     {
       "binding": "DB",
       "database_name": "otterware",
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "779560bb-941f-4dd9-9c9e-cb4e4cd5c84d",
       "migrations_dir": "migrations",
     },
   ],
