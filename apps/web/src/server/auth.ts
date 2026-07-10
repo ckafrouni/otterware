@@ -1,7 +1,13 @@
 import { apiKey } from '@better-auth/api-key'
 import { betterAuth } from 'better-auth'
-import { bearer, deviceAuthorization, organization } from 'better-auth/plugins'
+import {
+  admin as adminPlugin,
+  bearer,
+  deviceAuthorization,
+  organization,
+} from 'better-auth/plugins'
 import { tanstackStartCookies } from 'better-auth/tanstack-start'
+import { authorizeNewUser, normalizeEmail } from './auth-policy'
 import type { Env } from './types'
 import {
   accessControl,
@@ -32,6 +38,20 @@ export function createAuth(env: Env) {
     socialProviders,
     emailAndPassword: {
       enabled: !env.GOOGLE_CLIENT_ID,
+      disableSignUp: Boolean(env.GOOGLE_CLIENT_ID),
+    },
+    databaseHooks: {
+      user: {
+        create: {
+          before: async (user) => ({
+            data: {
+              ...user,
+              email: normalizeEmail(user.email),
+              role: await authorizeNewUser(env, user.email),
+            },
+          }),
+        },
+      },
     },
     advanced: {
       cookiePrefix: 'otterware',
@@ -43,6 +63,7 @@ export function createAuth(env: Env) {
       },
     },
     plugins: [
+      adminPlugin({ defaultRole: 'user', adminRoles: ['admin'] }),
       organization({
         ac: accessControl,
         roles: {
@@ -52,7 +73,7 @@ export function createAuth(env: Env) {
           viewer: viewerRole,
         },
         creatorRole: 'owner',
-        allowUserToCreateOrganization: true,
+        allowUserToCreateOrganization: (user) => user.role === 'admin',
         teams: { enabled: false },
       }),
       deviceAuthorization({

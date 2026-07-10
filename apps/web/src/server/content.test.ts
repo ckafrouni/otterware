@@ -6,6 +6,7 @@ function testEnv(): Env {
   return {
     APP_URL: 'http://localhost:3000',
     CONTENT_URL: 'http://localhost:3000',
+    ADMIN_EMAIL: 'chris.kafrouni@gmail.com',
     BETTER_AUTH_SECRET: 'auth-secret-at-least-thirty-two-characters',
     CONTENT_SIGNING_KEY: 'content-secret-at-least-thirty-two-characters',
     GOOGLE_CLIENT_ID: '',

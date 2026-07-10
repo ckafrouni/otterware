@@ -4,6 +4,7 @@ declare global {
   interface OtterwareEnv {
     APP_URL: string
     CONTENT_URL: string
+    ADMIN_EMAIL: string
     BETTER_AUTH_SECRET: string
     CONTENT_SIGNING_KEY: string
     GOOGLE_CLIENT_ID: string

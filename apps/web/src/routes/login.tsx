@@ -23,8 +23,6 @@ function LoginPage() {
   const { callback } = Route.useSearch()
   const destination = safeCallback(callback)
   const session = authClient.useSession()
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin')
-  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -36,19 +34,11 @@ function LoginPage() {
   async function submit(event: React.FormEvent) {
     event.preventDefault()
     setError(null)
-    const result =
-      mode === 'signup'
-        ? await authClient.signUp.email({
-            name,
-            email,
-            password,
-            callbackURL: destination,
-          })
-        : await authClient.signIn.email({
-            email,
-            password,
-            callbackURL: destination,
-          })
+    const result = await authClient.signIn.email({
+      email,
+      password,
+      callbackURL: destination,
+    })
     if (result.error) setError(result.error.message ?? 'Authentication failed.')
     else location.assign(destination)
   }
@@ -61,10 +51,10 @@ function LoginPage() {
         </div>
         <div>
           <p className="eyebrow">Private collaboration</p>
-          <h1>{mode === 'signin' ? 'Welcome back' : 'Create your account'}</h1>
+          <h1>Welcome back</h1>
           <p>
-            Publish immutable artifacts and collaborate safely with people and
-            agents.
+            Access is invitation-only. Continue with the Google account that was
+            invited by your administrator.
           </p>
         </div>
         <button
@@ -79,53 +69,38 @@ function LoginPage() {
         >
           Continue with Google
         </button>
-        <div className="auth-divider">
-          <span>or</span>
-        </div>
-        <form className="auth-form" onSubmit={submit}>
-          {mode === 'signup' && (
-            <label>
-              Name
-              <input
-                required
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-              />
-            </label>
-          )}
-          <label>
-            Email
-            <input
-              required
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-            />
-          </label>
-          <label>
-            Password
-            <input
-              required
-              minLength={8}
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-            />
-          </label>
-          {error && <p className="form-error">{error}</p>}
-          <button className="primary-button wide" type="submit">
-            {mode === 'signin' ? 'Sign in' : 'Create account'}
-          </button>
-        </form>
-        <button
-          className="link-button"
-          type="button"
-          onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}
-        >
-          {mode === 'signin'
-            ? 'Need an account? Sign up'
-            : 'Already have an account? Sign in'}
-        </button>
+        {import.meta.env.DEV && (
+          <>
+            <div className="auth-divider">
+              <span>local development</span>
+            </div>
+            <form className="auth-form" onSubmit={submit}>
+              <label>
+                Email
+                <input
+                  required
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                />
+              </label>
+              <label>
+                Password
+                <input
+                  required
+                  minLength={8}
+                  type="password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                />
+              </label>
+              {error && <p className="form-error">{error}</p>}
+              <button className="primary-button wide" type="submit">
+                Sign in locally
+              </button>
+            </form>
+          </>
+        )}
       </section>
     </main>
   )
