@@ -10,6 +10,9 @@
   },
   "observability": { "enabled": true },
   "upload_source_maps": true,
+  "browser": {
+    "binding": "BROWSER",
+  },
   "routes": [
     { "pattern": "app.otterware.dev", "custom_domain": true },
     { "pattern": "usercontent.otterware.dev", "custom_domain": true },

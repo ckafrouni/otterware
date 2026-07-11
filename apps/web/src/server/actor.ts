@@ -19,6 +19,66 @@ interface MemberRow {
   role: string
 }
 
+interface BearerActorRow extends MemberRow {
+  userId: string
+  name: string
+  email: string
+  expiresAt: string
+}
+
+function bearerSessionToken(request: Request): string | null {
+  const authorization = request.headers.get('authorization')
+  if (!authorization?.toLowerCase().startsWith('bearer ')) return null
+  const encoded = authorization.slice(7).trim()
+  if (!encoded) return null
+  try {
+    return decodeURIComponent(encoded).split('.')[0] || null
+  } catch {
+    return encoded.split('.')[0] || null
+  }
+}
+
+async function authenticateBearerUser(
+  request: Request,
+  env: Env,
+): Promise<AuthenticatedActor | null> {
+  const token = bearerSessionToken(request)
+  if (!token) return null
+  const requestedOrganization = request.headers.get('x-otterware-organization')
+  const statement = requestedOrganization
+    ? env.DB.prepare(
+        `SELECT u.id AS userId, u.name, u.email, s.expiresAt,
+                m.id, m.organizationId, m.role
+           FROM session s
+           JOIN user u ON u.id = s.userId
+           JOIN member m ON m.userId = u.id AND m.organizationId = ?
+          WHERE s.token = ? AND coalesce(u.banned, 0) = 0
+          LIMIT 1`,
+      ).bind(requestedOrganization, token)
+    : env.DB.prepare(
+        `SELECT u.id AS userId, u.name, u.email, s.expiresAt,
+                m.id, m.organizationId, m.role
+           FROM session s
+           JOIN user u ON u.id = s.userId
+           JOIN member m ON m.userId = u.id
+          WHERE s.token = ? AND coalesce(u.banned, 0) = 0
+          ORDER BY CASE WHEN m.organizationId = s.activeOrganizationId THEN 0 ELSE 1 END,
+                   m.createdAt
+          LIMIT 1`,
+      ).bind(token)
+  const row = await statement.first<BearerActorRow>()
+  if (!row || new Date(row.expiresAt).getTime() <= Date.now()) return null
+  return {
+    type: 'user',
+    id: row.userId,
+    name: row.name || row.email,
+    userId: row.userId,
+    organizationId: row.organizationId,
+    roles: row.role.split(',').map((role) => role.trim()),
+    permissions: {},
+  }
+}
+
 export async function authenticate(
   request: Request,
   env: Env,
@@ -42,6 +102,9 @@ export async function authenticate(
       permissions: result.key.permissions ?? {},
     }
   }
+
+  const bearerActor = await authenticateBearerUser(request, env)
+  if (bearerActor) return bearerActor
 
   const session = (await auth.api.getSession({
     headers: request.headers,

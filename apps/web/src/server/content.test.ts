@@ -14,6 +14,7 @@ function testEnv(): Env {
     DB: {} as D1Database,
     ARTIFACTS: {} as R2Bucket,
     ASSETS: {} as Fetcher,
+    BROWSER: {} as BrowserRun,
   }
 }
 

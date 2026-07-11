@@ -10,6 +10,7 @@ export function isAllowedHostPath(request: Request, env: Env): boolean {
   if (url.host === contentHost) {
     return (
       /^\/raw\/session\/[^/]+$/.test(url.pathname) ||
+      /^\/raw\/thumbnail\/[^/]+$/.test(url.pathname) ||
       /^\/raw\/a\/[^/]+\/[^/]+\/.+/.test(url.pathname)
     )
   }

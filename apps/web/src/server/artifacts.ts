@@ -13,9 +13,11 @@ import {
   type ArtifactVersion,
   type CreateUploadInput,
 } from '@otterware/contracts'
+import { waitUntil } from 'cloudflare:workers'
 import { assertCanWrite, canReadWithKey } from './actor'
-import { signContentGrant } from './content'
+import { signContentGrant, signThumbnailGrant } from './content'
 import { HttpError, json, parseJson } from './http'
+import { generateThumbnail } from './thumbnails'
 import type { AuthenticatedActor, Env } from './types'
 
 interface ArtifactRow {
@@ -49,6 +51,22 @@ interface VersionRow {
   file_count: number
   byte_size: number
   content_hash: string
+  preview_r2_key: string | null
+}
+
+interface ArtifactListRow extends ArtifactRow {
+  cv_id: string | null
+  cv_number: number | null
+  cv_label: string | null
+  cv_entry_path: string | null
+  cv_created_at: string | null
+  cv_created_by_user_id: string | null
+  cv_created_by_api_key_id: string | null
+  cv_created_by_name: string | null
+  cv_file_count: number | null
+  cv_byte_size: number | null
+  cv_content_hash: string | null
+  cv_preview_r2_key: string | null
 }
 
 interface FileRow {
@@ -151,7 +169,12 @@ async function versionById(
   return row ? mapVersion(row) : null
 }
 
-async function mapArtifact(env: Env, row: ArtifactRow): Promise<Artifact> {
+function mapArtifactRecord(
+  env: Env,
+  row: ArtifactRow,
+  currentVersion: ArtifactVersion | null,
+  thumbnailUrl?: string | null,
+): Artifact {
   return {
     id: row.id,
     organizationId: row.organization_id,
@@ -163,10 +186,38 @@ async function mapArtifact(env: Env, row: ArtifactRow): Promise<Artifact> {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     archivedAt: row.archived_at,
-    currentVersion: await versionById(env, row.current_version_id),
+    currentVersion,
     versionCount: row.version_count,
     url: new URL(`/a/${row.slug}/`, env.APP_URL).toString(),
+    ...(thumbnailUrl !== undefined ? { thumbnailUrl } : {}),
   }
+}
+
+async function mapArtifact(env: Env, row: ArtifactRow): Promise<Artifact> {
+  return mapArtifactRecord(
+    env,
+    row,
+    await versionById(env, row.current_version_id),
+  )
+}
+
+function joinedCurrentVersion(row: ArtifactListRow): ArtifactVersion | null {
+  if (!row.cv_id) return null
+  return mapVersion({
+    id: row.cv_id,
+    artifact_id: row.id,
+    number: row.cv_number!,
+    label: row.cv_label!,
+    entry_path: row.cv_entry_path!,
+    created_at: row.cv_created_at!,
+    created_by_user_id: row.cv_created_by_user_id,
+    created_by_api_key_id: row.cv_created_by_api_key_id,
+    created_by_name: row.cv_created_by_name,
+    file_count: row.cv_file_count!,
+    byte_size: row.cv_byte_size!,
+    content_hash: row.cv_content_hash!,
+    preview_r2_key: row.cv_preview_r2_key,
+  })
 }
 
 async function artifactRow(
@@ -230,30 +281,56 @@ export async function listArtifacts(
   const visibility = url.searchParams.get('visibility')
   const cursor = url.searchParams.get('cursor')
   const conditions = [
-    'organization_id = ?',
-    "state = 'published'",
-    "(visibility = 'organization' OR owner_user_id = ?)",
+    'a.organization_id = ?',
+    "a.state = 'published'",
+    "(a.visibility = 'organization' OR a.owner_user_id = ?)",
   ]
   const bindings: unknown[] = [actor.organizationId, actor.userId ?? '']
-  if (!includeArchived) conditions.push('archived_at IS NULL')
+  if (!includeArchived) conditions.push('a.archived_at IS NULL')
   if (visibility === 'private' || visibility === 'organization') {
-    conditions.push('visibility = ?')
+    conditions.push('a.visibility = ?')
     bindings.push(visibility)
   }
   if (cursor) {
-    conditions.push('updated_at < ?')
+    conditions.push('a.updated_at < ?')
     bindings.push(cursor)
   }
   bindings.push(limit + 1)
   const result = await env.DB.prepare(
-    `SELECT * FROM artifact WHERE ${conditions.join(' AND ')} ORDER BY updated_at DESC LIMIT ?`,
+    `SELECT a.*,
+            v.id AS cv_id, v.number AS cv_number, v.label AS cv_label,
+            v.entry_path AS cv_entry_path, v.created_at AS cv_created_at,
+            v.created_by_user_id AS cv_created_by_user_id,
+            v.created_by_api_key_id AS cv_created_by_api_key_id,
+            v.created_by_name AS cv_created_by_name,
+            v.file_count AS cv_file_count, v.byte_size AS cv_byte_size,
+            v.content_hash AS cv_content_hash,
+            v.preview_r2_key AS cv_preview_r2_key
+       FROM artifact a
+       LEFT JOIN artifact_version v ON v.id = a.current_version_id
+      WHERE ${conditions.join(' AND ')}
+      ORDER BY a.updated_at DESC
+      LIMIT ?`,
   )
     .bind(...bindings)
-    .all<ArtifactRow>()
+    .all<ArtifactListRow>()
   const hasMore = result.results.length > limit
   const rows = result.results.slice(0, limit)
   const artifacts = await Promise.all(
-    rows.map((row: ArtifactRow) => mapArtifact(env, row)),
+    rows.map(async (row) => {
+      const thumbnailUrl = row.cv_preview_r2_key
+        ? new URL(
+            `/raw/thumbnail/${await signThumbnailGrant(env, row.cv_preview_r2_key)}`,
+            env.CONTENT_URL,
+          ).toString()
+        : null
+      return mapArtifactRecord(
+        env,
+        row,
+        joinedCurrentVersion(row),
+        thumbnailUrl,
+      )
+    }),
   )
   return json(
     artifactListResponseSchema.parse({
@@ -537,6 +614,26 @@ export async function previewArtifact(
       version: mapVersion(version),
     },
   })
+}
+
+export async function regenerateThumbnail(
+  request: Request,
+  env: Env,
+  actor: AuthenticatedActor,
+  reference: string,
+): Promise<Response> {
+  assertCanWrite(actor, 'update')
+  const artifact = await artifactRow(env, actor, reference, {
+    requireModify: true,
+  })
+  const version = await selectedVersion(request, env, artifact)
+  const r2Key = await generateThumbnail(
+    env,
+    artifact.id,
+    version.id,
+    version.entry_path,
+  )
+  return json({ data: { version: version.number, r2Key } })
 }
 
 function encodePath(path: string): string {
@@ -907,6 +1004,13 @@ export async function completeUpload(
     .bind(upload.version_id)
     .first<VersionRow>()
   if (!version) throw new Error('Published version could not be loaded')
+  waitUntil(
+    generateThumbnail(env, artifact.id, version.id, version.entry_path).catch(
+      (error: unknown) => {
+        console.error('Artifact thumbnail generation failed', error)
+      },
+    ),
+  )
   return json(
     completeUploadResponseSchema.parse({
       data: {

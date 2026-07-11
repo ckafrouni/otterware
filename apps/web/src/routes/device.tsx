@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { z } from 'zod'
 import { authClient } from '#/lib/auth-client'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 
 const searchSchema = z.object({
   user_code: z.string().optional(),
@@ -52,7 +55,7 @@ function DevicePage() {
 
   return (
     <main className="auth-page">
-      <section className="auth-card device-card">
+      <Card className="auth-card device-card">
         <p className="eyebrow">CLI authorization</p>
         <h1>Connect a device</h1>
         {status === 'approved' || status === 'denied' ? (
@@ -66,7 +69,7 @@ function DevicePage() {
           <>
             <label className="device-code-label">
               Authorization code
-              <input
+              <Input
                 value={code}
                 onChange={(event) => {
                   setCode(event.target.value.toUpperCase())
@@ -80,26 +83,25 @@ function DevicePage() {
               your Otterware identity.
             </p>
             <div className="decision-actions">
-              <button
-                className="secondary-button"
+              <Button
+                variant="outline"
                 type="button"
                 disabled={status !== 'ready'}
                 onClick={() => void decide(false)}
               >
                 Deny
-              </button>
-              <button
-                className="primary-button"
+              </Button>
+              <Button
                 type="button"
                 disabled={status !== 'ready'}
                 onClick={() => void decide(true)}
               >
                 Approve device
-              </button>
+              </Button>
             </div>
           </>
         )}
-      </section>
+      </Card>
     </main>
   )
 }

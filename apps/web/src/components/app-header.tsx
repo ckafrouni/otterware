@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { Box, LogOut, Settings } from 'lucide-react'
 import { authClient } from '#/lib/auth-client'
+import { Button } from '@/components/ui/button'
 
 export function AppHeader() {
   const session = authClient.useSession()
@@ -25,8 +26,9 @@ export function AppHeader() {
           {session.data?.user.name?.slice(0, 2).toUpperCase() ?? 'OT'}
         </span>
         <span className="account-name">{session.data?.user.name}</span>
-        <button
-          className="icon-button"
+        <Button
+          variant="outline"
+          size="icon-sm"
           type="button"
           title="Sign out"
           onClick={() =>
@@ -36,7 +38,7 @@ export function AppHeader() {
           }
         >
           <LogOut size={15} />
-        </button>
+        </Button>
       </div>
     </header>
   )

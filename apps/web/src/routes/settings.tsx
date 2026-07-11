@@ -4,6 +4,16 @@ import { Check, Copy, KeyRound, Plus, Users } from 'lucide-react'
 import { authClient } from '#/lib/auth-client'
 import { AppHeader } from '#/components/app-header'
 import { AuthGate } from '#/components/auth-gate'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 interface Organization {
   id: string
@@ -103,7 +113,7 @@ function SettingsPage() {
           </section>
           {message && <div className="notice">{message}</div>}
           <div className="settings-grid">
-            <section className="settings-card">
+            <Card className="settings-card">
               <div className="settings-card-heading">
                 <Users size={17} />
                 <div>
@@ -113,8 +123,9 @@ function SettingsPage() {
               </div>
               <div className="organization-list">
                 {organizations.map((organization) => (
-                  <button
+                  <Button
                     key={organization.id}
+                    variant="ghost"
                     type="button"
                     className={
                       organization.id === activeOrganizationId
@@ -127,23 +138,23 @@ function SettingsPage() {
                     {organization.id === activeOrganizationId && (
                       <Check size={14} />
                     )}
-                  </button>
+                  </Button>
                 ))}
               </div>
               <form className="inline-form" onSubmit={createOrganization}>
-                <input
+                <Input
                   required
                   placeholder="New organization"
                   value={orgName}
                   onChange={(event) => setOrgName(event.target.value)}
                 />
-                <button className="secondary-button" type="submit">
+                <Button variant="outline" type="submit">
                   <Plus size={14} /> Create
-                </button>
+                </Button>
               </form>
-            </section>
+            </Card>
 
-            <section className="settings-card">
+            <Card className="settings-card">
               <div className="settings-card-heading">
                 <Users size={17} />
                 <div>
@@ -152,45 +163,52 @@ function SettingsPage() {
                 </div>
               </div>
               <form className="stacked-form" onSubmit={invite}>
-                <input
+                <Input
                   required
                   type="email"
                   placeholder="colleague@example.com"
                   value={inviteEmail}
                   onChange={(event) => setInviteEmail(event.target.value)}
                 />
-                <select
+                <Select
                   value={inviteRole}
-                  onChange={(event) => setInviteRole(event.target.value)}
+                  onValueChange={(value) => setInviteRole(value ?? 'viewer')}
                 >
-                  <option value="viewer">Viewer</option>
-                  <option value="editor">Editor</option>
-                  <option value="admin">Admin</option>
-                </select>
-                <button
-                  className="secondary-button"
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="viewer">Viewer</SelectItem>
+                    <SelectItem value="editor">Editor</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button
+                  variant="outline"
                   type="submit"
                   disabled={!activeOrganizationId}
                 >
                   Create invitation
-                </button>
+                </Button>
               </form>
               {inviteLink && (
                 <div className="secret-output">
                   <code>{inviteLink}</code>
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
                     type="button"
                     onClick={() =>
                       void navigator.clipboard.writeText(inviteLink)
                     }
                   >
                     <Copy size={14} />
-                  </button>
+                  </Button>
                 </div>
               )}
-            </section>
+            </Card>
 
-            <section className="settings-card wide-card">
+            <Card className="settings-card wide-card">
               <div className="settings-card-heading">
                 <KeyRound size={17} />
                 <div>
@@ -202,18 +220,18 @@ function SettingsPage() {
                 </div>
               </div>
               <form className="inline-form" onSubmit={createKey}>
-                <input
+                <Input
                   required
                   value={keyName}
                   onChange={(event) => setKeyName(event.target.value)}
                 />
-                <button
-                  className="secondary-button"
+                <Button
+                  variant="outline"
                   type="submit"
                   disabled={!activeOrganizationId}
                 >
                   Create key
-                </button>
+                </Button>
               </form>
               {createdKey && (
                 <div>
@@ -222,18 +240,20 @@ function SettingsPage() {
                   </p>
                   <div className="secret-output">
                     <code>{createdKey}</code>
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="icon-xs"
                       type="button"
                       onClick={() =>
                         void navigator.clipboard.writeText(createdKey)
                       }
                     >
                       <Copy size={14} />
-                    </button>
+                    </Button>
                   </div>
                 </div>
               )}
-            </section>
+            </Card>
           </div>
         </main>
       </div>

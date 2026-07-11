@@ -9,6 +9,12 @@ interface GrantPayload {
   nonce: string
 }
 
+interface ThumbnailGrantPayload {
+  r2Key: string
+  expiresAt: number
+  nonce: string
+}
+
 interface ContentFileRow {
   path: string
   content_type: string
@@ -61,6 +67,24 @@ export async function signContentGrant(
   return `${body}.${base64Url(new Uint8Array(signature))}`
 }
 
+export async function signThumbnailGrant(
+  env: Env,
+  r2Key: string,
+): Promise<string> {
+  const payload: ThumbnailGrantPayload = {
+    r2Key,
+    expiresAt: Math.floor(Date.now() / 1_000) + 60 * 60,
+    nonce: crypto.randomUUID(),
+  }
+  const body = base64Url(encoder.encode(JSON.stringify(payload)))
+  const signature = await crypto.subtle.sign(
+    'HMAC',
+    await signingKey(env),
+    encoder.encode(body),
+  )
+  return `${body}.${base64Url(new Uint8Array(signature))}`
+}
+
 async function verifyContentGrant(
   env: Env,
   token: string,
@@ -82,6 +106,31 @@ async function verifyContentGrant(
   ) as GrantPayload
   if (payload.expiresAt < Math.floor(Date.now() / 1_000)) {
     throw new HttpError(401, 'expired_grant', 'The content grant expired.')
+  }
+  return payload
+}
+
+async function verifyThumbnailGrant(
+  env: Env,
+  token: string,
+): Promise<ThumbnailGrantPayload> {
+  const [body, signature] = token.split('.')
+  if (!body || !signature) {
+    throw new HttpError(401, 'invalid_grant', 'Invalid thumbnail grant.')
+  }
+  const valid = await crypto.subtle.verify(
+    'HMAC',
+    await signingKey(env),
+    decodeBase64Url(signature) as unknown as BufferSource,
+    encoder.encode(body),
+  )
+  if (!valid)
+    throw new HttpError(401, 'invalid_grant', 'Invalid thumbnail grant.')
+  const payload = JSON.parse(
+    new TextDecoder().decode(decodeBase64Url(body)),
+  ) as ThumbnailGrantPayload
+  if (payload.expiresAt < Math.floor(Date.now() / 1_000)) {
+    throw new HttpError(401, 'expired_grant', 'The thumbnail grant expired.')
   }
   return payload
 }
@@ -177,4 +226,29 @@ export async function serveRawContent(
     )
   }
   return new Response(object.body, { headers })
+}
+
+export async function serveThumbnail(
+  request: Request,
+  env: Env,
+  token: string,
+): Promise<Response> {
+  assertContentOrigin(request, env)
+  const grant = await verifyThumbnailGrant(env, token)
+  if (!grant.r2Key.startsWith('previews/')) {
+    throw new HttpError(401, 'invalid_grant', 'Invalid thumbnail grant.')
+  }
+  const object = await env.ARTIFACTS.get(grant.r2Key)
+  if (!object)
+    throw new HttpError(404, 'thumbnail_not_found', 'Thumbnail not found.')
+  return new Response(object.body, {
+    headers: {
+      'content-type': object.httpMetadata?.contentType ?? 'image/jpeg',
+      'content-length': String(object.size),
+      'cache-control': 'private, max-age=3600',
+      'x-content-type-options': 'nosniff',
+      'cross-origin-resource-policy': 'same-site',
+      'referrer-policy': 'no-referrer',
+    },
+  })
 }

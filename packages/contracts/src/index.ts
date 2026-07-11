@@ -45,6 +45,7 @@ export const artifactSchema = z.object({
   currentVersion: artifactVersionSchema.nullable(),
   versionCount: z.number().int().nonnegative(),
   url: z.string(),
+  thumbnailUrl: z.string().nullable().optional(),
 })
 export type Artifact = z.infer<typeof artifactSchema>
 
