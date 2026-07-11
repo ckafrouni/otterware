@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 
 const MAX_ROWS = 2_000
 const MAX_COLUMNS = 100
+const MIN_VISIBLE_ROWS = 100
 
 type GridValue = unknown
 
@@ -18,6 +19,8 @@ interface DocumentSheet {
 interface ArtifactDocumentPreviewProps {
   contentType: string
   entryPath: string
+  onSheetChange?: ((sheet: string | undefined) => void) | undefined
+  selectedSheet?: string | undefined
   slug: string
   version: number
 }
@@ -52,7 +55,10 @@ function SpreadsheetGrid({ rows }: { rows: GridValue[][] }) {
     MAX_COLUMNS,
     rows.reduce((maximum, row) => Math.max(maximum, row.length), 0),
   )
-  const visibleRows = rows.slice(0, MAX_ROWS)
+  const visibleRows = Array.from(
+    { length: Math.max(Math.min(rows.length, MAX_ROWS), MIN_VISIBLE_ROWS) },
+    (_, index) => rows[index] ?? [],
+  )
   const truncated =
     rows.length > MAX_ROWS || rows.some((row) => row.length > MAX_COLUMNS)
 
@@ -74,14 +80,16 @@ function SpreadsheetGrid({ rows }: { rows: GridValue[][] }) {
             <tr>
               <th className="spreadsheet-corner" aria-label="Row number" />
               {Array.from({ length: columnCount }, (_, index) => (
-                <th key={index}>{columnName(index)}</th>
+                <th key={index} scope="col">
+                  {columnName(index)}
+                </th>
               ))}
             </tr>
           </thead>
           <tbody>
             {visibleRows.map((row, rowIndex) => (
               <tr key={rowIndex}>
-                <th>{rowIndex + 1}</th>
+                <th scope="row">{rowIndex + 1}</th>
                 {Array.from({ length: columnCount }, (_, columnIndex) => (
                   <td key={columnIndex} title={displayCell(row[columnIndex])}>
                     {displayCell(row[columnIndex])}
@@ -110,12 +118,13 @@ export function columnName(index: number): string {
 export function ArtifactDocumentPreview({
   contentType,
   entryPath,
+  onSheetChange,
+  selectedSheet: selectedSheetName,
   slug,
   version,
 }: ArtifactDocumentPreviewProps) {
   const [markdown, setMarkdown] = useState<string | null>(null)
   const [sheets, setSheets] = useState<DocumentSheet[]>([])
-  const [activeSheet, setActiveSheet] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const normalizedType = contentType.split(';')[0]?.trim().toLowerCase() ?? ''
   const extension = entryPath.split('.').pop()?.toLowerCase()
@@ -134,7 +143,6 @@ export function ArtifactDocumentPreview({
     let active = true
     setMarkdown(null)
     setSheets([])
-    setActiveSheet(0)
     setError(null)
 
     if (markdownDocument || csvDocument) {
@@ -199,6 +207,10 @@ export function ArtifactDocumentPreview({
     workbook,
   ])
 
+  const activeSheet = Math.max(
+    0,
+    sheets.findIndex((sheet) => sheet.sheet === selectedSheetName),
+  )
   const selectedSheet = useMemo(
     () => sheets[activeSheet],
     [activeSheet, sheets],
@@ -244,7 +256,9 @@ export function ArtifactDocumentPreview({
                   variant={activeSheet === index ? 'secondary' : 'ghost'}
                   role="tab"
                   aria-selected={activeSheet === index}
-                  onClick={() => setActiveSheet(index)}
+                  onClick={() =>
+                    onSheetChange?.(index === 0 ? undefined : sheet.sheet)
+                  }
                 >
                   {sheet.sheet}
                 </Button>

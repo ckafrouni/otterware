@@ -5,6 +5,7 @@ import {
   Archive,
   ChevronDown,
   Copy,
+  Download,
   Home,
   MoreHorizontal,
   Pencil,
@@ -48,9 +49,13 @@ interface PreviewResponse {
 }
 
 export function ArtifactViewer({
+  onSheetChange,
+  sheet,
   slug,
   version,
 }: {
+  onSheetChange?: ((sheet: string | undefined) => void) | undefined
+  sheet?: string | undefined
   slug: string
   version?: number
 }) {
@@ -186,6 +191,7 @@ export function ArtifactViewer({
                               slug: artifact.slug,
                               version: `v${item.number}`,
                             }}
+                            search={sheet ? { sheet } : {}}
                           />
                         }
                         className={
@@ -276,6 +282,21 @@ export function ArtifactViewer({
             >
               <Pencil size={15} />
             </Button>
+            {artifact && selected && (
+              <Button
+                render={
+                  <a
+                    href={`/api/v1/artifacts/${encodeURIComponent(artifact.id)}/download?version=${selected.number}`}
+                    download
+                  />
+                }
+                variant="outline"
+                size="icon-sm"
+                aria-label={`Download ${artifact.title} version ${selected.number}`}
+              >
+                <Download size={15} />
+              </Button>
+            )}
             <Button
               variant="outline"
               size="sm"
@@ -308,6 +329,8 @@ export function ArtifactViewer({
               <ArtifactDocumentPreview
                 contentType={previewContentType}
                 entryPath={selected.entryPath}
+                onSheetChange={onSheetChange}
+                selectedSheet={sheet}
                 slug={slug}
                 version={selected.number}
               />

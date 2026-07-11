@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   ArtifactDocumentPreview,
@@ -39,7 +39,8 @@ describe('ArtifactDocumentPreview', () => {
     )
 
     expect(await screen.findByText('Otterware')).not.toBeNull()
-    expect(screen.getByText('42')).not.toBeNull()
+    expect(screen.getByTitle('42')).not.toBeNull()
+    expect(screen.getAllByRole('row')).toHaveLength(101)
     expect(fetch).toHaveBeenCalledWith(
       '/api/v1/artifacts/report/content?version=1',
       { headers: { accept: '*/*' } },
@@ -94,10 +95,12 @@ describe('ArtifactDocumentPreview', () => {
       ),
     )
 
+    const onSheetChange = vi.fn()
     render(
       <ArtifactDocumentPreview
         contentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         entryPath="report.xlsx"
+        onSheetChange={onSheetChange}
         slug="workbook"
         version={1}
       />,
@@ -106,5 +109,8 @@ describe('ArtifactDocumentPreview', () => {
     expect(await screen.findByRole('tab', { name: 'Summary' })).not.toBeNull()
     expect(screen.getByRole('tab', { name: 'Metrics' })).not.toBeNull()
     expect(screen.getByText('XLSX preview')).not.toBeNull()
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Metrics' }))
+    expect(onSheetChange).toHaveBeenCalledWith('Metrics')
   })
 })

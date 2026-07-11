@@ -656,6 +656,8 @@ button:disabled {
   padding: 0 10px;
 }
 .viewer-main {
+  display: flex;
+  flex-direction: column;
   min-height: 0;
   padding: 8px 8px 0;
 }
@@ -674,11 +676,13 @@ button:disabled {
 
 .markdown-preview,
 .workbook-preview {
+  height: 100%;
   min-height: 0;
   flex: 1;
   background: var(--background);
   border: 1px solid var(--border);
   border-bottom: 0;
+  border-radius: 12px 12px 0 0;
   box-shadow: 0 8px 24px rgb(0 0 0 / 7%);
 }
 
@@ -778,6 +782,7 @@ button:disabled {
   justify-content: space-between;
   gap: 8px 16px;
   border-bottom: 1px solid var(--border);
+  background: #f8f9fa;
   padding: 5px 10px;
 }
 
@@ -811,6 +816,7 @@ button:disabled {
 
 .spreadsheet-scroll {
   overflow: auto;
+  background: white;
 }
 
 .spreadsheet-notice {
@@ -827,18 +833,19 @@ button:disabled {
   border-spacing: 0;
   border-collapse: separate;
   table-layout: fixed;
-  font-size: 0.78rem;
+  color: #202124;
+  font-size: 0.8rem;
 }
 
 .spreadsheet-grid th,
 .spreadsheet-grid td {
-  height: 29px;
+  height: 27px;
   max-width: 320px;
   min-width: 120px;
   overflow: hidden;
-  border-right: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  padding: 4px 8px;
+  border-right: 1px solid #dadce0;
+  border-bottom: 1px solid #dadce0;
+  padding: 3px 6px;
   text-align: left;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -848,8 +855,8 @@ button:disabled {
   position: sticky;
   z-index: 2;
   top: 0;
-  background: var(--muted);
-  color: var(--muted-foreground);
+  background: #f8f9fa;
+  color: #5f6368;
   font-weight: 550;
   text-align: center;
 }
@@ -861,8 +868,8 @@ button:disabled {
   left: 0;
   width: 46px;
   min-width: 46px;
-  background: var(--muted);
-  color: var(--muted-foreground);
+  background: #f8f9fa;
+  color: #5f6368;
   font-weight: 500;
   text-align: right;
 }
