@@ -5,6 +5,7 @@ packages:
 allowBuilds:
   esbuild: true
   lightningcss: true
+  protobufjs: false
   sharp: true
   unrs-resolver: true
   workerd: true
