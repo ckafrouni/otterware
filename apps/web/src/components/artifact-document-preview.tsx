@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Papa from 'papaparse'
 import ReactMarkdown, { defaultUrlTransform } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { FileSpreadsheet, LoaderCircle } from 'lucide-react'
+import { LoaderCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 const MAX_ROWS = 2_000
@@ -239,34 +239,30 @@ export function ArtifactDocumentPreview({
   if ((csvDocument || workbook) && selectedSheet) {
     return (
       <div className="workbook-preview">
-        <div className="workbook-toolbar">
-          <span>
-            <FileSpreadsheet size={15} /> {entryPath}
-          </span>
-          {sheets.length > 1 && (
-            <div
-              className="workbook-tabs"
-              role="tablist"
-              aria-label="Workbook sheets"
-            >
-              {sheets.map((sheet, index) => (
-                <Button
-                  key={sheet.sheet}
-                  size="xs"
-                  variant={activeSheet === index ? 'secondary' : 'ghost'}
-                  role="tab"
-                  aria-selected={activeSheet === index}
-                  onClick={() =>
-                    onSheetChange?.(index === 0 ? undefined : sheet.sheet)
-                  }
-                >
-                  {sheet.sheet}
-                </Button>
-              ))}
-            </div>
-          )}
-        </div>
         <SpreadsheetGrid rows={selectedSheet.data} />
+        <div className="workbook-footer">
+          <div
+            className="workbook-tabs"
+            role="tablist"
+            aria-label="Workbook sheets"
+          >
+            {sheets.map((sheet, index) => (
+              <Button
+                key={sheet.sheet}
+                size="sm"
+                variant="ghost"
+                role="tab"
+                aria-selected={activeSheet === index}
+                className={activeSheet === index ? 'active' : ''}
+                onClick={() =>
+                  onSheetChange?.(index === 0 ? undefined : sheet.sheet)
+                }
+              >
+                {sheet.sheet}
+              </Button>
+            ))}
+          </div>
+        </div>
       </div>
     )
   }
