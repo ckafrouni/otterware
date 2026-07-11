@@ -232,6 +232,7 @@ async function publishVersion(input: {
 
 export function UniverEditor(props: EditorProps) {
   const container = useRef<HTMLDivElement>(null)
+  const containerId = `univer-${props.slug}-${props.expectedCurrentVersion}`
   const handle = useRef<UniverHandle | null>(null)
   const [dirty, setDirty] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -261,8 +262,8 @@ export function UniverEditor(props: EditorProps) {
       if (disposed || !container.current) return
       const isSheet = props.kind === 'spreadsheet'
       const preset = isSheet
-        ? sheetPreset.UniverSheetsCorePreset({ container: container.current })
-        : docsPreset.UniverDocsCorePreset({ container: container.current })
+        ? sheetPreset.UniverSheetsCorePreset({ container: containerId })
+        : docsPreset.UniverDocsCorePreset({ container: containerId })
       const locale = isSheet ? sheetsLocale.default : docsLocale.default
       const { univer, univerAPI } = createUniver({
         locale: LocaleType.EN_US,
@@ -351,7 +352,7 @@ export function UniverEditor(props: EditorProps) {
           <Save size={14} /> {saving ? 'Saving…' : 'Save new version'}
         </Button>
       </div>
-      <div ref={container} className="univer-editor" />
+      <div id={containerId} ref={container} className="univer-editor" />
     </div>
   )
 }
