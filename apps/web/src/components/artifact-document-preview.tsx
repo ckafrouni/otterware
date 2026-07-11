@@ -1,7 +1,22 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import Papa from 'papaparse'
 import { LoaderCircle } from 'lucide-react'
-import { UniverEditor, type UniverSheet } from './univer-editor'
+import type { UniverSheet } from './univer-editor'
+
+const UniverEditor = lazy(
+  import.meta.env.SSR
+    ? async () => ({
+        default: () => (
+          <div className="viewer-message document-loading">
+            Loading editor…
+          </div>
+        ),
+      })
+    : () =>
+        import('./univer-editor').then((module) => ({
+          default: module.UniverEditor,
+        })),
+)
 
 type GridValue = unknown
 
@@ -143,26 +158,30 @@ export function ArtifactDocumentPreview({
   if (error) return <div className="viewer-message error-panel">{error}</div>
   if (markdownDocument && markdown !== null) {
     return (
-      <UniverEditor
-        entryPath={entryPath}
-        expectedCurrentVersion={expectedCurrentVersion ?? version}
-        kind="document"
-        slug={slug}
-        text={markdown}
-      />
+      <Suspense fallback={<div className="viewer-message">Loading editor…</div>}>
+        <UniverEditor
+          entryPath={entryPath}
+          expectedCurrentVersion={expectedCurrentVersion ?? version}
+          kind="document"
+          slug={slug}
+          text={markdown}
+        />
+      </Suspense>
     )
   }
   if ((csvDocument || workbook) && sheets.length) {
     return (
-      <UniverEditor
-        entryPath={entryPath}
-        expectedCurrentVersion={expectedCurrentVersion ?? version}
-        kind="spreadsheet"
-        onSheetChange={onSheetChange}
-        selectedSheet={selectedSheetName}
-        sheets={sheets}
-        slug={slug}
-      />
+      <Suspense fallback={<div className="viewer-message">Loading editor…</div>}>
+        <UniverEditor
+          entryPath={entryPath}
+          expectedCurrentVersion={expectedCurrentVersion ?? version}
+          kind="spreadsheet"
+          onSheetChange={onSheetChange}
+          selectedSheet={selectedSheetName}
+          sheets={sheets}
+          slug={slug}
+        />
+      </Suspense>
     )
   }
   return (
