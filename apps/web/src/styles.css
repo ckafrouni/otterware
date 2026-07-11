@@ -989,6 +989,9 @@ button:disabled {
   background: var(--surface);
   border-radius: 12px 12px 0 0;
 }
+.artifact-loading-state {
+  min-height: 160px;
+}
 
 .auth-page,
 .centered-state {

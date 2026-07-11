@@ -1,14 +1,12 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
 import Papa from 'papaparse'
-import { LoaderCircle } from 'lucide-react'
 import type { UniverSheet } from './univer-editor'
+import { ArtifactLoadingState } from './artifact-loading-state'
 
 const UniverEditor = lazy(
   import.meta.env.SSR
     ? async () => ({
-        default: () => (
-          <div className="viewer-message document-loading">Loading editor…</div>
-        ),
+        default: ArtifactLoadingState,
       })
     : () =>
         import('./univer-editor').then((module) => ({
@@ -98,6 +96,7 @@ export function ArtifactDocumentPreview({
     setMarkdown(null)
     setSheets([])
     setError(null)
+    if (!import.meta.env.SSR) void import('./univer-editor')
 
     if (markdownDocument || csvDocument) {
       loadContent(organizationId, slug, version, 'text')
@@ -165,9 +164,7 @@ export function ArtifactDocumentPreview({
   if (error) return <div className="viewer-message error-panel">{error}</div>
   if (markdownDocument && markdown !== null) {
     return (
-      <Suspense
-        fallback={<div className="viewer-message">Loading editor…</div>}
-      >
+      <Suspense fallback={<ArtifactLoadingState />}>
         <UniverEditor
           entryPath={entryPath}
           expectedCurrentVersion={expectedCurrentVersion ?? version}
@@ -182,9 +179,7 @@ export function ArtifactDocumentPreview({
   }
   if ((csvDocument || workbook) && sheets.length) {
     return (
-      <Suspense
-        fallback={<div className="viewer-message">Loading editor…</div>}
-      >
+      <Suspense fallback={<ArtifactLoadingState />}>
         <UniverEditor
           entryPath={entryPath}
           expectedCurrentVersion={expectedCurrentVersion ?? version}
@@ -199,9 +194,5 @@ export function ArtifactDocumentPreview({
       </Suspense>
     )
   }
-  return (
-    <div className="viewer-message document-loading">
-      <LoaderCircle size={18} className="spin" /> Loading document…
-    </div>
-  )
+  return <ArtifactLoadingState />
 }
