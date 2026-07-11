@@ -869,6 +869,14 @@ button:disabled {
   font-size: 0.8rem;
 }
 
+.spreadsheet-grid col {
+  width: 120px;
+}
+
+.spreadsheet-grid .spreadsheet-row-number-column {
+  width: 46px;
+}
+
 .spreadsheet-grid th,
 .spreadsheet-grid td {
   height: 27px;
