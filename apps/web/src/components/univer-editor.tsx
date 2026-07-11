@@ -25,6 +25,7 @@ interface EditorProps {
   entryPath: string
   expectedCurrentVersion: number
   kind: 'document' | 'spreadsheet'
+  organizationId: string
   organizationSlug: string
   onSheetChange?: ((sheet: string | undefined) => void) | undefined
   selectedSheet?: string | undefined
@@ -164,6 +165,7 @@ async function publishVersion(input: {
   blob: Blob
   entryPath: string
   expectedCurrentVersion: number
+  organizationId: string
   slug: string
 }): Promise<number> {
   const hash = await sha256(input.blob)
@@ -174,6 +176,7 @@ async function publishVersion(input: {
     }
   }>(`/api/v1/artifacts/${encodeURIComponent(input.slug)}/uploads`, {
     method: 'POST',
+    organizationId: input.organizationId,
     body: JSON.stringify({
       label: 'Edited in Otterware',
       entryPath: input.entryPath,
@@ -231,7 +234,7 @@ async function publishVersion(input: {
   }
   const complete = await api<{ data: { version: { number: number } } }>(
     `/api/v1/uploads/${session.data.id}/complete`,
-    { method: 'POST' },
+    { method: 'POST', organizationId: input.organizationId },
   )
   return complete.data.version.number
 }
@@ -361,6 +364,7 @@ export function UniverEditor(props: EditorProps) {
         blob,
         entryPath: props.entryPath,
         expectedCurrentVersion: props.expectedCurrentVersion,
+        organizationId: props.organizationId,
         slug: props.slug,
       })
       setDirty(false)

@@ -50,12 +50,14 @@ interface PreviewResponse {
 
 export function ArtifactViewer({
   onSheetChange,
+  organizationId,
   organizationSlug,
   sheet,
   slug,
   version,
 }: {
   onSheetChange?: ((sheet: string | undefined) => void) | undefined
+  organizationId: string
   organizationSlug: string
   sheet?: string | undefined
   slug: string
@@ -88,15 +90,19 @@ export function ArtifactViewer({
   useEffect(() => {
     setError(null)
     Promise.all([
-      api<unknown>(`/api/v1/artifacts/${encodeURIComponent(slug)}`),
-      api<unknown>(`/api/v1/artifacts/${encodeURIComponent(slug)}/versions`),
+      api<unknown>(`/api/v1/artifacts/${encodeURIComponent(slug)}`, {
+        organizationId,
+      }),
+      api<unknown>(`/api/v1/artifacts/${encodeURIComponent(slug)}/versions`, {
+        organizationId,
+      }),
     ])
       .then(([artifactResult, versionsResult]) => {
         setArtifact(artifactResponseSchema.parse(artifactResult).data)
         setVersions(artifactVersionsResponseSchema.parse(versionsResult).data)
       })
       .catch((reason: Error) => setError(reason.message))
-  }, [slug])
+  }, [organizationId, slug])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -106,7 +112,7 @@ export function ArtifactViewer({
     const query = version ? `?version=${version}` : ''
     api<PreviewResponse>(
       `/api/v1/artifacts/${encodeURIComponent(slug)}/preview${query}`,
-      { signal: controller.signal },
+      { organizationId, signal: controller.signal },
     )
       .then((result) => {
         if (!controller.signal.aborted) {
@@ -119,7 +125,7 @@ export function ArtifactViewer({
       })
 
     return () => controller.abort()
-  }, [slug, version])
+  }, [organizationId, slug, version])
 
   async function copy(value: string, message: string) {
     try {
@@ -127,6 +133,28 @@ export function ArtifactViewer({
       toast.success(message)
     } catch {
       toast.error('Could not copy to the clipboard.')
+    }
+  }
+
+  async function downloadArtifact() {
+    if (!artifact || !selected) return
+    try {
+      const response = await fetch(
+        `/api/v1/artifacts/${encodeURIComponent(artifact.id)}/download?version=${selected.number}`,
+        { headers: { 'x-otterware-organization': organizationId } },
+      )
+      if (!response.ok) throw new Error(`Download failed (${response.status}).`)
+      const disposition = response.headers.get('content-disposition')
+      const filename =
+        disposition?.match(/filename="?([^";]+)"?/i)?.[1] ?? selected.entryPath
+      const url = URL.createObjectURL(await response.blob())
+      const link = document.createElement('a')
+      link.href = url
+      link.download = filename
+      link.click()
+      URL.revokeObjectURL(url)
+    } catch (reason) {
+      toast.error(reason instanceof Error ? reason.message : String(reason))
     }
   }
 
@@ -139,11 +167,11 @@ export function ArtifactViewer({
         artifact.archivedAt
           ? await api<unknown>(
               `/api/v1/artifacts/${encodeURIComponent(artifact.id)}/restore`,
-              { method: 'POST' },
+              { method: 'POST', organizationId },
             )
           : await api<unknown>(
               `/api/v1/artifacts/${encodeURIComponent(artifact.id)}`,
-              { method: 'DELETE' },
+              { method: 'DELETE', organizationId },
             ),
       )
       setArtifact(result.data)
@@ -291,15 +319,11 @@ export function ArtifactViewer({
             </Button>
             {artifact && selected && (
               <Button
-                render={
-                  <a
-                    href={`/api/v1/artifacts/${encodeURIComponent(artifact.id)}/download?version=${selected.number}`}
-                    download
-                  />
-                }
                 variant="outline"
                 size="icon-sm"
+                type="button"
                 aria-label={`Download ${artifact.title} version ${selected.number}`}
+                onClick={() => void downloadArtifact()}
               >
                 <Download size={15} />
               </Button>
@@ -338,6 +362,7 @@ export function ArtifactViewer({
                 entryPath={selected.entryPath}
                 expectedCurrentVersion={artifact.versionCount}
                 onSheetChange={onSheetChange}
+                organizationId={organizationId}
                 organizationSlug={organizationSlug}
                 selectedSheet={sheet}
                 slug={slug}
@@ -357,6 +382,7 @@ export function ArtifactViewer({
         </main>
         <DeleteArtifactDialog
           artifact={deleteDialogOpen ? artifact : null}
+          organizationId={organizationId}
           onOpenChange={setDeleteDialogOpen}
           onDeleted={() => location.assign('/artifacts')}
         />

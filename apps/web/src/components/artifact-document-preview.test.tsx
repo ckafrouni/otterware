@@ -55,6 +55,7 @@ describe('ArtifactDocumentPreview', () => {
       <ArtifactDocumentPreview
         contentType="text/csv"
         entryPath="report.csv"
+        organizationId="org-chris"
         organizationSlug="chris"
         slug="report"
         version={1}
@@ -64,7 +65,12 @@ describe('ArtifactDocumentPreview', () => {
     expect(await screen.findByTestId('univer-editor')).not.toBeNull()
     expect(fetch).toHaveBeenCalledWith(
       '/api/v1/artifacts/report/content?version=1',
-      { headers: { accept: '*/*' } },
+      {
+        headers: {
+          accept: '*/*',
+          'x-otterware-organization': 'org-chris',
+        },
+      },
     )
   })
 
@@ -84,6 +90,7 @@ describe('ArtifactDocumentPreview', () => {
       <ArtifactDocumentPreview
         contentType="text/markdown"
         entryPath="README.md"
+        organizationId="org-chris"
         organizationSlug="chris"
         slug="roadmap"
         version={2}
@@ -114,6 +121,7 @@ describe('ArtifactDocumentPreview', () => {
       <ArtifactDocumentPreview
         contentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         entryPath="report.xlsx"
+        organizationId="org-chris"
         organizationSlug="chris"
         onSheetChange={onSheetChange}
         slug="workbook"

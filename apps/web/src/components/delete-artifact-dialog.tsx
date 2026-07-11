@@ -17,10 +17,12 @@ import { Input } from '@/components/ui/input'
 
 export function DeleteArtifactDialog({
   artifact,
+  organizationId,
   onDeleted,
   onOpenChange,
 }: {
   artifact: Artifact | null
+  organizationId?: string
   onDeleted: (artifact: Artifact) => void
   onOpenChange: (open: boolean) => void
 }) {
@@ -40,7 +42,10 @@ export function DeleteArtifactDialog({
     try {
       await api<void>(
         `/api/v1/artifacts/${encodeURIComponent(artifact.id)}/permanent`,
-        { method: 'DELETE' },
+        {
+          method: 'DELETE',
+          ...(organizationId ? { organizationId } : {}),
+        },
       )
       onDeleted(artifact)
       onOpenChange(false)

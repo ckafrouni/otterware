@@ -1,12 +1,11 @@
 // @vitest-environment jsdom
 
-import { render, screen, waitFor } from '@testing-library/react'
+import { cleanup, render, screen } from '@testing-library/react'
 import type React from 'react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { WorkspaceArtifactRoute } from './workspace-artifact-route'
 
-const { selectOrganization, useOrganizations } = vi.hoisted(() => ({
-  selectOrganization: vi.fn(),
+const { useOrganizations } = vi.hoisted(() => ({
   useOrganizations: vi.fn(),
 }))
 
@@ -15,18 +14,27 @@ vi.mock('./auth-gate', () => ({
   AuthGate: ({ children }: { children: React.ReactNode }) => children,
 }))
 vi.mock('./artifact-viewer', () => ({
-  ArtifactViewer: ({ organizationSlug }: { organizationSlug: string }) => (
-    <div>Viewer for {organizationSlug}</div>
+  ArtifactViewer: ({
+    organizationId,
+    organizationSlug,
+  }: {
+    organizationId: string
+    organizationSlug: string
+  }) => (
+    <div>
+      Viewer for {organizationSlug} ({organizationId})
+    </div>
   ),
 }))
 
 describe('WorkspaceArtifactRoute', () => {
+  afterEach(cleanup)
+
   beforeEach(() => {
-    selectOrganization.mockReset().mockResolvedValue(undefined)
     useOrganizations.mockReset()
   })
 
-  it('selects the organization encoded in the URL before rendering', async () => {
+  it('scopes the viewer to the organization encoded in the URL', () => {
     useOrganizations.mockReturnValue({
       activeOrganization: { id: 'org-chris', name: 'Chris', slug: 'chris' },
       loaded: true,
@@ -34,16 +42,11 @@ describe('WorkspaceArtifactRoute', () => {
         { id: 'org-chris', name: 'Chris', slug: 'chris' },
         { id: 'org-zentio', name: 'Zentio', slug: 'zentio' },
       ],
-      selectOrganization,
     })
 
     render(<WorkspaceArtifactRoute organizationSlug="zentio" slug="contract" />)
 
-    expect(screen.getByText('Switching to zentio…')).not.toBeNull()
-    await waitFor(() =>
-      expect(selectOrganization).toHaveBeenCalledWith('org-zentio'),
-    )
-    expect(screen.queryByText('Viewer for zentio')).toBeNull()
+    expect(screen.getByText('Viewer for zentio (org-zentio)')).not.toBeNull()
   })
 
   it('renders immediately when the URL team is already active', () => {
@@ -51,12 +54,10 @@ describe('WorkspaceArtifactRoute', () => {
       activeOrganization: { id: 'org-zentio', name: 'Zentio', slug: 'zentio' },
       loaded: true,
       organizations: [{ id: 'org-zentio', name: 'Zentio', slug: 'zentio' }],
-      selectOrganization,
     })
 
     render(<WorkspaceArtifactRoute organizationSlug="zentio" slug="contract" />)
 
-    expect(screen.getByText('Viewer for zentio')).not.toBeNull()
-    expect(selectOrganization).not.toHaveBeenCalled()
+    expect(screen.getByText('Viewer for zentio (org-zentio)')).not.toBeNull()
   })
 })
