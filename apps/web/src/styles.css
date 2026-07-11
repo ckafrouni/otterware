@@ -736,6 +736,11 @@ button:disabled {
   overflow: hidden;
 }
 
+.univer-editor > div {
+  width: 100%;
+  height: 100%;
+}
+
 .markdown-preview {
   overflow: auto;
   padding: clamp(24px, 5vw, 64px);
