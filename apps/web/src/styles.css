@@ -470,15 +470,15 @@ button:disabled {
 .viewer-shell {
   height: 100vh;
   display: grid;
-  grid-template-rows: 42px 1fr;
+  grid-template-rows: 34px 1fr;
   overflow: hidden;
 }
 .viewer-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 3px 6px;
+  gap: 8px;
+  padding: 2px 4px;
   background: var(--bg);
 }
 .viewer-left,
@@ -486,12 +486,7 @@ button:disabled {
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 7px;
-}
-.viewer-icon {
-  width: 27px;
-  height: 27px;
-  text-decoration: none;
+  gap: 4px;
 }
 .version-trigger {
   max-width: min(500px, 45vw);
@@ -500,11 +495,11 @@ button:disabled {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  font-size: 13px;
+  font-size: 12px;
 }
 .viewer-byline {
   color: var(--ink-muted);
-  font-size: 11px;
+  font-size: 10px;
   white-space: nowrap;
 }
 .version-menu {
