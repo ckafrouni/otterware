@@ -1,6 +1,6 @@
 ---
 name: otterware-artifacts
-description: Manage Otterware artifacts with the otterware CLI. Use when an agent needs to authenticate with Otterware, select a personal or organization workspace, create or publish static content, inspect or retrieve artifact files, manage immutable versions, update metadata, open previews, or archive and restore artifacts.
+description: Manage Otterware artifacts with the otterware CLI. Use when an agent needs to authenticate with Otterware, select a personal or organization workspace, create or publish HTML, Markdown, CSV, TSV, Excel, image, or other static content, inspect or retrieve artifact files, manage immutable versions, update metadata, open previews, or archive and restore artifacts.
 ---
 
 # Otterware Artifacts
@@ -70,6 +70,16 @@ otterware --json artifacts create <output-directory> \
   --title <title> \
   --visibility private \
   --label "Initial version"
+```
+
+The source may also be a single document. Publish `.md`, `.csv`, `.tsv`, and `.xlsx` files directly; Otterware provides a purpose-built browser preview for each format:
+
+```bash
+otterware --json artifacts create ./report.xlsx \
+  --slug quarterly-report \
+  --title "Quarterly report" \
+  --visibility organization \
+  --label "Initial workbook"
 ```
 
 Publish a new immutable version of an existing artifact with `push`:
