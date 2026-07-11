@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import { Check, Copy, KeyRound, Pencil, Plus, Users } from 'lucide-react'
+import { Building2, Copy, KeyRound, Pencil, Plus, UserPlus } from 'lucide-react'
 import { authClient } from '#/lib/auth-client'
 import { AppHeader } from '#/components/app-header'
 import { AuthGate } from '#/components/auth-gate'
@@ -136,185 +136,224 @@ function SettingsPage() {
         <main className="settings-page">
           <section className="settings-heading">
             <h1>Settings</h1>
-            <p>Manage your active team, collaborators, and agent access.</p>
+            <p>Workspace preferences and access.</p>
           </section>
-          {message && <div className="notice">{message}</div>}
-          <div className="settings-grid">
-            <Card className="settings-card wide-card team-settings-card">
-              <div className="settings-card-heading">
-                <span className="settings-card-icon">
-                  <Users size={16} />
-                </span>
-                <div>
-                  <h2>Teams</h2>
-                  <p>Switch teams or update the active workspace.</p>
+          <div className="settings-layout">
+            <nav className="settings-nav" aria-label="Settings sections">
+              <a href="#team">
+                <Building2 size={15} /> Team
+              </a>
+              <a href="#collaborators">
+                <UserPlus size={15} /> Collaborators
+              </a>
+              <a href="#agent-access">
+                <KeyRound size={15} /> Agent access
+              </a>
+            </nav>
+
+            <div className="settings-content">
+              {message && <div className="notice">{message}</div>}
+
+              <Card id="team" className="settings-panel">
+                <div className="settings-panel-heading">
+                  <div>
+                    <h2>Team</h2>
+                    <p>Choose and configure your active workspace.</p>
+                  </div>
                 </div>
-              </div>
-              <div className="organization-list">
-                {organizations.map((organization) => (
-                  <Button
-                    key={organization.id}
-                    variant="ghost"
-                    type="button"
-                    className={
-                      organization.id === activeOrganizationId
-                        ? 'organization active'
-                        : 'organization'
-                    }
-                    onClick={() => void selectOrganization(organization.id)}
+                <div className="settings-panel-body">
+                  <div className="settings-field">
+                    <label htmlFor="active-team">Active team</label>
+                    <Select
+                      value={activeOrganizationId}
+                      onValueChange={(value) =>
+                        value && void selectOrganization(value)
+                      }
+                    >
+                      <SelectTrigger id="active-team" className="w-full">
+                        <SelectValue placeholder="Select a team" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {organizations.map((organization) => (
+                          <SelectItem
+                            key={organization.id}
+                            value={organization.id}
+                          >
+                            {organization.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {canManageOrganization && activeOrganization && (
+                    <form
+                      className="settings-field"
+                      onSubmit={renameOrganization}
+                    >
+                      <label htmlFor="team-name">Team name</label>
+                      <div className="settings-control-row">
+                        <Input
+                          id="team-name"
+                          required
+                          maxLength={80}
+                          value={teamName}
+                          onChange={(event) => setTeamName(event.target.value)}
+                        />
+                        <Button
+                          variant="outline"
+                          type="submit"
+                          disabled={
+                            !teamName.trim() ||
+                            teamName.trim() === activeOrganization.name
+                          }
+                        >
+                          <Pencil size={14} /> Save
+                        </Button>
+                      </div>
+                    </form>
+                  )}
+
+                  <form
+                    className="settings-field settings-field-separated"
+                    onSubmit={createOrganization}
                   >
-                    <span>{organization.name}</span>
-                    {organization.id === activeOrganizationId && (
-                      <Check size={14} />
-                    )}
-                  </Button>
-                ))}
-              </div>
-              {canManageOrganization && activeOrganization && (
-                <div className="settings-subsection">
-                  <label htmlFor="team-name">Team name</label>
-                  <form className="inline-form" onSubmit={renameOrganization}>
-                    <Input
-                      id="team-name"
-                      required
-                      maxLength={80}
-                      value={teamName}
-                      onChange={(event) => setTeamName(event.target.value)}
-                    />
+                    <label htmlFor="new-organization">
+                      Create another team
+                    </label>
+                    <div className="settings-control-row">
+                      <Input
+                        id="new-organization"
+                        required
+                        placeholder="Team name"
+                        value={orgName}
+                        onChange={(event) => setOrgName(event.target.value)}
+                      />
+                      <Button variant="outline" type="submit">
+                        <Plus size={14} /> Create
+                      </Button>
+                    </div>
+                  </form>
+                </div>
+              </Card>
+
+              <Card id="collaborators" className="settings-panel">
+                <div className="settings-panel-heading">
+                  <div>
+                    <h2>Collaborators</h2>
+                    <p>Invite someone to the active team.</p>
+                  </div>
+                </div>
+                <div className="settings-panel-body">
+                  <form className="invite-form" onSubmit={invite}>
+                    <div className="settings-field">
+                      <label htmlFor="invite-email">Email address</label>
+                      <Input
+                        id="invite-email"
+                        required
+                        type="email"
+                        placeholder="colleague@example.com"
+                        value={inviteEmail}
+                        onChange={(event) => setInviteEmail(event.target.value)}
+                      />
+                    </div>
+                    <div className="settings-field invite-role-field">
+                      <label htmlFor="invite-role">Role</label>
+                      <Select
+                        value={inviteRole}
+                        onValueChange={(value) =>
+                          setInviteRole(value ?? 'viewer')
+                        }
+                      >
+                        <SelectTrigger id="invite-role" className="w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="viewer">Viewer</SelectItem>
+                          <SelectItem value="editor">Editor</SelectItem>
+                          <SelectItem value="admin">Admin</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                     <Button
                       variant="outline"
                       type="submit"
-                      disabled={
-                        !teamName.trim() ||
-                        teamName.trim() === activeOrganization.name
-                      }
+                      disabled={!activeOrganizationId}
                     >
-                      <Pencil size={14} /> Rename
+                      Send invite
                     </Button>
                   </form>
+                  {inviteLink && (
+                    <div className="secret-output">
+                      <code>{inviteLink}</code>
+                      <Button
+                        variant="ghost"
+                        size="icon-xs"
+                        type="button"
+                        onClick={() =>
+                          void navigator.clipboard.writeText(inviteLink)
+                        }
+                      >
+                        <Copy size={14} />
+                      </Button>
+                    </div>
+                  )}
                 </div>
-              )}
-              <div className="settings-subsection">
-                <label htmlFor="new-organization">New team</label>
-                <form className="inline-form" onSubmit={createOrganization}>
-                  <Input
-                    id="new-organization"
-                    required
-                    placeholder="New organization"
-                    value={orgName}
-                    onChange={(event) => setOrgName(event.target.value)}
-                  />
-                  <Button variant="outline" type="submit">
-                    <Plus size={14} /> Create
-                  </Button>
-                </form>
-              </div>
-            </Card>
+              </Card>
 
-            <Card className="settings-card">
-              <div className="settings-card-heading">
-                <span className="settings-card-icon">
-                  <Users size={16} />
-                </span>
-                <div>
-                  <h2>Collaborators</h2>
-                  <p>Create a private invitation link.</p>
-                </div>
-              </div>
-              <form className="stacked-form" onSubmit={invite}>
-                <Input
-                  required
-                  type="email"
-                  placeholder="colleague@example.com"
-                  value={inviteEmail}
-                  onChange={(event) => setInviteEmail(event.target.value)}
-                />
-                <Select
-                  value={inviteRole}
-                  onValueChange={(value) => setInviteRole(value ?? 'viewer')}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="viewer">Viewer</SelectItem>
-                    <SelectItem value="editor">Editor</SelectItem>
-                    <SelectItem value="admin">Admin</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button
-                  variant="outline"
-                  type="submit"
-                  disabled={!activeOrganizationId}
-                >
-                  Create invitation
-                </Button>
-              </form>
-              {inviteLink && (
-                <div className="secret-output">
-                  <code>{inviteLink}</code>
-                  <Button
-                    variant="ghost"
-                    size="icon-xs"
-                    type="button"
-                    onClick={() =>
-                      void navigator.clipboard.writeText(inviteLink)
-                    }
-                  >
-                    <Copy size={14} />
-                  </Button>
-                </div>
-              )}
-            </Card>
-
-            <Card className="settings-card">
-              <div className="settings-card-heading">
-                <span className="settings-card-icon">
-                  <KeyRound size={16} />
-                </span>
-                <div>
-                  <h2>Agent access</h2>
-                  <p>
-                    Organization-scoped keys can access shared artifacts, never
-                    private artifacts.
-                  </p>
-                </div>
-              </div>
-              <form className="inline-form" onSubmit={createKey}>
-                <Input
-                  required
-                  value={keyName}
-                  onChange={(event) => setKeyName(event.target.value)}
-                />
-                <Button
-                  variant="outline"
-                  type="submit"
-                  disabled={!activeOrganizationId}
-                >
-                  Create key
-                </Button>
-              </form>
-              {createdKey && (
-                <div>
-                  <p className="security-note">
-                    Copy this key now. It will not be shown again.
-                  </p>
-                  <div className="secret-output">
-                    <code>{createdKey}</code>
-                    <Button
-                      variant="ghost"
-                      size="icon-xs"
-                      type="button"
-                      onClick={() =>
-                        void navigator.clipboard.writeText(createdKey)
-                      }
-                    >
-                      <Copy size={14} />
-                    </Button>
+              <Card id="agent-access" className="settings-panel">
+                <div className="settings-panel-heading">
+                  <div>
+                    <h2>Agent access</h2>
+                    <p>Create organization-scoped credentials for agents.</p>
                   </div>
                 </div>
-              )}
-            </Card>
+                <div className="settings-panel-body">
+                  <form className="settings-field" onSubmit={createKey}>
+                    <label htmlFor="key-name">Key name</label>
+                    <div className="settings-control-row">
+                      <Input
+                        id="key-name"
+                        required
+                        value={keyName}
+                        onChange={(event) => setKeyName(event.target.value)}
+                      />
+                      <Button
+                        variant="outline"
+                        type="submit"
+                        disabled={!activeOrganizationId}
+                      >
+                        Create key
+                      </Button>
+                    </div>
+                    <p className="settings-help">
+                      Keys can access shared organization artifacts, never
+                      private artifacts.
+                    </p>
+                  </form>
+                  {createdKey && (
+                    <div>
+                      <p className="security-note">
+                        Copy this key now. It will not be shown again.
+                      </p>
+                      <div className="secret-output">
+                        <code>{createdKey}</code>
+                        <Button
+                          variant="ghost"
+                          size="icon-xs"
+                          type="button"
+                          onClick={() =>
+                            void navigator.clipboard.writeText(createdKey)
+                          }
+                        >
+                          <Copy size={14} />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            </div>
           </div>
         </main>
       </div>
