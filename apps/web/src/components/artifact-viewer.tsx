@@ -8,6 +8,7 @@ import {
   MoreHorizontal,
   Pencil,
   RotateCcw,
+  Trash2,
 } from 'lucide-react'
 import {
   artifactResponseSchema,
@@ -17,15 +18,18 @@ import {
 } from '@otterware/contracts'
 import { api, formatDate } from '#/lib/api'
 import { useOrganizations } from '@/hooks/use-organizations'
+import { useCurrentActor } from '@/hooks/use-current-actor'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { AuthGate } from './auth-gate'
+import { DeleteArtifactDialog } from './delete-artifact-dialog'
 
 interface PreviewResponse {
   data: {
@@ -47,7 +51,9 @@ export function ArtifactViewer({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [changingArchivedState, setChangingArchivedState] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const { organizations } = useOrganizations()
+  const { isOwner } = useCurrentActor()
 
   const selected = useMemo(
     () =>
@@ -219,6 +225,18 @@ export function ArtifactViewer({
                       ? 'Restore artifact'
                       : 'Archive artifact'}
                   </DropdownMenuItem>
+                  {artifact.archivedAt && isOwner && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        variant="destructive"
+                        onClick={() => setDeleteDialogOpen(true)}
+                      >
+                        <Trash2 size={14} />
+                        Delete permanently
+                      </DropdownMenuItem>
+                    </>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
@@ -261,6 +279,11 @@ export function ArtifactViewer({
             />
           )}
         </main>
+        <DeleteArtifactDialog
+          artifact={deleteDialogOpen ? artifact : null}
+          onOpenChange={setDeleteDialogOpen}
+          onDeleted={() => location.assign('/artifacts')}
+        />
       </div>
     </AuthGate>
   )

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
-import { authenticate } from './actor'
-import type { Env } from './types'
+import { assertCanPermanentlyDelete, authenticate } from './actor'
+import type { AuthenticatedActor, Env } from './types'
 import type { OtterwareAuth } from './auth'
 
 describe('bearer authentication fast path', () => {
@@ -35,5 +35,34 @@ describe('bearer authentication fast path', () => {
       organizationId: 'organization-1',
       roles: ['owner'],
     })
+  })
+})
+
+describe('permanent artifact deletion permissions', () => {
+  const actor = (roles: string[], type: 'user' | 'api_key' = 'user') =>
+    ({
+      type,
+      id: 'actor-1',
+      name: 'Actor',
+      userId: type === 'user' ? 'actor-1' : null,
+      organizationId: 'organization-1',
+      roles,
+      permissions: {},
+    }) satisfies AuthenticatedActor
+
+  it('allows workspace owners', () => {
+    expect(() => assertCanPermanentlyDelete(actor(['owner']))).not.toThrow()
+  })
+
+  it.each(['admin', 'editor', 'member'])('rejects the %s role', (role) => {
+    expect(() => assertCanPermanentlyDelete(actor([role]))).toThrow(
+      'Only the workspace owner',
+    )
+  })
+
+  it('rejects API keys even if their role is owner', () => {
+    expect(() =>
+      assertCanPermanentlyDelete(actor(['owner'], 'api_key')),
+    ).toThrow('Only the workspace owner')
   })
 })

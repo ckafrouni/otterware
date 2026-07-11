@@ -518,6 +518,21 @@ button:disabled {
 .error-panel {
   color: var(--red);
 }
+.delete-confirmation-field {
+  display: grid;
+  gap: 7px;
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+.delete-confirmation-field strong {
+  color: var(--ink);
+  font-family: 'SFMono-Regular', Consolas, monospace;
+}
+.delete-dialog-error {
+  margin: 0;
+  color: var(--red);
+  font-size: 12px;
+}
 
 .viewer-shell {
   height: 100vh;

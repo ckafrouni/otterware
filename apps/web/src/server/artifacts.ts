@@ -14,7 +14,11 @@ import {
   type CreateUploadInput,
 } from '@otterware/contracts'
 import { waitUntil } from 'cloudflare:workers'
-import { assertCanWrite, canReadWithKey } from './actor'
+import {
+  assertCanPermanentlyDelete,
+  assertCanWrite,
+  canReadWithKey,
+} from './actor'
 import { signContentGrant, signThumbnailGrant } from './content'
 import { HttpError, json, parseJson } from './http'
 import { generateThumbnail } from './thumbnails'
@@ -487,6 +491,100 @@ export async function archiveArtifact(
     row.id,
   )
   return showArtifact(env, actor, row.id)
+}
+
+async function deleteArtifactStorage(
+  env: Env,
+  objectKeys: string[],
+  uploads: UploadRow[],
+): Promise<void> {
+  await Promise.all(
+    uploads.flatMap((upload) =>
+      uploadManifest(upload)
+        .filter((file) => file.multipartUploadId)
+        .map((file) =>
+          env.ARTIFACTS.resumeMultipartUpload(
+            file.r2Key,
+            file.multipartUploadId!,
+          )
+            .abort()
+            .catch(() => {}),
+        ),
+    ),
+  )
+  const uniqueKeys = [...new Set(objectKeys)]
+  for (let index = 0; index < uniqueKeys.length; index += 1000) {
+    await env.ARTIFACTS.delete(uniqueKeys.slice(index, index + 1000))
+  }
+}
+
+export async function permanentlyDeleteArtifact(
+  env: Env,
+  actor: AuthenticatedActor,
+  reference: string,
+): Promise<Response> {
+  assertCanPermanentlyDelete(actor)
+  const row = await artifactRow(env, actor, reference, { requireModify: true })
+  if (!row.archived_at) {
+    throw new HttpError(
+      409,
+      'artifact_not_archived',
+      'Archive the artifact before permanently deleting it.',
+    )
+  }
+
+  const [files, previews, uploads] = await Promise.all([
+    env.DB.prepare(
+      `SELECT af.r2_key
+         FROM artifact_file af
+         JOIN artifact_version av ON av.id = af.version_id
+        WHERE av.artifact_id = ?`,
+    )
+      .bind(row.id)
+      .all<{ r2_key: string }>(),
+    env.DB.prepare(
+      'SELECT preview_r2_key FROM artifact_version WHERE artifact_id = ? AND preview_r2_key IS NOT NULL',
+    )
+      .bind(row.id)
+      .all<{ preview_r2_key: string }>(),
+    env.DB.prepare('SELECT * FROM artifact_upload WHERE artifact_id = ?')
+      .bind(row.id)
+      .all<UploadRow>(),
+  ])
+  const uploadKeys = uploads.results.flatMap((upload) =>
+    uploadManifest(upload).map((file) => file.r2Key),
+  )
+  const objectKeys = [
+    ...files.results.map((file) => file.r2_key),
+    ...previews.results.map((preview) => preview.preview_r2_key),
+    ...uploadKeys,
+  ]
+  const now = new Date().toISOString()
+  await env.DB.batch([
+    env.DB.prepare(
+      `INSERT INTO audit_event
+        (id, organization_id, actor_type, actor_id, actor_name, action, resource_type, resource_id, metadata_json, created_at)
+       VALUES (?, ?, ?, ?, ?, 'artifact.permanently_deleted', 'artifact', ?, ?, ?)`,
+    ).bind(
+      crypto.randomUUID(),
+      actor.organizationId,
+      actor.type,
+      actor.id,
+      actor.name,
+      row.id,
+      JSON.stringify({ title: row.title, slug: row.slug }),
+      now,
+    ),
+    env.DB.prepare('DELETE FROM artifact WHERE id = ?').bind(row.id),
+  ])
+  waitUntil(
+    deleteArtifactStorage(env, objectKeys, uploads.results).catch(
+      (error: unknown) => {
+        console.error('Artifact storage cleanup failed', row.id, error)
+      },
+    ),
+  )
+  return new Response(null, { status: 204 })
 }
 
 export async function deleteDraft(

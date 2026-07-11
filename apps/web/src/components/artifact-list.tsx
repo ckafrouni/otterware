@@ -10,6 +10,7 @@ import {
   Plus,
   RotateCcw,
   Search,
+  Trash2,
   Users,
   UserRound,
 } from 'lucide-react'
@@ -19,6 +20,7 @@ import {
   type Artifact,
 } from '@otterware/contracts'
 import { api, formatDate } from '#/lib/api'
+import { useCurrentActor } from '@/hooks/use-current-actor'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -27,6 +29,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
@@ -39,6 +42,7 @@ import {
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { AppHeader } from './app-header'
 import { AuthGate } from './auth-gate'
+import { DeleteArtifactDialog } from './delete-artifact-dialog'
 
 export function ArtifactListPage() {
   const [artifacts, setArtifacts] = useState<Artifact[]>([])
@@ -49,6 +53,10 @@ export function ArtifactListPage() {
   const [view, setView] = useState<'grid' | 'list'>('grid')
   const [status, setStatus] = useState<'active' | 'archived'>('active')
   const [changingId, setChangingId] = useState<string | null>(null)
+  const [deletingArtifact, setDeletingArtifact] = useState<Artifact | null>(
+    null,
+  )
+  const { isOwner } = useCurrentActor()
 
   useEffect(() => {
     setLoading(true)
@@ -333,6 +341,18 @@ export function ArtifactListPage() {
                             )}
                             {artifact.archivedAt ? 'Restore' : 'Archive'}
                           </DropdownMenuItem>
+                          {artifact.archivedAt && isOwner && (
+                            <>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                variant="destructive"
+                                onClick={() => setDeletingArtifact(artifact)}
+                              >
+                                <Trash2 size={14} />
+                                Delete permanently
+                              </DropdownMenuItem>
+                            </>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
@@ -341,6 +361,18 @@ export function ArtifactListPage() {
               </Link>
             ))}
           </section>
+          <DeleteArtifactDialog
+            artifact={deletingArtifact}
+            onOpenChange={(open) => {
+              if (!open) setDeletingArtifact(null)
+            }}
+            onDeleted={(deleted) => {
+              setArtifacts((current) =>
+                current.filter((artifact) => artifact.id !== deleted.id),
+              )
+              setDeletingArtifact(null)
+            }}
+          />
         </main>
       </div>
     </AuthGate>
