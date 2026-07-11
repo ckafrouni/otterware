@@ -304,6 +304,9 @@ code {
 .artifact-sort-trigger {
   width: 205px;
 }
+.artifact-status-trigger {
+  width: 132px;
+}
 .count-badge,
 .version-pill {
   padding: 5px 9px;
@@ -448,6 +451,11 @@ button:disabled {
   justify-content: space-between;
   color: var(--ink-muted);
   font-size: 11px;
+}
+.artifact-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 .artifact-list-view {
   display: grid;

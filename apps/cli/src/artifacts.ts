@@ -212,6 +212,7 @@ export function registerArtifactCommands(program: Command): void {
             slug: artifact.slug,
             title: artifact.title,
             visibility: artifact.visibility,
+            status: artifact.archivedAt ? 'archived' : 'active',
             version: artifact.currentVersion?.number ?? '-',
             updated: artifact.updatedAt,
           })),

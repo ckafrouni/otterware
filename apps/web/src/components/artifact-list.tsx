@@ -1,21 +1,34 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import {
+  Archive,
   ArrowDownAZ,
   Copy,
   Grid2X2,
   List as ListIcon,
+  MoreHorizontal,
   Plus,
+  RotateCcw,
   Search,
   Users,
   UserRound,
 } from 'lucide-react'
-import { artifactListResponseSchema, type Artifact } from '@otterware/contracts'
+import {
+  artifactListResponseSchema,
+  artifactResponseSchema,
+  type Artifact,
+} from '@otterware/contracts'
 import { api, formatDate } from '#/lib/api'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import {
   Select,
   SelectContent,
@@ -34,15 +47,20 @@ export function ArtifactListPage() {
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState<'updated' | 'az' | 'za'>('updated')
   const [view, setView] = useState<'grid' | 'list'>('grid')
+  const [status, setStatus] = useState<'active' | 'archived'>('active')
+  const [changingId, setChangingId] = useState<string | null>(null)
 
   useEffect(() => {
-    api<unknown>('/api/v1/artifacts')
+    setLoading(true)
+    setError(null)
+    const archived = status === 'archived' ? '&archived=only' : ''
+    api<unknown>(`/api/v1/artifacts?limit=100${archived}`)
       .then((result) =>
         setArtifacts(artifactListResponseSchema.parse(result).data),
       )
       .catch((reason: Error) => setError(reason.message))
       .finally(() => setLoading(false))
-  }, [])
+  }, [status])
 
   useEffect(() => {
     const saved = localStorage.getItem('otterware-artifact-view')
@@ -51,20 +69,50 @@ export function ArtifactListPage() {
 
   const visibleArtifacts = useMemo(() => {
     const normalized = query.trim().toLowerCase()
+    const matchingStatus = artifacts.filter((artifact) =>
+      status === 'archived'
+        ? artifact.archivedAt !== null
+        : !artifact.archivedAt,
+    )
     const result = normalized
-      ? artifacts.filter((artifact) =>
+      ? matchingStatus.filter((artifact) =>
           [artifact.title, artifact.slug, artifact.description]
             .join(' ')
             .toLowerCase()
             .includes(normalized),
         )
-      : [...artifacts]
+      : [...matchingStatus]
     return result.sort((left, right) => {
       if (sort === 'az') return left.title.localeCompare(right.title)
       if (sort === 'za') return right.title.localeCompare(left.title)
       return right.updatedAt.localeCompare(left.updatedAt)
     })
-  }, [artifacts, query, sort])
+  }, [artifacts, query, sort, status])
+
+  async function changeArchivedState(artifact: Artifact) {
+    setChangingId(artifact.id)
+    setError(null)
+    try {
+      const result = artifactResponseSchema.parse(
+        artifact.archivedAt
+          ? await api<unknown>(
+              `/api/v1/artifacts/${encodeURIComponent(artifact.id)}/restore`,
+              { method: 'POST' },
+            )
+          : await api<unknown>(
+              `/api/v1/artifacts/${encodeURIComponent(artifact.id)}`,
+              { method: 'DELETE' },
+            ),
+      )
+      setArtifacts((current) =>
+        current.map((item) => (item.id === artifact.id ? result.data : item)),
+      )
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : String(reason))
+    } finally {
+      setChangingId(null)
+    }
+  }
 
   function chooseView(next: 'grid' | 'list') {
     setView(next)
@@ -108,6 +156,25 @@ export function ArtifactListPage() {
                 onChange={(event) => setQuery(event.target.value)}
               />
             </label>
+            <Select
+              value={status}
+              onValueChange={(value) =>
+                setStatus(value as 'active' | 'archived')
+              }
+            >
+              <SelectTrigger className="artifact-status-trigger">
+                {status === 'active' ? (
+                  <Grid2X2 size={15} />
+                ) : (
+                  <Archive size={15} />
+                )}
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent align="end">
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="archived">Archived</SelectItem>
+              </SelectContent>
+            </Select>
             <Select
               value={sort}
               onValueChange={(value) =>
@@ -156,10 +223,17 @@ export function ArtifactListPage() {
           )}
           {!loading && !error && artifacts.length === 0 && (
             <div className="empty-panel">
-              <h2>No artifacts yet</h2>
-              <p>
-                Install the CLI and run <code>otterware artifacts create</code>.
-              </p>
+              {status === 'archived' ? (
+                <h2>No archived artifacts</h2>
+              ) : (
+                <>
+                  <h2>No artifacts yet</h2>
+                  <p>
+                    Install the CLI and run{' '}
+                    <code>otterware artifacts create</code>.
+                  </p>
+                </>
+              )}
             </div>
           )}
           {!loading &&
@@ -167,7 +241,11 @@ export function ArtifactListPage() {
             artifacts.length > 0 &&
             visibleArtifacts.length === 0 && (
               <div className="empty-panel compact-empty">
-                No artifacts match “{query}”.
+                {query
+                  ? `No ${status} artifacts match “${query}”.`
+                  : status === 'archived'
+                    ? 'No archived artifacts.'
+                    : 'No active artifacts.'}
               </div>
             )}
           <section
@@ -209,19 +287,55 @@ export function ArtifactListPage() {
                       v{artifact.currentVersion?.number ?? 1} ·{' '}
                       {formatDate(artifact.updatedAt)}
                     </span>
-                    <Button
-                      variant="outline"
-                      size="icon-xs"
-                      type="button"
-                      aria-label="Copy artifact URL"
-                      onClick={(event) => {
-                        event.preventDefault()
-                        event.stopPropagation()
-                        void navigator.clipboard.writeText(artifact.url)
-                      }}
-                    >
-                      <Copy size={14} />
-                    </Button>
+                    <div className="artifact-card-actions">
+                      <Button
+                        variant="outline"
+                        size="icon-xs"
+                        type="button"
+                        aria-label="Copy artifact URL"
+                        onClick={(event) => {
+                          event.preventDefault()
+                          event.stopPropagation()
+                          void navigator.clipboard.writeText(artifact.url)
+                        }}
+                      >
+                        <Copy size={14} />
+                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger
+                          render={
+                            <Button
+                              variant="outline"
+                              size="icon-xs"
+                              type="button"
+                              aria-label="Artifact actions"
+                              disabled={changingId === artifact.id}
+                              onClick={(event) => {
+                                event.preventDefault()
+                                event.stopPropagation()
+                              }}
+                            />
+                          }
+                        >
+                          <MoreHorizontal size={14} />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            variant={
+                              artifact.archivedAt ? 'default' : 'destructive'
+                            }
+                            onClick={() => void changeArchivedState(artifact)}
+                          >
+                            {artifact.archivedAt ? (
+                              <RotateCcw size={14} />
+                            ) : (
+                              <Archive size={14} />
+                            )}
+                            {artifact.archivedAt ? 'Restore' : 'Archive'}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </div>
                 </Card>
               </Link>
