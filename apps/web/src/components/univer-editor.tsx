@@ -291,7 +291,7 @@ export function UniverEditor(props: EditorProps) {
         const readyTimer = window.setTimeout(() => {
           acceptingChanges = true
           setDirty(false)
-        }, 500)
+        }, 1_000)
         handle.current = {
           dispose: () => {
             clearTimeout(readyTimer)
@@ -315,7 +315,7 @@ export function UniverEditor(props: EditorProps) {
         const readyTimer = window.setTimeout(() => {
           acceptingChanges = true
           setDirty(false)
-        }, 500)
+        }, 1_000)
         handle.current = {
           dispose: () => {
             clearTimeout(readyTimer)
