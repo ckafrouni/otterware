@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from '@tanstack/react-router'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   Archive,
   ArrowDownAZ,
@@ -23,6 +24,8 @@ import {
   type Artifact,
 } from '@otterware/contracts'
 import { api, formatDate } from '#/lib/api'
+import { artifactBootstrapQuery } from '#/lib/artifact-query'
+import { readSessionCache, writeSessionCache } from '#/lib/session-cache'
 import { useCurrentActor } from '@/hooks/use-current-actor'
 import { useOrganizations } from '@/hooks/use-organizations'
 import { Badge } from '@/components/ui/badge'
@@ -66,31 +69,68 @@ export function ArtifactListPage({
     options?: { replace?: boolean },
   ) => void
 }) {
-  const [artifacts, setArtifacts] = useState<Artifact[]>([])
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [actionError, setActionError] = useState<string | null>(null)
   const [changingId, setChangingId] = useState<string | null>(null)
   const [deletingArtifact, setDeletingArtifact] = useState<Artifact | null>(
     null,
   )
-  const { isOwner } = useCurrentActor()
   const { activeOrganization } = useOrganizations()
+  const { isOwner } = useCurrentActor(
+    activeOrganization?.id,
+    Boolean(activeOrganization),
+  )
+  const queryClient = useQueryClient()
   const query = search.q ?? ''
   const sort = search.sort ?? 'updated'
   const view = search.view ?? 'grid'
   const status = search.status ?? 'active'
 
-  useEffect(() => {
-    setLoading(true)
-    setError(null)
-    const archived = status === 'archived' ? '&archived=only' : ''
-    api<unknown>(`/api/v1/artifacts?limit=100${archived}`)
-      .then((result) =>
-        setArtifacts(artifactListResponseSchema.parse(result).data),
+  const artifactsQueryKey = [
+    'artifacts',
+    activeOrganization?.id ?? 'none',
+    status,
+  ] as const
+  const artifactsStorageKey = `otterware:artifacts:${activeOrganization?.id ?? 'none'}:${status}`
+  const storedArtifacts = readSessionCache<Artifact[]>(
+    artifactsStorageKey,
+    60_000,
+  )
+  const artifactsQuery = useQuery({
+    enabled: Boolean(activeOrganization?.id),
+    queryKey: artifactsQueryKey,
+    queryFn: async () => {
+      const archived = status === 'archived' ? '&archived=only' : ''
+      const result = await api<unknown>(
+        `/api/v1/artifacts?limit=100${archived}`,
+        { organizationId: activeOrganization!.id },
       )
-      .catch((reason: Error) => setError(reason.message))
-      .finally(() => setLoading(false))
-  }, [status])
+      return writeSessionCache(
+        artifactsStorageKey,
+        artifactListResponseSchema.parse(result).data,
+      )
+    },
+    ...(activeOrganization && storedArtifacts
+      ? {
+          initialData: storedArtifacts.value,
+          initialDataUpdatedAt: storedArtifacts.savedAt,
+        }
+      : {}),
+    staleTime: 60_000,
+  })
+  const artifacts = artifactsQuery.data ?? []
+  const loading = !activeOrganization || artifactsQuery.isPending
+  const error =
+    actionError ??
+    (artifactsQuery.error instanceof Error
+      ? artifactsQuery.error.message
+      : null)
+
+  function setArtifacts(update: (current: Artifact[]) => Artifact[]) {
+    queryClient.setQueryData<Artifact[]>(artifactsQueryKey, (current = []) => {
+      const next = update(current)
+      return writeSessionCache(artifactsStorageKey, next)
+    })
+  }
 
   const visibleArtifacts = useMemo(() => {
     const normalized = query.trim().toLowerCase()
@@ -116,24 +156,24 @@ export function ArtifactListPage({
 
   async function changeArchivedState(artifact: Artifact) {
     setChangingId(artifact.id)
-    setError(null)
+    setActionError(null)
     try {
       const result = artifactResponseSchema.parse(
         artifact.archivedAt
           ? await api<unknown>(
               `/api/v1/artifacts/${encodeURIComponent(artifact.id)}/restore`,
-              { method: 'POST' },
+              { method: 'POST', organizationId: activeOrganization?.id },
             )
           : await api<unknown>(
               `/api/v1/artifacts/${encodeURIComponent(artifact.id)}`,
-              { method: 'DELETE' },
+              { method: 'DELETE', organizationId: activeOrganization?.id },
             ),
       )
       setArtifacts((current) =>
         current.map((item) => (item.id === artifact.id ? result.data : item)),
       )
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : String(reason))
+      setActionError(reason instanceof Error ? reason.message : String(reason))
     } finally {
       setChangingId(null)
     }
@@ -334,6 +374,24 @@ export function ArtifactListPage({
                     slug: artifact.slug,
                   }}
                   className="artifact-card-link"
+                  onFocus={() => {
+                    if (activeOrganization)
+                      void queryClient.prefetchQuery(
+                        artifactBootstrapQuery(
+                          activeOrganization.id,
+                          artifact.slug,
+                        ),
+                      )
+                  }}
+                  onMouseEnter={() => {
+                    if (activeOrganization)
+                      void queryClient.prefetchQuery(
+                        artifactBootstrapQuery(
+                          activeOrganization.id,
+                          artifact.slug,
+                        ),
+                      )
+                  }}
                 >
                   <Card
                     size="sm"
@@ -449,6 +507,9 @@ export function ArtifactListPage({
           </section>
           <DeleteArtifactDialog
             artifact={deletingArtifact}
+            {...(activeOrganization
+              ? { organizationId: activeOrganization.id }
+              : {})}
             onOpenChange={(open) => {
               if (!open) setDeletingArtifact(null)
             }}

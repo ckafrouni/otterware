@@ -12,7 +12,6 @@ interface GrantPayload {
 interface ThumbnailGrantPayload {
   r2Key: string
   expiresAt: number
-  nonce: string
 }
 
 interface ContentFileRow {
@@ -73,8 +72,7 @@ export async function signThumbnailGrant(
 ): Promise<string> {
   const payload: ThumbnailGrantPayload = {
     r2Key,
-    expiresAt: Math.floor(Date.now() / 1_000) + 60 * 60,
-    nonce: crypto.randomUUID(),
+    expiresAt: (Math.floor(Date.now() / 3_600_000) + 2) * 3_600,
   }
   const body = base64Url(encoder.encode(JSON.stringify(payload)))
   const signature = await crypto.subtle.sign(
@@ -245,7 +243,7 @@ export async function serveThumbnail(
     headers: {
       'content-type': object.httpMetadata?.contentType ?? 'image/jpeg',
       'content-length': String(object.size),
-      'cache-control': 'private, max-age=3600',
+      'cache-control': 'public, max-age=3600, immutable',
       'x-content-type-options': 'nosniff',
       'cross-origin-resource-policy': 'same-site',
       'referrer-policy': 'no-referrer',

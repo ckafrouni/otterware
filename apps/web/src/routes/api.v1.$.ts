@@ -3,6 +3,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { authenticate } from '#/server/actor'
 import {
   archiveArtifact,
+  bootstrapArtifact,
   completeUpload,
   completeMultipartFile,
   createArtifact,
@@ -94,6 +95,8 @@ async function handler({ request }: { request: Request }): Promise<Response> {
         return downloadArtifact(request, env, actor, reference)
       } else if (segments[2] === 'preview' && request.method === 'GET') {
         return previewArtifact(request, env, actor, reference)
+      } else if (segments[2] === 'bootstrap' && request.method === 'GET') {
+        return bootstrapArtifact(request, env, actor, reference)
       } else if (segments[2] === 'thumbnail' && request.method === 'POST') {
         return regenerateThumbnail(request, env, actor, reference)
       } else if (segments[2] === 'uploads' && request.method === 'POST') {

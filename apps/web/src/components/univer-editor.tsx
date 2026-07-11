@@ -9,6 +9,7 @@ import type {
   IWorksheetData,
 } from '@univerjs/presets'
 import { api } from '#/lib/api'
+import { removeSessionCachePrefix } from '#/lib/session-cache'
 import { Button } from '@/components/ui/button'
 
 import '@univerjs/preset-sheets-core/lib/index.css'
@@ -367,6 +368,10 @@ export function UniverEditor(props: EditorProps) {
         organizationId: props.organizationId,
         slug: props.slug,
       })
+      removeSessionCachePrefix(
+        `otterware:artifact:${props.organizationId}:${props.slug}`,
+      )
+      removeSessionCachePrefix(`otterware:artifacts:${props.organizationId}:`)
       setDirty(false)
       toast.success(`Published version ${nextVersion}.`)
       window.setTimeout(

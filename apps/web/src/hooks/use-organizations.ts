@@ -1,5 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { authClient } from '#/lib/auth-client'
+import { readSessionCache, writeSessionCache } from '#/lib/session-cache'
 
 export interface OrganizationSummary {
   id: string
@@ -9,27 +11,37 @@ export interface OrganizationSummary {
 
 export function useOrganizations() {
   const session = authClient.useSession()
-  const [organizations, setOrganizations] = useState<OrganizationSummary[]>([])
-  const [loaded, setLoaded] = useState(false)
+  const queryClient = useQueryClient()
+  const userId = session.data?.user.id
+  const queryKey = ['organizations', userId] as const
+  const storageKey = `otterware:organizations:${userId ?? 'anonymous'}`
+  const stored = readSessionCache<OrganizationSummary[]>(storageKey, 5 * 60_000)
+  const organizationsQuery = useQuery({
+    enabled: Boolean(userId),
+    queryFn: async () => {
+      const result = await authClient.organization.list()
+      if (result.error) throw new Error(result.error.message)
+      return writeSessionCache(
+        storageKey,
+        (result.data ?? []) as OrganizationSummary[],
+      )
+    },
+    ...(stored
+      ? { initialData: stored.value, initialDataUpdatedAt: stored.savedAt }
+      : {}),
+    queryKey,
+    staleTime: 5 * 60_000,
+  })
+  const organizations = organizationsQuery.data ?? []
+  const loaded = Boolean(userId) && !organizationsQuery.isPending
 
   useEffect(() => {
-    if (!session.data) return
-    let active = true
-    const refresh = () => {
-      authClient.organization.list().then((result) => {
-        if (active) {
-          setOrganizations((result.data ?? []) as OrganizationSummary[])
-          setLoaded(true)
-        }
-      })
-    }
-    refresh()
+    const refresh = () => void queryClient.invalidateQueries({ queryKey })
     window.addEventListener('otterware:organizations-changed', refresh)
     return () => {
-      active = false
       window.removeEventListener('otterware:organizations-changed', refresh)
     }
-  }, [session.data])
+  }, [queryClient, userId])
 
   const activeOrganization = useMemo(() => {
     const activeId = session.data?.session.activeOrganizationId
@@ -46,9 +58,10 @@ export function useOrganizations() {
       const result = await authClient.organization.setActive({ organizationId })
       if (result.error) throw new Error(result.error.message)
       await session.refetch()
-      location.reload()
+      await queryClient.invalidateQueries({ queryKey: ['actor'] })
+      await queryClient.invalidateQueries({ queryKey: ['artifacts'] })
     },
-    [activeOrganization?.id, session],
+    [activeOrganization?.id, queryClient, session],
   )
 
   return { activeOrganization, loaded, organizations, selectOrganization }

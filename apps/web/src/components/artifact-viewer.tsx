@@ -1,5 +1,6 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useMemo, useState } from 'react'
 import { Link } from '@tanstack/react-router'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import {
   Archive,
@@ -12,13 +13,10 @@ import {
   RotateCcw,
   Trash2,
 } from 'lucide-react'
-import {
-  artifactResponseSchema,
-  artifactVersionsResponseSchema,
-  type Artifact,
-  type ArtifactVersion,
-} from '@otterware/contracts'
+import { artifactResponseSchema, type Artifact } from '@otterware/contracts'
 import { api, formatDate } from '#/lib/api'
+import { artifactBootstrapQuery } from '#/lib/artifact-query'
+import { removeSessionCachePrefix } from '#/lib/session-cache'
 import { useOrganizations } from '@/hooks/use-organizations'
 import { useCurrentActor } from '@/hooks/use-current-actor'
 import { Badge } from '@/components/ui/badge'
@@ -39,15 +37,6 @@ const ArtifactDocumentPreview = lazy(() =>
   })),
 )
 
-interface PreviewResponse {
-  data: {
-    url: string
-    expiresAt: string
-    version: ArtifactVersion
-    contentType: string
-  }
-}
-
 export function ArtifactViewer({
   onSheetChange,
   organizationId,
@@ -63,17 +52,27 @@ export function ArtifactViewer({
   slug: string
   version?: number
 }) {
-  const [artifact, setArtifact] = useState<Artifact | null>(null)
-  const [versions, setVersions] = useState<ArtifactVersion[]>([])
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-  const [previewContentType, setPreviewContentType] = useState<string | null>(
+  const [artifactOverride, setArtifactOverride] = useState<Artifact | null>(
     null,
   )
-  const [error, setError] = useState<string | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
   const [changingArchivedState, setChangingArchivedState] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const { organizations } = useOrganizations()
-  const { isOwner } = useCurrentActor()
+  const { isOwner } = useCurrentActor(organizationId)
+  const queryClient = useQueryClient()
+  const bootstrapQuery = useQuery(
+    artifactBootstrapQuery(organizationId, slug, version),
+  )
+  const artifact = artifactOverride ?? bootstrapQuery.data?.artifact ?? null
+  const versions = bootstrapQuery.data?.versions ?? []
+  const previewUrl = bootstrapQuery.data?.preview.url ?? null
+  const previewContentType = bootstrapQuery.data?.preview.contentType ?? null
+  const error =
+    actionError ??
+    (bootstrapQuery.error instanceof Error
+      ? bootstrapQuery.error.message
+      : null)
 
   const selected = useMemo(
     () =>
@@ -86,46 +85,6 @@ export function ArtifactViewer({
   const artifactOrganization = organizations.find(
     (organization) => organization.id === artifact?.organizationId,
   )
-
-  useEffect(() => {
-    setError(null)
-    Promise.all([
-      api<unknown>(`/api/v1/artifacts/${encodeURIComponent(slug)}`, {
-        organizationId,
-      }),
-      api<unknown>(`/api/v1/artifacts/${encodeURIComponent(slug)}/versions`, {
-        organizationId,
-      }),
-    ])
-      .then(([artifactResult, versionsResult]) => {
-        setArtifact(artifactResponseSchema.parse(artifactResult).data)
-        setVersions(artifactVersionsResponseSchema.parse(versionsResult).data)
-      })
-      .catch((reason: Error) => setError(reason.message))
-  }, [organizationId, slug])
-
-  useEffect(() => {
-    const controller = new AbortController()
-    setPreviewUrl(null)
-    setPreviewContentType(null)
-    setError(null)
-    const query = version ? `?version=${version}` : ''
-    api<PreviewResponse>(
-      `/api/v1/artifacts/${encodeURIComponent(slug)}/preview${query}`,
-      { organizationId, signal: controller.signal },
-    )
-      .then((result) => {
-        if (!controller.signal.aborted) {
-          setPreviewUrl(result.data.url)
-          setPreviewContentType(result.data.contentType)
-        }
-      })
-      .catch((reason: Error) => {
-        if (!controller.signal.aborted) setError(reason.message)
-      })
-
-    return () => controller.abort()
-  }, [organizationId, slug, version])
 
   async function copy(value: string, message: string) {
     try {
@@ -161,7 +120,7 @@ export function ArtifactViewer({
   async function changeArchivedState() {
     if (!artifact) return
     setChangingArchivedState(true)
-    setError(null)
+    setActionError(null)
     try {
       const result = artifactResponseSchema.parse(
         artifact.archivedAt
@@ -174,9 +133,14 @@ export function ArtifactViewer({
               { method: 'DELETE', organizationId },
             ),
       )
-      setArtifact(result.data)
+      setArtifactOverride(result.data)
+      removeSessionCachePrefix(`otterware:artifact:${organizationId}:${slug}`)
+      removeSessionCachePrefix(`otterware:artifacts:${organizationId}:`)
+      await queryClient.invalidateQueries({
+        queryKey: ['artifacts', organizationId],
+      })
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : String(reason))
+      setActionError(reason instanceof Error ? reason.message : String(reason))
     } finally {
       setChangingArchivedState(false)
     }
