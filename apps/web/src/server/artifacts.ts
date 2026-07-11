@@ -277,7 +277,7 @@ export async function listArtifacts(
     Math.max(Number(url.searchParams.get('limit')) || 50, 1),
     100,
   )
-  const includeArchived = url.searchParams.get('archived') === 'true'
+  const archived = url.searchParams.get('archived')
   const visibility = url.searchParams.get('visibility')
   const cursor = url.searchParams.get('cursor')
   const conditions = [
@@ -286,7 +286,8 @@ export async function listArtifacts(
     "(a.visibility = 'organization' OR a.owner_user_id = ?)",
   ]
   const bindings: unknown[] = [actor.organizationId, actor.userId ?? '']
-  if (!includeArchived) conditions.push('a.archived_at IS NULL')
+  if (archived === 'only') conditions.push('a.archived_at IS NOT NULL')
+  else if (archived !== 'true') conditions.push('a.archived_at IS NULL')
   if (visibility === 'private' || visibility === 'organization') {
     conditions.push('a.visibility = ?')
     bindings.push(visibility)

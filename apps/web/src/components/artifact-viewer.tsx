@@ -1,6 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from '@tanstack/react-router'
-import { ChevronDown, Copy, Home, Pencil } from 'lucide-react'
+import {
+  Archive,
+  ChevronDown,
+  Copy,
+  Home,
+  MoreHorizontal,
+  Pencil,
+  RotateCcw,
+} from 'lucide-react'
 import {
   artifactResponseSchema,
   artifactVersionsResponseSchema,
@@ -38,6 +46,7 @@ export function ArtifactViewer({
   const [versions, setVersions] = useState<ArtifactVersion[]>([])
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [changingArchivedState, setChangingArchivedState] = useState(false)
   const { organizations } = useOrganizations()
 
   const selected = useMemo(
@@ -85,6 +94,30 @@ export function ArtifactViewer({
   }, [slug, version])
 
   const copy = (value: string) => navigator.clipboard.writeText(value)
+
+  async function changeArchivedState() {
+    if (!artifact) return
+    setChangingArchivedState(true)
+    setError(null)
+    try {
+      const result = artifactResponseSchema.parse(
+        artifact.archivedAt
+          ? await api<unknown>(
+              `/api/v1/artifacts/${encodeURIComponent(artifact.id)}/restore`,
+              { method: 'POST' },
+            )
+          : await api<unknown>(
+              `/api/v1/artifacts/${encodeURIComponent(artifact.id)}`,
+              { method: 'DELETE' },
+            ),
+      )
+      setArtifact(result.data)
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : String(reason))
+    } finally {
+      setChangingArchivedState(false)
+    }
+  }
 
   return (
     <AuthGate>
@@ -152,8 +185,43 @@ export function ArtifactViewer({
             {selected && versions.length > 1 && (
               <Badge variant="outline">v{selected.number}</Badge>
             )}
+            {artifact?.archivedAt && (
+              <Badge variant="secondary">Archived</Badge>
+            )}
           </div>
           <div className="viewer-actions">
+            {artifact && (
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <Button
+                      variant="outline"
+                      size="icon-sm"
+                      type="button"
+                      aria-label="Artifact actions"
+                      disabled={changingArchivedState}
+                    />
+                  }
+                >
+                  <MoreHorizontal size={15} />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    variant={artifact.archivedAt ? 'default' : 'destructive'}
+                    onClick={() => void changeArchivedState()}
+                  >
+                    {artifact.archivedAt ? (
+                      <RotateCcw size={14} />
+                    ) : (
+                      <Archive size={14} />
+                    )}
+                    {artifact.archivedAt
+                      ? 'Restore artifact'
+                      : 'Archive artifact'}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
             <Button
               variant="outline"
               size="icon-sm"
