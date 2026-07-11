@@ -861,7 +861,6 @@ button:disabled {
 }
 
 .spreadsheet-grid {
-  width: max-content;
   border-spacing: 0;
   border-collapse: separate;
   table-layout: fixed;

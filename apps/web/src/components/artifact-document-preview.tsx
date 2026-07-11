@@ -75,7 +75,10 @@ function SpreadsheetGrid({ rows }: { rows: GridValue[][] }) {
         </div>
       )}
       <div className="spreadsheet-scroll">
-        <table className="spreadsheet-grid">
+        <table
+          className="spreadsheet-grid"
+          style={{ width: 46 + columnCount * 120 }}
+        >
           <colgroup>
             <col className="spreadsheet-row-number-column" />
             {Array.from({ length: columnCount }, (_, index) => (
