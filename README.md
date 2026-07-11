@@ -47,7 +47,7 @@ With Node.js 24 LTS installed:
 
 ```bash
 npm install --global otterware
-otterware --cli-version
+otterware --version
 ```
 
 To build and install from a source checkout instead:
@@ -58,7 +58,7 @@ cd otterware
 pnpm install --frozen-lockfile
 pnpm --dir apps/cli build
 npm install --global ./apps/cli
-otterware --cli-version
+otterware --version
 otterware --help
 ```
 
@@ -116,7 +116,7 @@ After the pull request is merged, confirm the workflow succeeded and verify the 
 ```bash
 npm view otterware version
 npm install --global otterware@latest
-otterware --cli-version
+otterware --version
 ```
 
 ## Artifact commands

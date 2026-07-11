@@ -5,7 +5,7 @@
 ```text
 otterware --json <command>             Machine-readable output
 otterware --profile <name> <command>   Named local profile
-otterware --cli-version                Installed CLI version
+otterware -v, --version                Installed CLI version
 ```
 
 Environment overrides:
