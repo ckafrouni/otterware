@@ -50,11 +50,13 @@ interface PreviewResponse {
 
 export function ArtifactViewer({
   onSheetChange,
+  organizationSlug,
   sheet,
   slug,
   version,
 }: {
   onSheetChange?: ((sheet: string | undefined) => void) | undefined
+  organizationSlug: string
   sheet?: string | undefined
   slug: string
   version?: number
@@ -186,8 +188,10 @@ export function ArtifactViewer({
                         key={item.id}
                         render={
                           <Link
-                            to="/a/$slug/$version"
+                            to="/$organizationSlug/a/$slug/$version"
                             params={{
+                              organizationSlug:
+                                artifactOrganization?.slug ?? 'team',
                               slug: artifact.slug,
                               version: `v${item.number}`,
                             }}
@@ -334,6 +338,7 @@ export function ArtifactViewer({
                 entryPath={selected.entryPath}
                 expectedCurrentVersion={artifact.versionCount}
                 onSheetChange={onSheetChange}
+                organizationSlug={organizationSlug}
                 selectedSheet={sheet}
                 slug={slug}
                 version={selected.number}
