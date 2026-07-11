@@ -774,30 +774,11 @@ button:disabled {
   overflow: hidden;
 }
 
-.workbook-toolbar {
-  display: flex;
-  min-height: 42px;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px 16px;
-  border-bottom: 1px solid var(--border);
-  background: #f8f9fa;
-  padding: 5px 10px;
-}
-
-.workbook-toolbar > span,
 .workbook-tabs,
 .workbook-footer {
   display: flex;
   align-items: center;
   gap: 6px;
-}
-
-.workbook-toolbar > span {
-  color: var(--muted-foreground);
-  font-size: 0.8rem;
-  font-weight: 550;
 }
 
 .workbook-tabs {
