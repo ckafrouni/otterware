@@ -182,6 +182,13 @@ export function ArtifactViewer({
     }
   }
 
+  if (
+    !error &&
+    (!artifact || !selected || !previewUrl || !previewContentType)
+  ) {
+    return <ArtifactLoadingState />
+  }
+
   return (
     <div className="viewer-shell">
       <header className="viewer-header">
@@ -339,7 +346,6 @@ export function ArtifactViewer({
       </header>
       <main className="viewer-main">
         {error && <div className="viewer-message error-panel">{error}</div>}
-        {!error && !previewUrl && <ArtifactLoadingState />}
         {previewUrl &&
         previewContentType &&
         artifact &&

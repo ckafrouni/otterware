@@ -1,7 +1,13 @@
 import { useEffect } from 'react'
 import { authClient } from '#/lib/auth-client'
 
-export function AuthGate({ children }: { children: React.ReactNode }) {
+export function AuthGate({
+  children,
+  fallback,
+}: {
+  children: React.ReactNode
+  fallback?: React.ReactNode
+}) {
   const session = authClient.useSession()
 
   useEffect(() => {
@@ -12,6 +18,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   }, [session.data, session.isPending])
 
   if (session.isPending || !session.data) {
+    if (fallback) return fallback
     return (
       <main className="centered-state">
         <div className="spinner" />
