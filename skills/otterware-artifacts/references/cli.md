@@ -88,6 +88,14 @@ otterware --json artifacts push product-demo ./dist \
 
 The source may be one file or a directory. A directory uses `index.html` as its default entry. A single file uses itself. Otherwise provide `--entry <relative-path>`.
 
+Otterware renders the following single-file formats with dedicated previews:
+
+- Markdown: `.md`, `.markdown`
+- Delimited spreadsheets: `.csv`, `.tsv`
+- Excel workbooks: `.xlsx`, including multiple sheets
+
+Other static files remain available through the sandboxed raw preview and CLI retrieval commands.
+
 ## Metadata and lifecycle
 
 ```bash

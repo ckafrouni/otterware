@@ -671,6 +671,225 @@ button:disabled {
     0 1px 2px rgb(17 24 39 / 8%),
     0 14px 34px -18px rgb(17 24 39 / 34%);
 }
+
+.markdown-preview,
+.workbook-preview {
+  min-height: 0;
+  flex: 1;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-bottom: 0;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 7%);
+}
+
+.markdown-preview {
+  overflow: auto;
+  padding: clamp(24px, 5vw, 64px);
+  color: var(--foreground);
+  line-height: 1.7;
+}
+
+.markdown-preview > * {
+  max-width: 820px;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.markdown-preview h1,
+.markdown-preview h2,
+.markdown-preview h3 {
+  margin-top: 1.75em;
+  margin-bottom: 0.6em;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+
+.markdown-preview h1:first-child,
+.markdown-preview h2:first-child,
+.markdown-preview h3:first-child {
+  margin-top: 0;
+}
+
+.markdown-preview p,
+.markdown-preview ul,
+.markdown-preview ol,
+.markdown-preview blockquote,
+.markdown-preview pre,
+.markdown-preview table {
+  margin-top: 0;
+  margin-bottom: 1.15em;
+}
+
+.markdown-preview a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.markdown-preview blockquote {
+  padding-left: 1rem;
+  color: var(--muted-foreground);
+  border-left: 3px solid var(--border);
+}
+
+.markdown-preview code {
+  border-radius: 5px;
+  background: var(--muted);
+  padding: 0.15em 0.35em;
+  font-size: 0.9em;
+}
+
+.markdown-preview pre {
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--muted);
+  padding: 1rem;
+}
+
+.markdown-preview pre code {
+  padding: 0;
+}
+
+.markdown-preview table {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+
+.markdown-preview th,
+.markdown-preview td {
+  border: 1px solid var(--border);
+  padding: 0.45rem 0.7rem;
+  text-align: left;
+}
+
+.workbook-preview {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.workbook-toolbar {
+  display: flex;
+  min-height: 42px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  border-bottom: 1px solid var(--border);
+  padding: 5px 10px;
+}
+
+.workbook-toolbar > span,
+.workbook-tabs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.workbook-toolbar > span {
+  color: var(--muted-foreground);
+  font-size: 0.8rem;
+  font-weight: 550;
+}
+
+.workbook-tabs {
+  overflow-x: auto;
+}
+
+.spreadsheet-shell,
+.spreadsheet-scroll {
+  min-height: 0;
+  flex: 1;
+}
+
+.spreadsheet-shell {
+  display: flex;
+  flex-direction: column;
+}
+
+.spreadsheet-scroll {
+  overflow: auto;
+}
+
+.spreadsheet-notice {
+  border-bottom: 1px solid var(--border);
+  background: var(--muted);
+  padding: 7px 10px;
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+}
+
+.spreadsheet-grid {
+  width: max-content;
+  min-width: 100%;
+  border-spacing: 0;
+  border-collapse: separate;
+  table-layout: fixed;
+  font-size: 0.78rem;
+}
+
+.spreadsheet-grid th,
+.spreadsheet-grid td {
+  height: 29px;
+  max-width: 320px;
+  min-width: 120px;
+  overflow: hidden;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 4px 8px;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.spreadsheet-grid thead th {
+  position: sticky;
+  z-index: 2;
+  top: 0;
+  background: var(--muted);
+  color: var(--muted-foreground);
+  font-weight: 550;
+  text-align: center;
+}
+
+.spreadsheet-grid tbody th,
+.spreadsheet-corner {
+  position: sticky;
+  z-index: 1;
+  left: 0;
+  width: 46px;
+  min-width: 46px;
+  background: var(--muted);
+  color: var(--muted-foreground);
+  font-weight: 500;
+  text-align: right;
+}
+
+.spreadsheet-corner {
+  z-index: 3 !important;
+}
+
+.document-empty,
+.document-loading {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--muted-foreground);
+}
+
+.spin {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 .viewer-message {
   height: 100%;
   display: grid;

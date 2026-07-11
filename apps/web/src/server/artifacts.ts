@@ -701,6 +701,14 @@ export async function previewArtifact(
 ): Promise<Response> {
   const artifact = await artifactRow(env, actor, reference)
   const version = await selectedVersion(request, env, artifact)
+  const entryFile = await env.DB.prepare(
+    'SELECT content_type FROM artifact_file WHERE version_id = ? AND path = ?',
+  )
+    .bind(version.id, version.entry_path)
+    .first<{ content_type: string }>()
+  if (!entryFile) {
+    throw new HttpError(404, 'file_not_found', 'Artifact entry file not found.')
+  }
   const token = await signContentGrant(env, {
     artifactId: artifact.id,
     versionId: version.id,
@@ -711,6 +719,7 @@ export async function previewArtifact(
       url: new URL(`/raw/session/${token}`, env.CONTENT_URL).toString(),
       expiresAt: new Date(Date.now() + 5 * 60 * 1_000).toISOString(),
       version: mapVersion(version),
+      contentType: entryFile.content_type,
     },
   })
 }

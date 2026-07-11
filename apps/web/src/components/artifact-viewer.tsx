@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { toast } from 'sonner'
 import {
@@ -32,11 +32,18 @@ import {
 import { AuthGate } from './auth-gate'
 import { DeleteArtifactDialog } from './delete-artifact-dialog'
 
+const ArtifactDocumentPreview = lazy(() =>
+  import('./artifact-document-preview').then((module) => ({
+    default: module.ArtifactDocumentPreview,
+  })),
+)
+
 interface PreviewResponse {
   data: {
     url: string
     expiresAt: string
     version: ArtifactVersion
+    contentType: string
   }
 }
 
@@ -50,6 +57,9 @@ export function ArtifactViewer({
   const [artifact, setArtifact] = useState<Artifact | null>(null)
   const [versions, setVersions] = useState<ArtifactVersion[]>([])
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [previewContentType, setPreviewContentType] = useState<string | null>(
+    null,
+  )
   const [error, setError] = useState<string | null>(null)
   const [changingArchivedState, setChangingArchivedState] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
@@ -84,6 +94,7 @@ export function ArtifactViewer({
   useEffect(() => {
     const controller = new AbortController()
     setPreviewUrl(null)
+    setPreviewContentType(null)
     setError(null)
     const query = version ? `?version=${version}` : ''
     api<PreviewResponse>(
@@ -91,7 +102,10 @@ export function ArtifactViewer({
       { signal: controller.signal },
     )
       .then((result) => {
-        if (!controller.signal.aborted) setPreviewUrl(result.data.url)
+        if (!controller.signal.aborted) {
+          setPreviewUrl(result.data.url)
+          setPreviewContentType(result.data.contentType)
+        }
       })
       .catch((reason: Error) => {
         if (!controller.signal.aborted) setError(reason.message)
@@ -279,7 +293,26 @@ export function ArtifactViewer({
           {!error && !previewUrl && (
             <div className="viewer-message">Loading artifact…</div>
           )}
-          {previewUrl && artifact && selected && (
+          {previewUrl &&
+          previewContentType &&
+          artifact &&
+          selected &&
+          isDocumentPreview(previewContentType, selected.entryPath) ? (
+            <Suspense
+              fallback={
+                <div className="viewer-message document-loading">
+                  Loading document…
+                </div>
+              }
+            >
+              <ArtifactDocumentPreview
+                contentType={previewContentType}
+                entryPath={selected.entryPath}
+                slug={slug}
+                version={selected.number}
+              />
+            </Suspense>
+          ) : previewUrl && artifact && selected ? (
             <iframe
               key={`${slug}:${selected.number}:${previewUrl}`}
               className="artifact-frame"
@@ -288,7 +321,7 @@ export function ArtifactViewer({
               sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-downloads allow-modals"
               referrerPolicy="no-referrer"
             />
-          )}
+          ) : null}
         </main>
         <DeleteArtifactDialog
           artifact={deleteDialogOpen ? artifact : null}
@@ -297,5 +330,17 @@ export function ArtifactViewer({
         />
       </div>
     </AuthGate>
+  )
+}
+
+function isDocumentPreview(contentType: string, entryPath: string): boolean {
+  const type = contentType.split(';')[0]?.trim().toLowerCase()
+  const extension = entryPath.split('.').pop()?.toLowerCase()
+  return (
+    type === 'text/markdown' ||
+    type === 'text/csv' ||
+    type ===
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+    ['md', 'markdown', 'csv', 'tsv', 'xlsx'].includes(extension ?? '')
   )
 }

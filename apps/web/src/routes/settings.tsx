@@ -24,7 +24,7 @@ interface Organization {
 
 export const Route = createFileRoute('/settings')({ component: SettingsPage })
 
-function SettingsPage() {
+export function SettingsPage() {
   const session = authClient.useSession()
   const [organizations, setOrganizations] = useState<Organization[]>([])
   const [orgName, setOrgName] = useState('')
@@ -171,9 +171,11 @@ function SettingsPage() {
                       }
                     >
                       <SelectTrigger id="active-team" className="w-full">
-                        <SelectValue placeholder="Select a team" />
+                        <SelectValue placeholder="Select a team">
+                          {activeOrganization?.name}
+                        </SelectValue>
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent alignItemWithTrigger={false}>
                         {organizations.map((organization) => (
                           <SelectItem
                             key={organization.id}
@@ -268,7 +270,7 @@ function SettingsPage() {
                         <SelectTrigger id="invite-role" className="w-full">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent alignItemWithTrigger={false}>
                           <SelectItem value="viewer">Viewer</SelectItem>
                           <SelectItem value="editor">Editor</SelectItem>
                           <SelectItem value="admin">Admin</SelectItem>

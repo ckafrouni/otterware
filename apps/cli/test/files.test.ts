@@ -42,4 +42,24 @@ describe('artifact file discovery', () => {
     expect(() => resolveEntryPath(files)).toThrow('No index.html')
     expect(resolveEntryPath(files, 'a.txt')).toBe('a.txt')
   })
+
+  it.each([
+    ['notes.md', 'text/markdown'],
+    ['report.csv', 'text/csv'],
+    ['report.tsv', 'text/tab-separated-values'],
+    [
+      'report.xlsx',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    ],
+  ])('detects the MIME type for %s', async (name, contentType) => {
+    const root = await mkdtemp(join(tmpdir(), 'otterware-cli-'))
+    temporaryDirectories.push(root)
+    const path = join(root, name)
+    await writeFile(path, 'content')
+
+    const files = await discoverFiles(path)
+
+    expect(files[0]?.contentType).toBe(contentType)
+    expect(resolveEntryPath(files)).toBe(name)
+  })
 })
