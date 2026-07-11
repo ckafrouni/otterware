@@ -4,12 +4,14 @@ import {
   Archive,
   ArrowDownAZ,
   Copy,
+  ExternalLink,
   Grid2X2,
   List as ListIcon,
   MoreHorizontal,
   Plus,
   RotateCcw,
   Search,
+  Terminal,
   Trash2,
   Users,
   UserRound,
@@ -29,6 +31,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
@@ -132,91 +135,129 @@ export function ArtifactListPage() {
       <div className="app-shell">
         <AppHeader />
         <main className="artifact-home">
-          <section className="page-heading artifact-heading">
-            <div>
-              <p className="eyebrow">Workspace</p>
+          <section
+            className="artifact-commandbar"
+            aria-label="Artifact controls"
+          >
+            <div className="artifact-titleblock">
               <h1>Artifacts</h1>
               <p>Private work and shared organization deliverables.</p>
             </div>
-            <div className="heading-actions">
+            <div className="artifact-toolbar">
+              <label className="artifact-search-field">
+                <Search className="artifact-search-icon" size={16} />
+                <Input
+                  type="search"
+                  placeholder="Search artifacts"
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                />
+              </label>
+              <Select
+                value={status}
+                onValueChange={(value) =>
+                  setStatus(value as 'active' | 'archived')
+                }
+              >
+                <SelectTrigger className="artifact-status-trigger">
+                  {status === 'active' ? (
+                    <Grid2X2 size={15} />
+                  ) : (
+                    <Archive size={15} />
+                  )}
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent align="end">
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="archived">Archived</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select
+                value={sort}
+                onValueChange={(value) =>
+                  setSort(value as 'updated' | 'az' | 'za')
+                }
+              >
+                <SelectTrigger className="artifact-sort-trigger">
+                  <ArrowDownAZ size={16} />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent align="end">
+                  <SelectItem value="updated">Recently updated</SelectItem>
+                  <SelectItem value="az">Ascending (A–Z)</SelectItem>
+                  <SelectItem value="za">Descending (Z–A)</SelectItem>
+                </SelectContent>
+              </Select>
+              <ToggleGroup
+                value={[view]}
+                onValueChange={(values) => {
+                  const next = values[0]
+                  if (next === 'grid' || next === 'list') chooseView(next)
+                }}
+                variant="outline"
+                spacing={0}
+                size="sm"
+                aria-label="Artifact layout"
+              >
+                <ToggleGroupItem value="list" aria-label="List view">
+                  <ListIcon size={17} />
+                </ToggleGroupItem>
+                <ToggleGroupItem value="grid" aria-label="Grid view">
+                  <Grid2X2 size={16} />
+                </ToggleGroupItem>
+              </ToggleGroup>
               <Badge variant="outline">
                 {visibleArtifacts.length}{' '}
                 {visibleArtifacts.length === 1 ? 'artifact' : 'artifacts'}
               </Badge>
-              <Button
-                size="sm"
-                type="button"
-                disabled
-                title="Use the CLI to publish"
-              >
-                <Plus size={15} /> Publish
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <Button
+                      size="sm"
+                      type="button"
+                      aria-label="Publish artifact"
+                    />
+                  }
+                >
+                  <Plus size={15} /> Publish
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="publish-menu">
+                  <DropdownMenuLabel>Publish with the CLI</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() =>
+                      void navigator.clipboard.writeText(
+                        'otterware artifacts create ./dist --slug <slug> --title "<title>" --visibility private --label "Initial version"',
+                      )
+                    }
+                  >
+                    <Terminal size={14} /> Copy publish command
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() =>
+                      void navigator.clipboard.writeText(
+                        'npm install --global otterware@latest',
+                      )
+                    }
+                  >
+                    <Copy size={14} /> Copy install command
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    render={
+                      <a
+                        href="https://github.com/ckafrouni/otterware#artifact-commands"
+                        target="_blank"
+                        rel="noreferrer"
+                      />
+                    }
+                  >
+                    <ExternalLink size={14} /> CLI documentation
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
-          </section>
-
-          <section className="artifact-toolbar" aria-label="Artifact controls">
-            <label className="artifact-search-field">
-              <Search className="artifact-search-icon" size={16} />
-              <Input
-                type="search"
-                placeholder="Search artifacts"
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-              />
-            </label>
-            <Select
-              value={status}
-              onValueChange={(value) =>
-                setStatus(value as 'active' | 'archived')
-              }
-            >
-              <SelectTrigger className="artifact-status-trigger">
-                {status === 'active' ? (
-                  <Grid2X2 size={15} />
-                ) : (
-                  <Archive size={15} />
-                )}
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent align="end">
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="archived">Archived</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select
-              value={sort}
-              onValueChange={(value) =>
-                setSort(value as 'updated' | 'az' | 'za')
-              }
-            >
-              <SelectTrigger className="artifact-sort-trigger">
-                <ArrowDownAZ size={16} />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent align="end">
-                <SelectItem value="updated">Recently updated</SelectItem>
-                <SelectItem value="az">Ascending (A–Z)</SelectItem>
-                <SelectItem value="za">Descending (Z–A)</SelectItem>
-              </SelectContent>
-            </Select>
-            <ToggleGroup
-              value={[view]}
-              onValueChange={(values) => {
-                const next = values[0]
-                if (next === 'grid' || next === 'list') chooseView(next)
-              }}
-              variant="outline"
-              spacing={0}
-              size="sm"
-              aria-label="Artifact layout"
-            >
-              <ToggleGroupItem value="list" aria-label="List view">
-                <ListIcon size={17} />
-              </ToggleGroupItem>
-              <ToggleGroupItem value="grid" aria-label="Grid view">
-                <Grid2X2 size={16} />
-              </ToggleGroupItem>
-            </ToggleGroup>
           </section>
 
           {loading && <div className="empty-panel">Loading artifacts…</div>}
