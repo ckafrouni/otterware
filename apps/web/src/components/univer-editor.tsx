@@ -299,7 +299,10 @@ export function UniverEditor(props: EditorProps) {
             commands.dispose()
             univer.dispose()
           },
-          exportFile: async () => spreadsheetBlob(workbook.save(), props.entryPath),
+          exportFile: async () => {
+            await workbook.endEditing(true)
+            return spreadsheetBlob(workbook.save(), props.entryPath)
+          },
         }
       } else {
         let acceptingChanges = false
@@ -352,7 +355,10 @@ export function UniverEditor(props: EditorProps) {
       })
       setDirty(false)
       toast.success(`Published version ${nextVersion}.`)
-      location.assign(`/a/${encodeURIComponent(props.slug)}/${nextVersion}`)
+      window.setTimeout(
+        () => location.assign(`/a/${encodeURIComponent(props.slug)}/${nextVersion}`),
+        0,
+      )
     } catch (reason) {
       toast.error(reason instanceof Error ? reason.message : String(reason))
     } finally {
