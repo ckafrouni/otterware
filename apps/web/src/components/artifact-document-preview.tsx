@@ -1,12 +1,12 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
 import Papa from 'papaparse'
 import type { UniverSheet } from './univer-editor'
-import { ArtifactLoadingState } from './artifact-loading-state'
+import { ArtifactContentLoadingState } from './artifact-loading-state'
 
 const UniverEditor = lazy(
   import.meta.env.SSR
     ? async () => ({
-        default: ArtifactLoadingState,
+        default: ArtifactContentLoadingState,
       })
     : () =>
         import('./univer-editor').then((module) => ({
@@ -164,7 +164,7 @@ export function ArtifactDocumentPreview({
   if (error) return <div className="viewer-message error-panel">{error}</div>
   if (markdownDocument && markdown !== null) {
     return (
-      <Suspense fallback={<ArtifactLoadingState />}>
+      <Suspense fallback={<ArtifactContentLoadingState />}>
         <UniverEditor
           entryPath={entryPath}
           expectedCurrentVersion={expectedCurrentVersion ?? version}
@@ -179,7 +179,7 @@ export function ArtifactDocumentPreview({
   }
   if ((csvDocument || workbook) && sheets.length) {
     return (
-      <Suspense fallback={<ArtifactLoadingState />}>
+      <Suspense fallback={<ArtifactContentLoadingState />}>
         <UniverEditor
           entryPath={entryPath}
           expectedCurrentVersion={expectedCurrentVersion ?? version}
@@ -194,5 +194,5 @@ export function ArtifactDocumentPreview({
       </Suspense>
     )
   }
-  return <ArtifactLoadingState />
+  return <ArtifactContentLoadingState />
 }

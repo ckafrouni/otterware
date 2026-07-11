@@ -19,7 +19,7 @@ export function WorkspaceArtifactRoute({
   )
 
   return (
-    <AuthGate>
+    <AuthGate fallback={<ArtifactLoadingState />}>
       {loaded && !requestedOrganization ? (
         <div className="viewer-message error-panel">
           You do not have access to the “{organizationSlug}” team.
