@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Save } from 'lucide-react'
 import { toast } from 'sonner'
+import { LocaleType } from '@univerjs/presets'
 import type {
   ICellData,
   IDocumentData,
@@ -60,8 +61,11 @@ export function workbookData(
   const sheetOrder = sheets.map((_, index) => `sheet-${index}`)
   return {
     id: `otterware-${crypto.randomUUID()}`,
+    appVersion: '3.0.0',
+    locale: LocaleType.EN_US,
     name: entryPath,
     sheetOrder,
+    styles: {},
     sheets: Object.fromEntries(
       sheets.map((sheet, index) => {
         const columnCount = Math.max(
