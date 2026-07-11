@@ -142,6 +142,13 @@ export async function generateThumbnail(
     } else {
       await page.goto(url, { waitUntil: 'networkidle2', timeout: 25_000 })
     }
+    await page.evaluate(
+      () =>
+        new Promise<void>((resolve) => {
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+        }),
+    )
+    await scheduler.wait(200)
     screenshot = await page.screenshot({
       type: 'jpeg',
       quality: 72,
