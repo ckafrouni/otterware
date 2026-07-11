@@ -11,6 +11,7 @@ import {
   listArtifacts,
   listFiles,
   listVersions,
+  permanentlyDeleteArtifact,
   previewArtifact,
   promoteVersion,
   regenerateThumbnail,
@@ -80,6 +81,8 @@ async function handler({ request }: { request: Request }): Promise<Response> {
         return deleteDraft(env, actor, reference)
       } else if (segments[2] === 'restore' && request.method === 'POST') {
         return archiveArtifact(env, actor, reference, true)
+      } else if (segments[2] === 'permanent' && request.method === 'DELETE') {
+        return permanentlyDeleteArtifact(env, actor, reference)
       } else if (segments[2] === 'versions' && request.method === 'GET') {
         return listVersions(env, actor, reference)
       } else if (segments[2] === 'files' && request.method === 'GET') {

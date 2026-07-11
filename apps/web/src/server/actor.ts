@@ -192,3 +192,13 @@ export function assertCanManageKeys(actor: AuthenticatedActor): void {
     )
   }
 }
+
+export function assertCanPermanentlyDelete(actor: AuthenticatedActor): void {
+  if (actor.type !== 'user' || !actor.roles.includes('owner')) {
+    throw new HttpError(
+      403,
+      'forbidden',
+      'Only the workspace owner can permanently delete artifacts.',
+    )
+  }
+}
