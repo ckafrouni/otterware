@@ -332,6 +332,7 @@ export function ArtifactViewer({
               <ArtifactDocumentPreview
                 contentType={previewContentType}
                 entryPath={selected.entryPath}
+                expectedCurrentVersion={artifact.versionCount}
                 onSheetChange={onSheetChange}
                 selectedSheet={sheet}
                 slug={slug}
@@ -364,9 +365,10 @@ function isDocumentPreview(contentType: string, entryPath: string): boolean {
   const extension = entryPath.split('.').pop()?.toLowerCase()
   return (
     type === 'text/markdown' ||
+    type === 'text/plain' ||
     type === 'text/csv' ||
     type ===
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
-    ['md', 'markdown', 'csv', 'tsv', 'xlsx'].includes(extension ?? '')
+    ['md', 'markdown', 'txt', 'csv', 'tsv', 'xlsx'].includes(extension ?? '')
   )
 }

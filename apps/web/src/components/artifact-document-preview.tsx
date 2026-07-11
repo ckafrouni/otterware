@@ -1,24 +1,25 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import Papa from 'papaparse'
-import ReactMarkdown, { defaultUrlTransform } from 'react-markdown'
-import remarkGfm from 'remark-gfm'
 import { LoaderCircle } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-
-const MAX_ROWS = 2_000
-const MAX_COLUMNS = 100
-const MIN_VISIBLE_ROWS = 100
+import { UniverEditor, type UniverSheet } from './univer-editor'
 
 type GridValue = unknown
 
-interface DocumentSheet {
-  sheet: string
-  data: GridValue[][]
+export function columnName(index: number): string {
+  let value = index + 1
+  let output = ''
+  while (value > 0) {
+    value -= 1
+    output = String.fromCharCode(65 + (value % 26)) + output
+    value = Math.floor(value / 26)
+  }
+  return output
 }
 
 interface ArtifactDocumentPreviewProps {
   contentType: string
   entryPath: string
+  expectedCurrentVersion?: number | undefined
   onSheetChange?: ((sheet: string | undefined) => void) | undefined
   selectedSheet?: string | undefined
   slug: string
@@ -44,103 +45,26 @@ async function loadContent(
   return as === 'text' ? response.text() : response.arrayBuffer()
 }
 
-function displayCell(value: GridValue): string {
-  if (value == null) return ''
-  if (value instanceof Date) return value.toLocaleString()
-  return String(value)
-}
-
-function SpreadsheetGrid({ rows }: { rows: GridValue[][] }) {
-  const columnCount = Math.min(
-    MAX_COLUMNS,
-    rows.reduce((maximum, row) => Math.max(maximum, row.length), 0),
-  )
-  const visibleRows = Array.from(
-    { length: Math.max(Math.min(rows.length, MAX_ROWS), MIN_VISIBLE_ROWS) },
-    (_, index) => rows[index] ?? [],
-  )
-  const truncated =
-    rows.length > MAX_ROWS || rows.some((row) => row.length > MAX_COLUMNS)
-
-  if (!rows.length || !columnCount) {
-    return <div className="document-empty">This spreadsheet is empty.</div>
-  }
-
-  return (
-    <div className="spreadsheet-shell">
-      {truncated && (
-        <div className="spreadsheet-notice">
-          Previewing the first {MAX_ROWS.toLocaleString()} rows and{' '}
-          {MAX_COLUMNS} columns.
-        </div>
-      )}
-      <div className="spreadsheet-scroll">
-        <table
-          className="spreadsheet-grid"
-          style={{ width: 46 + columnCount * 120 }}
-        >
-          <colgroup>
-            <col className="spreadsheet-row-number-column" />
-            {Array.from({ length: columnCount }, (_, index) => (
-              <col key={index} />
-            ))}
-          </colgroup>
-          <thead>
-            <tr>
-              <th className="spreadsheet-corner" aria-label="Row number" />
-              {Array.from({ length: columnCount }, (_, index) => (
-                <th key={index} scope="col">
-                  {columnName(index)}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {visibleRows.map((row, rowIndex) => (
-              <tr key={rowIndex}>
-                <th scope="row">{rowIndex + 1}</th>
-                {Array.from({ length: columnCount }, (_, columnIndex) => (
-                  <td key={columnIndex} title={displayCell(row[columnIndex])}>
-                    {displayCell(row[columnIndex])}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  )
-}
-
-export function columnName(index: number): string {
-  let value = index + 1
-  let output = ''
-  while (value > 0) {
-    value -= 1
-    output = String.fromCharCode(65 + (value % 26)) + output
-    value = Math.floor(value / 26)
-  }
-  return output
-}
-
 export function ArtifactDocumentPreview({
   contentType,
   entryPath,
+  expectedCurrentVersion,
   onSheetChange,
   selectedSheet: selectedSheetName,
   slug,
   version,
 }: ArtifactDocumentPreviewProps) {
   const [markdown, setMarkdown] = useState<string | null>(null)
-  const [sheets, setSheets] = useState<DocumentSheet[]>([])
+  const [sheets, setSheets] = useState<UniverSheet[]>([])
   const [error, setError] = useState<string | null>(null)
   const normalizedType = contentType.split(';')[0]?.trim().toLowerCase() ?? ''
   const extension = entryPath.split('.').pop()?.toLowerCase()
   const markdownDocument =
     normalizedType === 'text/markdown' ||
+    normalizedType === 'text/plain' ||
     extension === 'md' ||
-    extension === 'markdown'
+    extension === 'markdown' ||
+    extension === 'txt'
   const csvDocument =
     normalizedType === 'text/csv' || extension === 'csv' || extension === 'tsv'
   const workbook =
@@ -216,63 +140,29 @@ export function ArtifactDocumentPreview({
     workbook,
   ])
 
-  const activeSheet = Math.max(
-    0,
-    sheets.findIndex((sheet) => sheet.sheet === selectedSheetName),
-  )
-  const selectedSheet = useMemo(
-    () => sheets[activeSheet],
-    [activeSheet, sheets],
-  )
-  const transformMarkdownUrl = (url: string) => {
-    if (url.startsWith('#') || /^[a-z][a-z\d+.-]*:/i.test(url)) {
-      return defaultUrlTransform(url)
-    }
-    const resolved = new URL(url, `https://artifact.local/${entryPath}`)
-    return contentUrl(slug, version, resolved.pathname.slice(1))
-  }
-
   if (error) return <div className="viewer-message error-panel">{error}</div>
   if (markdownDocument && markdown !== null) {
     return (
-      <article className="markdown-preview">
-        <ReactMarkdown
-          remarkPlugins={[remarkGfm]}
-          urlTransform={transformMarkdownUrl}
-        >
-          {markdown}
-        </ReactMarkdown>
-      </article>
+      <UniverEditor
+        entryPath={entryPath}
+        expectedCurrentVersion={expectedCurrentVersion ?? version}
+        kind="document"
+        slug={slug}
+        text={markdown}
+      />
     )
   }
-  if ((csvDocument || workbook) && selectedSheet) {
+  if ((csvDocument || workbook) && sheets.length) {
     return (
-      <div className="workbook-preview">
-        <SpreadsheetGrid rows={selectedSheet.data} />
-        <div className="workbook-footer">
-          <div
-            className="workbook-tabs"
-            role="tablist"
-            aria-label="Workbook sheets"
-          >
-            {sheets.map((sheet, index) => (
-              <Button
-                key={sheet.sheet}
-                size="sm"
-                variant="ghost"
-                role="tab"
-                aria-selected={activeSheet === index}
-                className={activeSheet === index ? 'active' : ''}
-                onClick={() =>
-                  onSheetChange?.(index === 0 ? undefined : sheet.sheet)
-                }
-              >
-                {sheet.sheet}
-              </Button>
-            ))}
-          </div>
-        </div>
-      </div>
+      <UniverEditor
+        entryPath={entryPath}
+        expectedCurrentVersion={expectedCurrentVersion ?? version}
+        kind="spreadsheet"
+        onSheetChange={onSheetChange}
+        selectedSheet={selectedSheetName}
+        sheets={sheets}
+        slug={slug}
+      />
     )
   }
   return (

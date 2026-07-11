@@ -698,6 +698,44 @@ button:disabled {
   box-shadow: 0 8px 24px rgb(0 0 0 / 7%);
 }
 
+.univer-editor-shell {
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: 38px minmax(0, 1fr);
+  overflow: hidden;
+  background: white;
+  border: 1px solid var(--border);
+  border-bottom: 0;
+  border-radius: 12px 12px 0 0;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 7%);
+}
+
+.univer-editor-actions {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--border);
+  background: var(--background);
+}
+
+.univer-editor-actions span {
+  color: var(--muted-foreground);
+  font-size: 11px;
+}
+
+.univer-editor {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .markdown-preview {
   overflow: auto;
   padding: clamp(24px, 5vw, 64px);
