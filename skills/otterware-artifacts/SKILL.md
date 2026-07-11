@@ -13,14 +13,14 @@ Use the installed `otterware` CLI as the only boundary for artifact operations. 
 
    ```bash
    command -v otterware
-   otterware --cli-version
+   otterware --version
    ```
 
 2. If it is missing, require Node.js 24 LTS and install the official npm package:
 
    ```bash
    npm install --global otterware@latest
-   otterware --cli-version
+   otterware --version
    ```
 
    The official package is `otterware` and its repository metadata points to `https://github.com/ckafrouni/otterware`. When developing the CLI itself inside a clean Otterware checkout, use `pnpm install --frozen-lockfile`, `pnpm --dir apps/cli build`, and `npm install --global ./apps/cli`. Preserve existing checkout changes and never replace them automatically.
