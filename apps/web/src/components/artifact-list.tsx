@@ -140,7 +140,7 @@ export function ArtifactListPage({
   }
 
   return (
-    <AuthGate>
+    <AuthGate fallback={<ArtifactHomeLoadingState view={view} />}>
       <div className="app-shell">
         <AppHeader />
         <main className="artifact-home">
@@ -282,7 +282,6 @@ export function ArtifactListPage({
             </div>
           </section>
 
-          {loading && <div className="empty-panel">Loading artifacts…</div>}
           {error && (
             <div className="empty-panel error-panel">
               <strong>Could not load artifacts</strong>
@@ -323,124 +322,130 @@ export function ArtifactListPage({
             className={view === 'grid' ? 'artifact-grid' : 'artifact-list-view'}
             aria-label="Artifacts"
           >
-            {visibleArtifacts.map((artifact) => (
-              <Link
-                key={artifact.id}
-                to="/$organizationSlug/a/$slug"
-                params={{
-                  organizationSlug: activeOrganization?.slug ?? 'team',
-                  slug: artifact.slug,
-                }}
-                className="artifact-card-link"
-              >
-                <Card
-                  size="sm"
-                  className={
-                    view === 'grid'
-                      ? 'artifact-card'
-                      : 'artifact-card artifact-row'
-                  }
+            {loading ? (
+              <ArtifactCardSkeletons view={view} />
+            ) : (
+              visibleArtifacts.map((artifact) => (
+                <Link
+                  key={artifact.id}
+                  to="/$organizationSlug/a/$slug"
+                  params={{
+                    organizationSlug: activeOrganization?.slug ?? 'team',
+                    slug: artifact.slug,
+                  }}
+                  className="artifact-card-link"
                 >
-                  <ArtifactCardPreview artifact={artifact} />
-                  <div className="artifact-card-body">
-                    <div className="visibility-label">
-                      {artifact.visibility === 'private' ? (
-                        <UserRound size={13} />
-                      ) : (
-                        <Users size={13} />
-                      )}
-                      {artifact.visibility === 'private'
-                        ? 'Private'
-                        : 'Organization'}
+                  <Card
+                    size="sm"
+                    className={
+                      view === 'grid'
+                        ? 'artifact-card'
+                        : 'artifact-card artifact-row'
+                    }
+                  >
+                    <ArtifactCardPreview artifact={artifact} />
+                    <div className="artifact-card-body">
+                      <div className="visibility-label">
+                        {artifact.visibility === 'private' ? (
+                          <UserRound size={13} />
+                        ) : (
+                          <Users size={13} />
+                        )}
+                        {artifact.visibility === 'private'
+                          ? 'Private'
+                          : 'Organization'}
+                      </div>
+                      <h2>{artifact.title}</h2>
+                      <p>
+                        {artifact.description || 'No description provided.'}
+                      </p>
                     </div>
-                    <h2>{artifact.title}</h2>
-                    <p>{artifact.description || 'No description provided.'}</p>
-                  </div>
-                  <div className="artifact-card-meta">
-                    <span>
-                      v{artifact.currentVersion?.number ?? 1} ·{' '}
-                      {formatDate(artifact.updatedAt)}
-                    </span>
-                    <div className="artifact-card-actions">
-                      <Button
-                        variant="outline"
-                        size="icon-xs"
-                        type="button"
-                        aria-label="Copy artifact URL"
-                        onClick={(event) => {
-                          event.preventDefault()
-                          event.stopPropagation()
-                          void navigator.clipboard.writeText(artifact.url)
-                        }}
-                      >
-                        <Copy size={14} />
-                      </Button>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger
-                          render={
-                            <Button
-                              variant="outline"
-                              size="icon-xs"
-                              type="button"
-                              aria-label="Artifact actions"
-                              disabled={changingId === artifact.id}
-                              onClick={(event) => {
-                                event.preventDefault()
-                                event.stopPropagation()
-                              }}
-                            />
-                          }
+                    <div className="artifact-card-meta">
+                      <span>
+                        v{artifact.currentVersion?.number ?? 1} ·{' '}
+                        {formatDate(artifact.updatedAt)}
+                      </span>
+                      <div className="artifact-card-actions">
+                        <Button
+                          variant="outline"
+                          size="icon-xs"
+                          type="button"
+                          aria-label="Copy artifact URL"
+                          onClick={(event) => {
+                            event.preventDefault()
+                            event.stopPropagation()
+                            void navigator.clipboard.writeText(artifact.url)
+                          }}
                         >
-                          <MoreHorizontal size={14} />
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent
-                          align="end"
-                          className="artifact-actions-menu"
-                        >
-                          <DropdownMenuItem
+                          <Copy size={14} />
+                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger
                             render={
-                              <a
-                                href={`/api/v1/artifacts/${encodeURIComponent(artifact.id)}/download`}
-                                download
-                                onClick={(event) => event.stopPropagation()}
+                              <Button
+                                variant="outline"
+                                size="icon-xs"
+                                type="button"
+                                aria-label="Artifact actions"
+                                disabled={changingId === artifact.id}
+                                onClick={(event) => {
+                                  event.preventDefault()
+                                  event.stopPropagation()
+                                }}
                               />
                             }
                           >
-                            <Download size={14} /> Download
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            variant={
-                              artifact.archivedAt ? 'default' : 'destructive'
-                            }
-                            onClick={() => void changeArchivedState(artifact)}
+                            <MoreHorizontal size={14} />
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent
+                            align="end"
+                            className="artifact-actions-menu"
                           >
-                            {artifact.archivedAt ? (
-                              <RotateCcw size={14} />
-                            ) : (
-                              <Archive size={14} />
+                            <DropdownMenuItem
+                              render={
+                                <a
+                                  href={`/api/v1/artifacts/${encodeURIComponent(artifact.id)}/download`}
+                                  download
+                                  onClick={(event) => event.stopPropagation()}
+                                />
+                              }
+                            >
+                              <Download size={14} /> Download
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              variant={
+                                artifact.archivedAt ? 'default' : 'destructive'
+                              }
+                              onClick={() => void changeArchivedState(artifact)}
+                            >
+                              {artifact.archivedAt ? (
+                                <RotateCcw size={14} />
+                              ) : (
+                                <Archive size={14} />
+                              )}
+                              {artifact.archivedAt ? 'Restore' : 'Archive'}
+                            </DropdownMenuItem>
+                            {artifact.archivedAt && isOwner && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  variant="destructive"
+                                  onClick={() => setDeletingArtifact(artifact)}
+                                >
+                                  <Trash2 size={14} />
+                                  Delete permanently
+                                </DropdownMenuItem>
+                              </>
                             )}
-                            {artifact.archivedAt ? 'Restore' : 'Archive'}
-                          </DropdownMenuItem>
-                          {artifact.archivedAt && isOwner && (
-                            <>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                variant="destructive"
-                                onClick={() => setDeletingArtifact(artifact)}
-                              >
-                                <Trash2 size={14} />
-                                Delete permanently
-                              </DropdownMenuItem>
-                            </>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </div>
-                  </div>
-                </Card>
-              </Link>
-            ))}
+                  </Card>
+                </Link>
+              ))
+            )}
           </section>
           <DeleteArtifactDialog
             artifact={deletingArtifact}
@@ -458,6 +463,67 @@ export function ArtifactListPage({
       </div>
     </AuthGate>
   )
+}
+
+function ArtifactHomeLoadingState({ view }: { view: 'grid' | 'list' }) {
+  return (
+    <div className="app-shell artifact-home-loading" role="status">
+      <header className="app-header" aria-hidden="true">
+        <div className="home-loading-navigation">
+          <div className="home-loading-brand" />
+          <div className="home-loading-team" />
+          <div className="home-loading-nav" />
+        </div>
+        <div className="home-loading-user" />
+      </header>
+      <main className="artifact-home">
+        <section className="artifact-commandbar" aria-hidden="true">
+          <div className="artifact-titleblock">
+            <div className="home-loading-heading" />
+            <div className="home-loading-subtitle" />
+          </div>
+          <div className="artifact-toolbar">
+            <div className="home-loading-search" />
+            <div className="home-loading-filter" />
+            <div className="home-loading-sort" />
+            <div className="home-loading-layout" />
+            <div className="home-loading-count" />
+            <div className="home-loading-publish" />
+          </div>
+        </section>
+        <section
+          className={view === 'grid' ? 'artifact-grid' : 'artifact-list-view'}
+          aria-hidden="true"
+        >
+          <ArtifactCardSkeletons view={view} />
+        </section>
+      </main>
+      <span className="sr-only">Loading artifacts…</span>
+    </div>
+  )
+}
+
+function ArtifactCardSkeletons({ view }: { view: 'grid' | 'list' }) {
+  return Array.from({ length: view === 'grid' ? 8 : 6 }, (_, index) => (
+    <div
+      className={
+        view === 'grid'
+          ? 'artifact-card artifact-card-skeleton'
+          : 'artifact-card artifact-row artifact-card-skeleton'
+      }
+      key={index}
+    >
+      <div className="artifact-preview" />
+      <div className="artifact-card-body">
+        <div className="skeleton-line skeleton-label" />
+        <div className="skeleton-line skeleton-title" />
+        <div className="skeleton-line skeleton-description" />
+      </div>
+      <div className="artifact-card-meta">
+        <div className="skeleton-line skeleton-meta" />
+      </div>
+    </div>
+  ))
 }
 
 function ArtifactCardPreview({ artifact }: { artifact: Artifact }) {
