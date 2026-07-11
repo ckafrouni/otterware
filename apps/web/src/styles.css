@@ -231,7 +231,7 @@ code {
 .artifact-home {
   width: min(1360px, calc(100% - 32px));
   margin: 0 auto;
-  padding: 42px 0 80px;
+  padding: 24px 0 80px;
 }
 .settings-page {
   width: min(1180px, calc(100% - 32px));
@@ -269,25 +269,45 @@ code {
   align-items: center;
   gap: 9px;
 }
-.artifact-heading {
-  margin-bottom: 18px;
-}
-.artifact-heading h1 {
-  font-size: clamp(30px, 4vw, 40px);
-}
 .compact-action {
   min-height: 32px;
 }
-.artifact-toolbar {
+.artifact-commandbar {
   display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 16px;
+}
+.artifact-titleblock {
+  min-width: 0;
+  display: flex;
+  flex: 0 0 auto;
+  align-items: baseline;
+  gap: 12px;
+}
+.artifact-titleblock h1 {
+  margin: 0;
+  font-size: 25px;
+  line-height: 1;
+  letter-spacing: -0.035em;
+}
+.artifact-titleblock p {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.artifact-toolbar {
+  min-width: 0;
+  display: flex;
+  flex: 1 1 auto;
   align-items: center;
   justify-content: flex-end;
   gap: 9px;
-  margin-bottom: 18px;
 }
 .artifact-search-field {
   position: relative;
-  width: min(310px, 100%);
+  width: min(280px, 100%);
 }
 .artifact-search-field input {
   padding-left: 32px;
@@ -302,10 +322,13 @@ code {
   transform: translateY(-50%);
 }
 .artifact-sort-trigger {
-  width: 205px;
+  width: 184px;
 }
 .artifact-status-trigger {
-  width: 132px;
+  width: 122px;
+}
+.publish-menu {
+  width: 210px;
 }
 .count-badge,
 .version-pill {
@@ -851,6 +874,20 @@ select:focus {
   }
 }
 
+@media (max-width: 1150px) {
+  .artifact-commandbar {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .artifact-toolbar {
+    flex-basis: 100%;
+    justify-content: flex-start;
+  }
+  .artifact-search-field {
+    flex: 1 1 240px;
+    width: auto;
+  }
+}
 @media (max-width: 850px) {
   .artifact-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -875,21 +912,27 @@ select:focus {
   .artifact-home,
   .settings-page {
     width: min(100% - 20px, 1180px);
-    padding-top: 30px;
+    padding-top: 18px;
   }
   .page-heading {
     align-items: flex-start;
     flex-direction: column;
   }
   .artifact-toolbar {
-    flex-wrap: wrap;
+    overflow-x: auto;
+    padding-bottom: 2px;
   }
   .artifact-search-field {
-    width: 100%;
+    width: 220px;
+    flex: 0 0 220px;
   }
   .artifact-sort-trigger {
-    flex: 1;
-    width: auto;
+    width: 175px;
+  }
+  .artifact-titleblock p {
+    overflow: hidden;
+    max-width: 48vw;
+    text-overflow: ellipsis;
   }
   .artifact-grid {
     grid-template-columns: 1fr;
