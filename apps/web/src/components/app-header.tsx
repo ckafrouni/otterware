@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router'
 import {
   Box,
   Check,
+  ChevronDown,
   ChevronsUpDown,
   LogOut,
   Settings,
@@ -69,34 +70,46 @@ export function AppHeader() {
             </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>
+        <span className="workspace-divider" />
+        <nav className="workspace-links">
+          <Link to="/artifacts" activeProps={{ className: 'active' }}>
+            Artifacts
+          </Link>
+        </nav>
       </div>
-      <nav className="app-nav">
-        <Link to="/artifacts" activeProps={{ className: 'active' }}>
-          Artifacts
-        </Link>
-        <Link to="/settings" activeProps={{ className: 'active' }}>
-          <Settings size={15} /> Settings
-        </Link>
-      </nav>
-      <div className="account-menu">
-        <span className="avatar">
-          {session.data?.user.name?.slice(0, 2).toUpperCase() ?? 'OT'}
-        </span>
-        <span className="account-name">{session.data?.user.name}</span>
-        <Button
-          variant="outline"
-          size="icon-sm"
-          type="button"
-          title="Sign out"
-          onClick={() =>
-            authClient.signOut({
-              fetchOptions: { onSuccess: () => location.assign('/login') },
-            })
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          render={
+            <Button variant="ghost" size="sm" className="user-menu-trigger" />
           }
         >
-          <LogOut size={15} />
-        </Button>
-      </div>
+          <span className="avatar">
+            {session.data?.user.name?.slice(0, 2).toUpperCase() ?? 'OT'}
+          </span>
+          <span className="account-name">{session.data?.user.name}</span>
+          <ChevronDown size={13} />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="user-menu">
+          <DropdownMenuLabel className="user-menu-identity">
+            <strong>{session.data?.user.name}</strong>
+            <small>{session.data?.user.email}</small>
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem render={<Link to="/settings" />}>
+            <Settings size={14} /> Settings
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={() =>
+              authClient.signOut({
+                fetchOptions: { onSuccess: () => location.assign('/login') },
+              })
+            }
+          >
+            <LogOut size={14} /> Sign out
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </header>
   )
 }
