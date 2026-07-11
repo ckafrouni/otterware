@@ -34,6 +34,7 @@ interface ArtifactDocumentPreviewProps {
   entryPath: string
   expectedCurrentVersion?: number | undefined
   onSheetChange?: ((sheet: string | undefined) => void) | undefined
+  organizationId: string
   organizationSlug: string
   selectedSheet?: string | undefined
   slug: string
@@ -47,12 +48,16 @@ function contentUrl(slug: string, version: number, path?: string): string {
 }
 
 async function loadContent(
+  organizationId: string,
   slug: string,
   version: number,
   as: 'text' | 'arrayBuffer',
 ): Promise<string | ArrayBuffer> {
   const response = await fetch(contentUrl(slug, version), {
-    headers: { accept: '*/*' },
+    headers: {
+      accept: '*/*',
+      'x-otterware-organization': organizationId,
+    },
   })
   if (!response.ok)
     throw new Error(`Could not load document (${response.status}).`)
@@ -64,6 +69,7 @@ export function ArtifactDocumentPreview({
   entryPath,
   expectedCurrentVersion,
   onSheetChange,
+  organizationId,
   organizationSlug,
   selectedSheet: selectedSheetName,
   slug,
@@ -94,7 +100,7 @@ export function ArtifactDocumentPreview({
     setError(null)
 
     if (markdownDocument || csvDocument) {
-      loadContent(slug, version, 'text')
+      loadContent(organizationId, slug, version, 'text')
         .then((value) => {
           if (!active) return
           const text = value as string
@@ -118,7 +124,7 @@ export function ArtifactDocumentPreview({
             setError(reason instanceof Error ? reason.message : String(reason))
         })
     } else if (workbook) {
-      loadContent(slug, version, 'arrayBuffer')
+      loadContent(organizationId, slug, version, 'arrayBuffer')
         .then(async (value) => {
           if (!active) return
           const XLSX = await import('@e965/xlsx')
@@ -150,6 +156,7 @@ export function ArtifactDocumentPreview({
     entryPath,
     extension,
     markdownDocument,
+    organizationId,
     slug,
     version,
     workbook,
@@ -165,6 +172,7 @@ export function ArtifactDocumentPreview({
           entryPath={entryPath}
           expectedCurrentVersion={expectedCurrentVersion ?? version}
           kind="document"
+          organizationId={organizationId}
           organizationSlug={organizationSlug}
           slug={slug}
           text={markdown}
@@ -181,6 +189,7 @@ export function ArtifactDocumentPreview({
           entryPath={entryPath}
           expectedCurrentVersion={expectedCurrentVersion ?? version}
           kind="spreadsheet"
+          organizationId={organizationId}
           organizationSlug={organizationSlug}
           onSheetChange={onSheetChange}
           selectedSheet={selectedSheetName}
