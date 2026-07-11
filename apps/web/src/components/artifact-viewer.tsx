@@ -30,7 +30,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { AuthGate } from './auth-gate'
+import { ArtifactLoadingState } from './artifact-loading-state'
 import { DeleteArtifactDialog } from './delete-artifact-dialog'
 
 const ArtifactDocumentPreview = lazy(() =>
@@ -183,211 +183,199 @@ export function ArtifactViewer({
   }
 
   return (
-    <AuthGate>
-      <div className="viewer-shell">
-        <header className="viewer-header">
-          <div className="viewer-left">
-            <Button
-              render={<Link to="/artifacts" />}
-              variant="outline"
-              size="icon-sm"
-              aria-label="Back to artifacts"
-            >
-              <Home size={15} />
-            </Button>
-            {artifact && selected ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger
-                  render={
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="version-trigger"
-                    />
-                  }
-                >
-                  <strong>{artifact.title}</strong>
-                  {versions.length > 1 && <ChevronDown size={15} />}
-                </DropdownMenuTrigger>
-                {versions.length > 1 && (
-                  <DropdownMenuContent align="start" className="version-menu">
-                    {versions.map((item) => (
-                      <DropdownMenuItem
-                        key={item.id}
-                        render={
-                          <Link
-                            to="/$organizationSlug/a/$slug/$version"
-                            params={{
-                              organizationSlug:
-                                artifactOrganization?.slug ?? 'team',
-                              slug: artifact.slug,
-                              version: `v${item.number}`,
-                            }}
-                            search={sheet ? { sheet } : {}}
-                          />
-                        }
-                        className={
-                          item.number === selected.number ? 'active' : ''
-                        }
-                      >
-                        <strong>v{item.number}</strong>
-                        <span>{item.label}</span>
-                        <small>{formatDate(item.createdAt)}</small>
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                )}
-              </DropdownMenu>
-            ) : (
-              <strong>Otterware Artifact</strong>
-            )}
-            {artifact && (
-              <span className="viewer-byline">
-                <strong>{artifactOrganization?.name ?? 'Team'}</strong>
-                <span aria-hidden="true">·</span>
-                {artifact.visibility === 'private' ? 'Private' : 'Shared'}
-              </span>
-            )}
-            {selected && versions.length > 1 && (
-              <Badge variant="outline">v{selected.number}</Badge>
-            )}
-            {artifact?.archivedAt && (
-              <Badge variant="secondary">Archived</Badge>
-            )}
-          </div>
-          <div className="viewer-actions">
-            {artifact && (
-              <DropdownMenu>
-                <DropdownMenuTrigger
-                  render={
-                    <Button
-                      variant="outline"
-                      size="icon-sm"
-                      type="button"
-                      aria-label="Artifact actions"
-                      disabled={changingArchivedState}
-                    />
-                  }
-                >
-                  <MoreHorizontal size={15} />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="end"
-                  className="artifact-actions-menu"
-                >
-                  <DropdownMenuItem
-                    variant={artifact.archivedAt ? 'default' : 'destructive'}
-                    onClick={() => void changeArchivedState()}
-                  >
-                    {artifact.archivedAt ? (
-                      <RotateCcw size={14} />
-                    ) : (
-                      <Archive size={14} />
-                    )}
-                    {artifact.archivedAt
-                      ? 'Restore artifact'
-                      : 'Archive artifact'}
-                  </DropdownMenuItem>
-                  {artifact.archivedAt && isOwner && (
-                    <>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        variant="destructive"
-                        onClick={() => setDeleteDialogOpen(true)}
-                      >
-                        <Trash2 size={14} />
-                        Delete permanently
-                      </DropdownMenuItem>
-                    </>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-            <Button
-              variant="outline"
-              size="icon-sm"
-              type="button"
-              aria-label="Copy edit prompt"
-              onClick={() =>
-                void copy(
-                  `Edit my Otterware artifact at ${artifact?.url}. Read the current version first and publish a new immutable version with the Otterware CLI.`,
-                  'Edit prompt copied.',
-                )
-              }
-            >
-              <Pencil size={15} />
-            </Button>
-            {artifact && selected && (
-              <Button
-                variant="outline"
-                size="icon-sm"
-                type="button"
-                aria-label={`Download ${artifact.title} version ${selected.number}`}
-                onClick={() => void downloadArtifact()}
+    <div className="viewer-shell">
+      <header className="viewer-header">
+        <div className="viewer-left">
+          <Button
+            render={<Link to="/artifacts" />}
+            variant="outline"
+            size="icon-sm"
+            aria-label="Back to artifacts"
+          >
+            <Home size={15} />
+          </Button>
+          {artifact && selected ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="version-trigger"
+                  />
+                }
               >
-                <Download size={15} />
-              </Button>
-            )}
+                <strong>{artifact.title}</strong>
+                {versions.length > 1 && <ChevronDown size={15} />}
+              </DropdownMenuTrigger>
+              {versions.length > 1 && (
+                <DropdownMenuContent align="start" className="version-menu">
+                  {versions.map((item) => (
+                    <DropdownMenuItem
+                      key={item.id}
+                      render={
+                        <Link
+                          to="/$organizationSlug/a/$slug/$version"
+                          params={{
+                            organizationSlug:
+                              artifactOrganization?.slug ?? 'team',
+                            slug: artifact.slug,
+                            version: `v${item.number}`,
+                          }}
+                          search={sheet ? { sheet } : {}}
+                        />
+                      }
+                      className={
+                        item.number === selected.number ? 'active' : ''
+                      }
+                    >
+                      <strong>v{item.number}</strong>
+                      <span>{item.label}</span>
+                      <small>{formatDate(item.createdAt)}</small>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              )}
+            </DropdownMenu>
+          ) : (
+            <strong>Otterware Artifact</strong>
+          )}
+          {artifact && (
+            <span className="viewer-byline">
+              <strong>{artifactOrganization?.name ?? 'Team'}</strong>
+              <span aria-hidden="true">·</span>
+              {artifact.visibility === 'private' ? 'Private' : 'Shared'}
+            </span>
+          )}
+          {selected && versions.length > 1 && (
+            <Badge variant="outline">v{selected.number}</Badge>
+          )}
+          {artifact?.archivedAt && <Badge variant="secondary">Archived</Badge>}
+        </div>
+        <div className="viewer-actions">
+          {artifact && (
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <Button
+                    variant="outline"
+                    size="icon-sm"
+                    type="button"
+                    aria-label="Artifact actions"
+                    disabled={changingArchivedState}
+                  />
+                }
+              >
+                <MoreHorizontal size={15} />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                className="artifact-actions-menu"
+              >
+                <DropdownMenuItem
+                  variant={artifact.archivedAt ? 'default' : 'destructive'}
+                  onClick={() => void changeArchivedState()}
+                >
+                  {artifact.archivedAt ? (
+                    <RotateCcw size={14} />
+                  ) : (
+                    <Archive size={14} />
+                  )}
+                  {artifact.archivedAt
+                    ? 'Restore artifact'
+                    : 'Archive artifact'}
+                </DropdownMenuItem>
+                {artifact.archivedAt && isOwner && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onClick={() => setDeleteDialogOpen(true)}
+                    >
+                      <Trash2 size={14} />
+                      Delete permanently
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+          <Button
+            variant="outline"
+            size="icon-sm"
+            type="button"
+            aria-label="Copy edit prompt"
+            onClick={() =>
+              void copy(
+                `Edit my Otterware artifact at ${artifact?.url}. Read the current version first and publish a new immutable version with the Otterware CLI.`,
+                'Edit prompt copied.',
+              )
+            }
+          >
+            <Pencil size={15} />
+          </Button>
+          {artifact && selected && (
             <Button
               variant="outline"
-              size="sm"
+              size="icon-sm"
               type="button"
-              onClick={() =>
-                artifact && void copy(artifact.url, 'Artifact link copied.')
-              }
+              aria-label={`Download ${artifact.title} version ${selected.number}`}
+              onClick={() => void downloadArtifact()}
             >
-              <Copy size={14} /> Share
+              <Download size={15} />
             </Button>
-          </div>
-        </header>
-        <main className="viewer-main">
-          {error && <div className="viewer-message error-panel">{error}</div>}
-          {!error && !previewUrl && (
-            <div className="viewer-message">Loading artifact…</div>
           )}
-          {previewUrl &&
-          previewContentType &&
-          artifact &&
-          selected &&
-          isDocumentPreview(previewContentType, selected.entryPath) ? (
-            <Suspense
-              fallback={
-                <div className="viewer-message document-loading">
-                  Loading document…
-                </div>
-              }
-            >
-              <ArtifactDocumentPreview
-                contentType={previewContentType}
-                entryPath={selected.entryPath}
-                expectedCurrentVersion={artifact.versionCount}
-                onSheetChange={onSheetChange}
-                organizationId={organizationId}
-                organizationSlug={organizationSlug}
-                selectedSheet={sheet}
-                slug={slug}
-                version={selected.number}
-              />
-            </Suspense>
-          ) : previewUrl && artifact && selected ? (
-            <iframe
-              key={`${slug}:${selected.number}:${previewUrl}`}
-              className="artifact-frame"
-              src={previewUrl}
-              title={`${artifact.title} version ${selected.number}`}
-              sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-downloads allow-modals"
-              referrerPolicy="no-referrer"
+          <Button
+            variant="outline"
+            size="sm"
+            type="button"
+            onClick={() =>
+              artifact && void copy(artifact.url, 'Artifact link copied.')
+            }
+          >
+            <Copy size={14} /> Share
+          </Button>
+        </div>
+      </header>
+      <main className="viewer-main">
+        {error && <div className="viewer-message error-panel">{error}</div>}
+        {!error && !previewUrl && <ArtifactLoadingState />}
+        {previewUrl &&
+        previewContentType &&
+        artifact &&
+        selected &&
+        isDocumentPreview(previewContentType, selected.entryPath) ? (
+          <Suspense fallback={<ArtifactLoadingState />}>
+            <ArtifactDocumentPreview
+              contentType={previewContentType}
+              entryPath={selected.entryPath}
+              expectedCurrentVersion={artifact.versionCount}
+              onSheetChange={onSheetChange}
+              organizationId={organizationId}
+              organizationSlug={organizationSlug}
+              selectedSheet={sheet}
+              slug={slug}
+              version={selected.number}
             />
-          ) : null}
-        </main>
-        <DeleteArtifactDialog
-          artifact={deleteDialogOpen ? artifact : null}
-          organizationId={organizationId}
-          onOpenChange={setDeleteDialogOpen}
-          onDeleted={() => location.assign('/artifacts')}
-        />
-      </div>
-    </AuthGate>
+          </Suspense>
+        ) : previewUrl && artifact && selected ? (
+          <iframe
+            key={`${slug}:${selected.number}:${previewUrl}`}
+            className="artifact-frame"
+            src={previewUrl}
+            title={`${artifact.title} version ${selected.number}`}
+            sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-downloads allow-modals"
+            referrerPolicy="no-referrer"
+          />
+        ) : null}
+      </main>
+      <DeleteArtifactDialog
+        artifact={deleteDialogOpen ? artifact : null}
+        organizationId={organizationId}
+        onOpenChange={setDeleteDialogOpen}
+        onDeleted={() => location.assign('/artifacts')}
+      />
+    </div>
   )
 }
 

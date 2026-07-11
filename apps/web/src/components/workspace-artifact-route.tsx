@@ -1,5 +1,6 @@
 import { ArtifactViewer } from './artifact-viewer'
 import { AuthGate } from './auth-gate'
+import { ArtifactLoadingState } from './artifact-loading-state'
 import { useOrganizations } from '@/hooks/use-organizations'
 
 export function WorkspaceArtifactRoute({
@@ -30,7 +31,7 @@ export function WorkspaceArtifactRoute({
           {...viewerProps}
         />
       ) : (
-        <div className="viewer-message">Opening {organizationSlug}…</div>
+        <ArtifactLoadingState />
       )}
     </AuthGate>
   )
