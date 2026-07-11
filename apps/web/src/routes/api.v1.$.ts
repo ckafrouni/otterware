@@ -13,6 +13,7 @@ import {
   listVersions,
   previewArtifact,
   promoteVersion,
+  regenerateThumbnail,
   readContent,
   showArtifact,
   updateArtifact,
@@ -87,6 +88,8 @@ async function handler({ request }: { request: Request }): Promise<Response> {
         return readContent(request, env, actor, reference)
       } else if (segments[2] === 'preview' && request.method === 'GET') {
         return previewArtifact(request, env, actor, reference)
+      } else if (segments[2] === 'thumbnail' && request.method === 'POST') {
+        return regenerateThumbnail(request, env, actor, reference)
       } else if (segments[2] === 'uploads' && request.method === 'POST') {
         return createUpload(request, env, actor, reference)
       } else if (segments[2] === 'promote' && request.method === 'POST') {

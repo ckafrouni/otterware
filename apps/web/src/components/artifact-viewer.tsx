@@ -8,6 +8,14 @@ import {
   type ArtifactVersion,
 } from '@otterware/contracts'
 import { api, formatDate } from '#/lib/api'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { AuthGate } from './auth-gate'
 
 interface PreviewResponse {
@@ -29,7 +37,6 @@ export function ArtifactViewer({
   const [versions, setVersions] = useState<ArtifactVersion[]>([])
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [menuOpen, setMenuOpen] = useState(false)
 
   const selected = useMemo(
     () =>
@@ -54,13 +61,23 @@ export function ArtifactViewer({
   }, [slug])
 
   useEffect(() => {
-    if (!artifact || !selected) return
+    const controller = new AbortController()
+    setPreviewUrl(null)
+    setError(null)
+    const query = version ? `?version=${version}` : ''
     api<PreviewResponse>(
-      `/api/v1/artifacts/${artifact.id}/preview?version=${selected.number}`,
+      `/api/v1/artifacts/${encodeURIComponent(slug)}/preview${query}`,
+      { signal: controller.signal },
     )
-      .then((result) => setPreviewUrl(result.data.url))
-      .catch((reason: Error) => setError(reason.message))
-  }, [artifact, selected])
+      .then((result) => {
+        if (!controller.signal.aborted) setPreviewUrl(result.data.url)
+      })
+      .catch((reason: Error) => {
+        if (!controller.signal.aborted) setError(reason.message)
+      })
+
+    return () => controller.abort()
+  }, [slug, version])
 
   const copy = (value: string) => navigator.clipboard.writeText(value)
 
@@ -69,46 +86,54 @@ export function ArtifactViewer({
       <div className="viewer-shell">
         <header className="viewer-header">
           <div className="viewer-left">
-            <Link
-              to="/artifacts"
-              className="viewer-icon"
+            <Button
+              render={<Link to="/artifacts" />}
+              variant="outline"
+              size="icon-sm"
               aria-label="Back to artifacts"
             >
               <Home size={15} />
-            </Link>
+            </Button>
             {artifact && selected ? (
-              <div className="version-control">
-                <button
-                  className="version-trigger"
-                  type="button"
-                  onClick={() => setMenuOpen((open) => !open)}
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="version-trigger"
+                    />
+                  }
                 >
                   <strong>{artifact.title}</strong>
                   {versions.length > 1 && <ChevronDown size={15} />}
-                </button>
-                {menuOpen && versions.length > 1 && (
-                  <div className="version-menu">
+                </DropdownMenuTrigger>
+                {versions.length > 1 && (
+                  <DropdownMenuContent align="start" className="version-menu">
                     {versions.map((item) => (
-                      <Link
+                      <DropdownMenuItem
                         key={item.id}
-                        to="/a/$slug/$version"
-                        params={{
-                          slug: artifact.slug,
-                          version: `v${item.number}`,
-                        }}
+                        render={
+                          <Link
+                            to="/a/$slug/$version"
+                            params={{
+                              slug: artifact.slug,
+                              version: `v${item.number}`,
+                            }}
+                          />
+                        }
                         className={
                           item.number === selected.number ? 'active' : ''
                         }
-                        onClick={() => setMenuOpen(false)}
                       >
                         <strong>v{item.number}</strong>
                         <span>{item.label}</span>
                         <small>{formatDate(item.createdAt)}</small>
-                      </Link>
+                      </DropdownMenuItem>
                     ))}
-                  </div>
+                  </DropdownMenuContent>
                 )}
-              </div>
+              </DropdownMenu>
             ) : (
               <strong>Otterware Artifact</strong>
             )}
@@ -120,12 +145,13 @@ export function ArtifactViewer({
               </span>
             )}
             {selected && versions.length > 1 && (
-              <span className="version-pill">v{selected.number}</span>
+              <Badge variant="outline">v{selected.number}</Badge>
             )}
           </div>
           <div className="viewer-actions">
-            <button
-              className="viewer-icon"
+            <Button
+              variant="outline"
+              size="icon-sm"
               type="button"
               aria-label="Copy edit prompt"
               onClick={() =>
@@ -135,14 +161,15 @@ export function ArtifactViewer({
               }
             >
               <Pencil size={15} />
-            </button>
-            <button
-              className="share-button"
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               type="button"
               onClick={() => artifact && void copy(artifact.url)}
             >
               <Copy size={14} /> Share
-            </button>
+            </Button>
           </div>
         </header>
         <main className="viewer-main">
@@ -152,6 +179,7 @@ export function ArtifactViewer({
           )}
           {previewUrl && artifact && selected && (
             <iframe
+              key={`${slug}:${selected.number}:${previewUrl}`}
               className="artifact-frame"
               src={previewUrl}
               title={`${artifact.title} version ${selected.number}`}

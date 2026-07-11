@@ -12,6 +12,7 @@ declare global {
     DB: D1Database
     ARTIFACTS: R2Bucket
     ASSETS: Fetcher
+    BROWSER: BrowserRun
   }
 
   interface Env extends OtterwareEnv {}

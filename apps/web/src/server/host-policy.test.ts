@@ -29,6 +29,12 @@ describe('production host isolation', () => {
     ).toBe(true)
     expect(
       isAllowedHostPath(
+        new Request('https://usercontent.otterware.dev/raw/thumbnail/grant'),
+        env,
+      ),
+    ).toBe(true)
+    expect(
+      isAllowedHostPath(
         new Request('https://app.otterware.dev/raw/session/grant'),
         env,
       ),

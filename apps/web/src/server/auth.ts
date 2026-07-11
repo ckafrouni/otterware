@@ -38,6 +38,13 @@ export function createAuth(env: Env) {
     database: env.DB,
     secret: env.BETTER_AUTH_SECRET,
     trustedOrigins: [env.APP_URL],
+    session: {
+      cookieCache: {
+        enabled: true,
+        maxAge: 60,
+        strategy: 'compact',
+      },
+    },
     socialProviders,
     emailAndPassword: {
       enabled: !googleEnabled,

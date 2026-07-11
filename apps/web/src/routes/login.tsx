@@ -4,6 +4,9 @@ import { Box } from 'lucide-react'
 import { z } from 'zod'
 import { api } from '#/lib/api'
 import { authClient } from '#/lib/auth-client'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 
 const searchSchema = z.object({
   callback: z.string().optional(),
@@ -69,7 +72,7 @@ function LoginPage() {
 
   return (
     <main className="auth-page">
-      <section className="auth-card">
+      <Card className="auth-card">
         <div className="auth-brand">
           <Box size={19} /> Otterware
         </div>
@@ -82,8 +85,9 @@ function LoginPage() {
           </p>
         </div>
         {config?.googleEnabled && (
-          <button
-            className="google-button"
+          <Button
+            variant="outline"
+            className="w-full"
             type="button"
             onClick={() =>
               void authClient.signIn.social({
@@ -93,7 +97,7 @@ function LoginPage() {
             }
           >
             Continue with Google
-          </button>
+          </Button>
         )}
         {config?.passwordEnabled && (
           <>
@@ -106,7 +110,7 @@ function LoginPage() {
               {signingUp && (
                 <label>
                   Name
-                  <input
+                  <Input
                     required
                     value={name}
                     onChange={(event) => setName(event.target.value)}
@@ -115,7 +119,7 @@ function LoginPage() {
               )}
               <label>
                 Email
-                <input
+                <Input
                   required
                   type="email"
                   value={email}
@@ -124,7 +128,7 @@ function LoginPage() {
               </label>
               <label>
                 Password
-                <input
+                <Input
                   required
                   minLength={8}
                   type="password"
@@ -133,9 +137,9 @@ function LoginPage() {
                 />
               </label>
               {error && <p className="form-error">{error}</p>}
-              <button className="primary-button wide" type="submit">
+              <Button className="w-full" type="submit">
                 {signingUp ? 'Create account' : 'Sign in'}
-              </button>
+              </Button>
             </form>
           </>
         )}
@@ -145,7 +149,7 @@ function LoginPage() {
           </div>
         )}
         {error && !config && <p className="form-error">{error}</p>}
-      </section>
+      </Card>
     </main>
   )
 }
