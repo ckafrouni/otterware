@@ -821,6 +821,16 @@ select:focus {
   border-color: #a8b9e8;
   background: #f5f7ff;
 }
+.settings-subsection {
+  display: grid;
+  gap: 7px;
+  margin-top: 16px;
+}
+.settings-subsection > label {
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 600;
+}
 .inline-form {
   display: flex;
   gap: 8px;
