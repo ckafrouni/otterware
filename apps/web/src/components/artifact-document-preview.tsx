@@ -2,17 +2,18 @@ import { useEffect, useMemo, useState } from 'react'
 import Papa from 'papaparse'
 import ReactMarkdown, { defaultUrlTransform } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import readXlsxFile, {
-  type CellValue,
-  type Sheet,
-} from 'read-excel-file/browser'
 import { FileSpreadsheet, LoaderCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 const MAX_ROWS = 2_000
 const MAX_COLUMNS = 100
 
-type GridValue = CellValue | null | undefined
+type GridValue = unknown
+
+interface DocumentSheet {
+  sheet: string
+  data: GridValue[][]
+}
 
 interface ArtifactDocumentPreviewProps {
   contentType: string
@@ -113,7 +114,7 @@ export function ArtifactDocumentPreview({
   version,
 }: ArtifactDocumentPreviewProps) {
   const [markdown, setMarkdown] = useState<string | null>(null)
-  const [sheets, setSheets] = useState<Sheet[]>([])
+  const [sheets, setSheets] = useState<DocumentSheet[]>([])
   const [activeSheet, setActiveSheet] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const normalizedType = contentType.split(';')[0]?.trim().toLowerCase() ?? ''
@@ -162,9 +163,22 @@ export function ArtifactDocumentPreview({
         })
     } else if (workbook) {
       loadContent(slug, version, 'arrayBuffer')
-        .then((value) => readXlsxFile(value as ArrayBuffer))
-        .then((value) => {
-          if (active) setSheets(value)
+        .then(async (value) => {
+          if (!active) return
+          const XLSX = await import('@e965/xlsx')
+          const parsed = XLSX.read(value as ArrayBuffer, {
+            type: 'array',
+            cellDates: true,
+          })
+          setSheets(
+            parsed.SheetNames.map((sheet) => ({
+              sheet,
+              data: XLSX.utils.sheet_to_json<GridValue[]>(
+                parsed.Sheets[sheet]!,
+                { header: 1, defval: null, raw: false },
+              ),
+            })),
+          )
         })
         .catch((reason: unknown) => {
           if (active)
