@@ -585,8 +585,10 @@ button:disabled {
 }
 
 .viewer-shell {
+  width: 100%;
   height: 100vh;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: 34px 1fr;
   overflow: hidden;
 }
