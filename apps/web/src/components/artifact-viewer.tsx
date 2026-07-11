@@ -8,6 +8,7 @@ import {
   type ArtifactVersion,
 } from '@otterware/contracts'
 import { api, formatDate } from '#/lib/api'
+import { useOrganizations } from '@/hooks/use-organizations'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -37,6 +38,7 @@ export function ArtifactViewer({
   const [versions, setVersions] = useState<ArtifactVersion[]>([])
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const { organizations } = useOrganizations()
 
   const selected = useMemo(
     () =>
@@ -45,6 +47,9 @@ export function ArtifactViewer({
       artifact?.currentVersion ??
       null,
     [artifact, version, versions],
+  )
+  const artifactOrganization = organizations.find(
+    (organization) => organization.id === artifact?.organizationId,
   )
 
   useEffect(() => {
@@ -139,9 +144,9 @@ export function ArtifactViewer({
             )}
             {artifact && (
               <span className="viewer-byline">
-                {artifact.visibility === 'private'
-                  ? 'Private artifact'
-                  : 'Organization artifact'}
+                <strong>{artifactOrganization?.name ?? 'Team'}</strong>
+                <span aria-hidden="true">·</span>
+                {artifact.visibility === 'private' ? 'Private' : 'Shared'}
               </span>
             )}
             {selected && versions.length > 1 && (
