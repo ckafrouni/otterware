@@ -651,6 +651,14 @@ button:disabled {
   grid-column: 2;
   color: var(--ink-muted);
 }
+
+.artifact-actions-menu {
+  min-width: 190px;
+}
+
+.artifact-actions-menu [data-slot='dropdown-menu-item'] {
+  white-space: nowrap;
+}
 .share-button {
   min-height: 27px;
   padding: 0 10px;
