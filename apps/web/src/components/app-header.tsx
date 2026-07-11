@@ -90,10 +90,12 @@ export function AppHeader() {
           <ChevronDown size={13} />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="user-menu">
-          <DropdownMenuLabel className="user-menu-identity">
-            <strong>{session.data?.user.name}</strong>
-            <small>{session.data?.user.email}</small>
-          </DropdownMenuLabel>
+          <DropdownMenuGroup>
+            <DropdownMenuLabel className="user-menu-identity">
+              <strong>{session.data?.user.name}</strong>
+              <small>{session.data?.user.email}</small>
+            </DropdownMenuLabel>
+          </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem render={<Link to="/settings" />}>
             <Settings size={14} /> Settings
