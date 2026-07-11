@@ -14,11 +14,17 @@ export function useOrganizations() {
   useEffect(() => {
     if (!session.data) return
     let active = true
-    authClient.organization.list().then((result) => {
-      if (active) setOrganizations((result.data ?? []) as OrganizationSummary[])
-    })
+    const refresh = () => {
+      authClient.organization.list().then((result) => {
+        if (active)
+          setOrganizations((result.data ?? []) as OrganizationSummary[])
+      })
+    }
+    refresh()
+    window.addEventListener('otterware:organizations-changed', refresh)
     return () => {
       active = false
+      window.removeEventListener('otterware:organizations-changed', refresh)
     }
   }, [session.data])
 

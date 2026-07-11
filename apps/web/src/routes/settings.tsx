@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import { Check, Copy, KeyRound, Plus, Users } from 'lucide-react'
+import { Check, Copy, KeyRound, Pencil, Plus, Users } from 'lucide-react'
 import { authClient } from '#/lib/auth-client'
 import { AppHeader } from '#/components/app-header'
 import { AuthGate } from '#/components/auth-gate'
+import { useCurrentActor } from '@/hooks/use-current-actor'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -27,15 +28,23 @@ function SettingsPage() {
   const session = authClient.useSession()
   const [organizations, setOrganizations] = useState<Organization[]>([])
   const [orgName, setOrgName] = useState('')
+  const [teamName, setTeamName] = useState('')
   const [inviteEmail, setInviteEmail] = useState('')
   const [inviteRole, setInviteRole] = useState('viewer')
   const [inviteLink, setInviteLink] = useState<string | null>(null)
   const [keyName, setKeyName] = useState('Agent')
   const [createdKey, setCreatedKey] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
+  const { roles } = useCurrentActor()
 
   const activeOrganizationId =
     session.data?.session.activeOrganizationId ?? organizations[0]?.id
+  const activeOrganization = organizations.find(
+    (organization) => organization.id === activeOrganizationId,
+  )
+  const canManageOrganization = roles.some((role) =>
+    ['owner', 'admin'].includes(role),
+  )
 
   async function refreshOrganizations() {
     const result = await authClient.organization.list()
@@ -45,6 +54,10 @@ function SettingsPage() {
   useEffect(() => {
     void refreshOrganizations()
   }, [])
+
+  useEffect(() => {
+    setTeamName(activeOrganization?.name ?? '')
+  }, [activeOrganization?.id, activeOrganization?.name])
 
   async function createOrganization(event: React.FormEvent) {
     event.preventDefault()
@@ -67,6 +80,23 @@ function SettingsPage() {
     await authClient.organization.setActive({ organizationId })
     await session.refetch()
     setMessage('Active organization changed.')
+  }
+
+  async function renameOrganization(event: React.FormEvent) {
+    event.preventDefault()
+    const name = teamName.trim()
+    if (!activeOrganizationId || !name || !canManageOrganization) return
+    const result = await authClient.organization.update({
+      organizationId: activeOrganizationId,
+      data: { name },
+    })
+    if (result.error) {
+      setMessage(result.error.message ?? 'Could not rename the team.')
+      return
+    }
+    setMessage('Team renamed.')
+    await refreshOrganizations()
+    window.dispatchEvent(new Event('otterware:organizations-changed'))
   }
 
   async function invite(event: React.FormEvent) {
@@ -141,17 +171,45 @@ function SettingsPage() {
                   </Button>
                 ))}
               </div>
-              <form className="inline-form" onSubmit={createOrganization}>
-                <Input
-                  required
-                  placeholder="New organization"
-                  value={orgName}
-                  onChange={(event) => setOrgName(event.target.value)}
-                />
-                <Button variant="outline" type="submit">
-                  <Plus size={14} /> Create
-                </Button>
-              </form>
+              {canManageOrganization && activeOrganization && (
+                <div className="settings-subsection">
+                  <label htmlFor="team-name">Team name</label>
+                  <form className="inline-form" onSubmit={renameOrganization}>
+                    <Input
+                      id="team-name"
+                      required
+                      maxLength={80}
+                      value={teamName}
+                      onChange={(event) => setTeamName(event.target.value)}
+                    />
+                    <Button
+                      variant="outline"
+                      type="submit"
+                      disabled={
+                        !teamName.trim() ||
+                        teamName.trim() === activeOrganization.name
+                      }
+                    >
+                      <Pencil size={14} /> Rename
+                    </Button>
+                  </form>
+                </div>
+              )}
+              <div className="settings-subsection">
+                <label htmlFor="new-organization">New team</label>
+                <form className="inline-form" onSubmit={createOrganization}>
+                  <Input
+                    id="new-organization"
+                    required
+                    placeholder="New organization"
+                    value={orgName}
+                    onChange={(event) => setOrgName(event.target.value)}
+                  />
+                  <Button variant="outline" type="submit">
+                    <Plus size={14} /> Create
+                  </Button>
+                </form>
+              </div>
             </Card>
 
             <Card className="settings-card">
