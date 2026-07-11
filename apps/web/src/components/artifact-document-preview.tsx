@@ -243,30 +243,31 @@ export function ArtifactDocumentPreview({
           <span>
             <FileSpreadsheet size={15} /> {entryPath}
           </span>
-          {sheets.length > 1 && (
-            <div
-              className="workbook-tabs"
-              role="tablist"
-              aria-label="Workbook sheets"
-            >
-              {sheets.map((sheet, index) => (
-                <Button
-                  key={sheet.sheet}
-                  size="xs"
-                  variant={activeSheet === index ? 'secondary' : 'ghost'}
-                  role="tab"
-                  aria-selected={activeSheet === index}
-                  onClick={() =>
-                    onSheetChange?.(index === 0 ? undefined : sheet.sheet)
-                  }
-                >
-                  {sheet.sheet}
-                </Button>
-              ))}
-            </div>
-          )}
         </div>
         <SpreadsheetGrid rows={selectedSheet.data} />
+        <div className="workbook-footer">
+          <div
+            className="workbook-tabs"
+            role="tablist"
+            aria-label="Workbook sheets"
+          >
+            {sheets.map((sheet, index) => (
+              <Button
+                key={sheet.sheet}
+                size="sm"
+                variant="ghost"
+                role="tab"
+                aria-selected={activeSheet === index}
+                className={activeSheet === index ? 'active' : ''}
+                onClick={() =>
+                  onSheetChange?.(index === 0 ? undefined : sheet.sheet)
+                }
+              >
+                {sheet.sheet}
+              </Button>
+            ))}
+          </div>
+        </div>
       </div>
     )
   }

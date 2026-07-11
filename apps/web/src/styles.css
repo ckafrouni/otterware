@@ -787,7 +787,8 @@ button:disabled {
 }
 
 .workbook-toolbar > span,
-.workbook-tabs {
+.workbook-tabs,
+.workbook-footer {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -800,7 +801,39 @@ button:disabled {
 }
 
 .workbook-tabs {
+  min-width: 0;
   overflow-x: auto;
+}
+
+.workbook-footer {
+  min-height: 38px;
+  flex: none;
+  border-top: 1px solid #dadce0;
+  background: #f8f9fa;
+  padding: 0 8px;
+}
+
+.workbook-tabs [role='tab'] {
+  position: relative;
+  min-width: max-content;
+  border-radius: 0;
+  color: #5f6368;
+  font-weight: 550;
+}
+
+.workbook-tabs [role='tab'].active {
+  color: #1967d2;
+}
+
+.workbook-tabs [role='tab'].active::after {
+  position: absolute;
+  right: 8px;
+  bottom: 0;
+  left: 8px;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: #1a73e8;
+  content: '';
 }
 
 .spreadsheet-shell,

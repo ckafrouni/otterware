@@ -106,7 +106,8 @@ describe('ArtifactDocumentPreview', () => {
       />,
     )
 
-    expect(await screen.findByRole('tab', { name: 'Summary' })).not.toBeNull()
+    const summaryTab = await screen.findByRole('tab', { name: 'Summary' })
+    expect(summaryTab.closest('.workbook-footer')).not.toBeNull()
     expect(screen.getByRole('tab', { name: 'Metrics' })).not.toBeNull()
     expect(screen.getByText('XLSX preview')).not.toBeNull()
 
