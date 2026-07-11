@@ -8,6 +8,7 @@ import {
   createArtifact,
   createUpload,
   deleteDraft,
+  downloadArtifact,
   listArtifacts,
   listFiles,
   listVersions,
@@ -89,6 +90,8 @@ async function handler({ request }: { request: Request }): Promise<Response> {
         return listFiles(request, env, actor, reference)
       } else if (segments[2] === 'content' && request.method === 'GET') {
         return readContent(request, env, actor, reference)
+      } else if (segments[2] === 'download' && request.method === 'GET') {
+        return downloadArtifact(request, env, actor, reference)
       } else if (segments[2] === 'preview' && request.method === 'GET') {
         return previewArtifact(request, env, actor, reference)
       } else if (segments[2] === 'thumbnail' && request.method === 'POST') {

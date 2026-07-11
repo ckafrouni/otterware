@@ -13,6 +13,7 @@ import {
   type ArtifactVersion,
   type CreateUploadInput,
 } from '@otterware/contracts'
+import { Zip, ZipPassThrough } from 'fflate'
 import { waitUntil } from 'cloudflare:workers'
 import {
   assertCanPermanentlyDelete,
@@ -691,6 +692,72 @@ export async function readContent(
   headers.set('cache-control', 'private, no-store')
   headers.set('x-content-type-options', 'nosniff')
   return new Response(object.body, { headers })
+}
+
+export async function downloadArtifact(
+  request: Request,
+  env: Env,
+  actor: AuthenticatedActor,
+  reference: string,
+): Promise<Response> {
+  const artifact = await artifactRow(env, actor, reference)
+  const version = await selectedVersion(request, env, artifact)
+  const files = await env.DB.prepare(
+    'SELECT * FROM artifact_file WHERE version_id = ? ORDER BY path',
+  )
+    .bind(version.id)
+    .all<FileRow>()
+  let archive: Zip | null = null
+  const body = new ReadableStream<Uint8Array>({
+    start(controller) {
+      archive = new Zip((error, chunk, final) => {
+        if (error) {
+          controller.error(error)
+          return
+        }
+        if (chunk?.length) controller.enqueue(chunk)
+        if (final) controller.close()
+      })
+      void (async () => {
+        try {
+          for (const file of files.results) {
+            const object = await env.ARTIFACTS.get(file.r2_key)
+            if (!object) {
+              throw new HttpError(
+                404,
+                'file_not_found',
+                `Artifact file body not found: ${file.path}`,
+              )
+            }
+            const member = new ZipPassThrough(file.path)
+            archive!.add(member)
+            const reader = object.body.getReader()
+            while (true) {
+              const { done, value } = await reader.read()
+              if (done) break
+              member.push(value)
+            }
+            member.push(new Uint8Array(), true)
+          }
+          archive!.end()
+        } catch (error) {
+          archive?.terminate()
+          controller.error(error)
+        }
+      })()
+    },
+    cancel() {
+      archive?.terminate()
+    },
+  })
+  return new Response(body, {
+    headers: {
+      'content-type': 'application/zip',
+      'content-disposition': `attachment; filename="${artifact.slug}-v${version.number}.zip"`,
+      'cache-control': 'private, no-store',
+      'x-content-type-options': 'nosniff',
+    },
+  })
 }
 
 export async function previewArtifact(

@@ -1,4 +1,7 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { ArtifactListPage } from '#/components/artifact-list'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
-export const Route = createFileRoute('/l')({ component: ArtifactListPage })
+export const Route = createFileRoute('/l')({
+  beforeLoad: () => {
+    throw redirect({ to: '/artifacts', search: { view: 'list' } })
+  },
+})

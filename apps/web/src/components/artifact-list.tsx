@@ -4,6 +4,7 @@ import {
   Archive,
   ArrowDownAZ,
   Copy,
+  Download,
   ExternalLink,
   Grid2X2,
   List as ListIcon,
@@ -47,19 +48,35 @@ import { AppHeader } from './app-header'
 import { AuthGate } from './auth-gate'
 import { DeleteArtifactDialog } from './delete-artifact-dialog'
 
-export function ArtifactListPage() {
+export interface ArtifactListSearch {
+  q?: string | undefined
+  sort?: 'updated' | 'az' | 'za' | undefined
+  status?: 'active' | 'archived' | undefined
+  view?: 'grid' | 'list' | undefined
+}
+
+export function ArtifactListPage({
+  search,
+  onSearchChange,
+}: {
+  search: ArtifactListSearch
+  onSearchChange: (
+    update: Partial<ArtifactListSearch>,
+    options?: { replace?: boolean },
+  ) => void
+}) {
   const [artifacts, setArtifacts] = useState<Artifact[]>([])
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
-  const [query, setQuery] = useState('')
-  const [sort, setSort] = useState<'updated' | 'az' | 'za'>('updated')
-  const [view, setView] = useState<'grid' | 'list'>('grid')
-  const [status, setStatus] = useState<'active' | 'archived'>('active')
   const [changingId, setChangingId] = useState<string | null>(null)
   const [deletingArtifact, setDeletingArtifact] = useState<Artifact | null>(
     null,
   )
   const { isOwner } = useCurrentActor()
+  const query = search.q ?? ''
+  const sort = search.sort ?? 'updated'
+  const view = search.view ?? 'grid'
+  const status = search.status ?? 'active'
 
   useEffect(() => {
     setLoading(true)
@@ -72,11 +89,6 @@ export function ArtifactListPage() {
       .catch((reason: Error) => setError(reason.message))
       .finally(() => setLoading(false))
   }, [status])
-
-  useEffect(() => {
-    const saved = localStorage.getItem('otterware-artifact-view')
-    if (saved === 'grid' || saved === 'list') setView(saved)
-  }, [])
 
   const visibleArtifacts = useMemo(() => {
     const normalized = query.trim().toLowerCase()
@@ -125,11 +137,6 @@ export function ArtifactListPage() {
     }
   }
 
-  function chooseView(next: 'grid' | 'list') {
-    setView(next)
-    localStorage.setItem('otterware-artifact-view', next)
-  }
-
   return (
     <AuthGate>
       <div className="app-shell">
@@ -150,13 +157,20 @@ export function ArtifactListPage() {
                   type="search"
                   placeholder="Search artifacts"
                   value={query}
-                  onChange={(event) => setQuery(event.target.value)}
+                  onChange={(event) =>
+                    onSearchChange(
+                      { q: event.target.value || undefined },
+                      { replace: true },
+                    )
+                  }
                 />
               </label>
               <Select
                 value={status}
                 onValueChange={(value) =>
-                  setStatus(value as 'active' | 'archived')
+                  onSearchChange({
+                    status: value === 'archived' ? 'archived' : undefined,
+                  })
                 }
               >
                 <SelectTrigger className="artifact-status-trigger">
@@ -175,7 +189,9 @@ export function ArtifactListPage() {
               <Select
                 value={sort}
                 onValueChange={(value) =>
-                  setSort(value as 'updated' | 'az' | 'za')
+                  onSearchChange({
+                    sort: value === 'az' || value === 'za' ? value : undefined,
+                  })
                 }
               >
                 <SelectTrigger className="artifact-sort-trigger">
@@ -192,7 +208,11 @@ export function ArtifactListPage() {
                 value={[view]}
                 onValueChange={(values) => {
                   const next = values[0]
-                  if (next === 'grid' || next === 'list') chooseView(next)
+                  if (next === 'grid' || next === 'list') {
+                    onSearchChange({
+                      view: next === 'list' ? 'list' : undefined,
+                    })
+                  }
                 }}
                 variant="outline"
                 spacing={0}
@@ -369,6 +389,18 @@ export function ArtifactListPage() {
                           <MoreHorizontal size={14} />
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            render={
+                              <a
+                                href={`/api/v1/artifacts/${encodeURIComponent(artifact.id)}/download`}
+                                download
+                                onClick={(event) => event.stopPropagation()}
+                              />
+                            }
+                          >
+                            <Download size={14} /> Download
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
                           <DropdownMenuItem
                             variant={
                               artifact.archivedAt ? 'default' : 'destructive'
