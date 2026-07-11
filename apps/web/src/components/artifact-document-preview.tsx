@@ -7,9 +7,7 @@ const UniverEditor = lazy(
   import.meta.env.SSR
     ? async () => ({
         default: () => (
-          <div className="viewer-message document-loading">
-            Loading editor…
-          </div>
+          <div className="viewer-message document-loading">Loading editor…</div>
         ),
       })
     : () =>
@@ -36,6 +34,7 @@ interface ArtifactDocumentPreviewProps {
   entryPath: string
   expectedCurrentVersion?: number | undefined
   onSheetChange?: ((sheet: string | undefined) => void) | undefined
+  organizationSlug: string
   selectedSheet?: string | undefined
   slug: string
   version: number
@@ -65,6 +64,7 @@ export function ArtifactDocumentPreview({
   entryPath,
   expectedCurrentVersion,
   onSheetChange,
+  organizationSlug,
   selectedSheet: selectedSheetName,
   slug,
   version,
@@ -158,11 +158,14 @@ export function ArtifactDocumentPreview({
   if (error) return <div className="viewer-message error-panel">{error}</div>
   if (markdownDocument && markdown !== null) {
     return (
-      <Suspense fallback={<div className="viewer-message">Loading editor…</div>}>
+      <Suspense
+        fallback={<div className="viewer-message">Loading editor…</div>}
+      >
         <UniverEditor
           entryPath={entryPath}
           expectedCurrentVersion={expectedCurrentVersion ?? version}
           kind="document"
+          organizationSlug={organizationSlug}
           slug={slug}
           text={markdown}
         />
@@ -171,11 +174,14 @@ export function ArtifactDocumentPreview({
   }
   if ((csvDocument || workbook) && sheets.length) {
     return (
-      <Suspense fallback={<div className="viewer-message">Loading editor…</div>}>
+      <Suspense
+        fallback={<div className="viewer-message">Loading editor…</div>}
+      >
         <UniverEditor
           entryPath={entryPath}
           expectedCurrentVersion={expectedCurrentVersion ?? version}
           kind="spreadsheet"
+          organizationSlug={organizationSlug}
           onSheetChange={onSheetChange}
           selectedSheet={selectedSheetName}
           sheets={sheets}

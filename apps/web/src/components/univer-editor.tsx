@@ -25,6 +25,7 @@ interface EditorProps {
   entryPath: string
   expectedCurrentVersion: number
   kind: 'document' | 'spreadsheet'
+  organizationSlug: string
   onSheetChange?: ((sheet: string | undefined) => void) | undefined
   selectedSheet?: string | undefined
   sheets?: UniverSheet[] | undefined
@@ -121,8 +122,7 @@ async function spreadsheetBlob(
     if (!sheet) continue
     const rows: GridValue[][] = []
     const data = sheet.cellData as
-      | Record<number, Record<number, ICellData>>
-      | undefined
+      Record<number, Record<number, ICellData>> | undefined
     for (const [rowIndex, columns] of Object.entries(data ?? {})) {
       const row = (rows[Number(rowIndex)] ??= [])
       for (const [columnIndex, cell] of Object.entries(columns)) {
@@ -139,7 +139,11 @@ async function spreadsheetBlob(
   if (extension === 'csv' || extension === 'tsv') {
     const first = workbook.Sheets[workbook.SheetNames[0]!]
     return new Blob(
-      [XLSX.utils.sheet_to_csv(first!, { FS: extension === 'tsv' ? '\t' : ',' })],
+      [
+        XLSX.utils.sheet_to_csv(first!, {
+          FS: extension === 'tsv' ? '\t' : ',',
+        }),
+      ],
       { type: extension === 'tsv' ? 'text/tab-separated-values' : 'text/csv' },
     )
   }
@@ -185,9 +189,11 @@ async function publishVersion(input: {
     }),
   })
   const remote = session.data.files[0]
-  if (!remote) throw new Error('The upload session did not include the edited file.')
+  if (!remote)
+    throw new Error('The upload session did not include the edited file.')
   if (remote.multipart) {
-    if (!remote.partSize) throw new Error('The upload session omitted its part size.')
+    if (!remote.partSize)
+      throw new Error('The upload session omitted its part size.')
     const parts: Array<{ partNumber: number; etag: string }> = []
     const count = Math.ceil(input.blob.size / remote.partSize)
     for (let partNumber = 1; partNumber <= count; partNumber += 1) {
@@ -249,12 +255,15 @@ export function UniverEditor(props: EditorProps) {
     let cleanup: (() => void) | undefined
     async function mount() {
       if (!container.current) return
-      const [{ createUniver, LocaleType, mergeLocales }, sheetPreset, docsPreset] =
-        await Promise.all([
-          import('@univerjs/presets'),
-          import('@univerjs/preset-sheets-core'),
-          import('@univerjs/preset-docs-core'),
-        ])
+      const [
+        { createUniver, LocaleType, mergeLocales },
+        sheetPreset,
+        docsPreset,
+      ] = await Promise.all([
+        import('@univerjs/presets'),
+        import('@univerjs/preset-sheets-core'),
+        import('@univerjs/preset-docs-core'),
+      ])
       const [sheetsLocale, docsLocale] = await Promise.all([
         import('@univerjs/preset-sheets-core/locales/en-US'),
         import('@univerjs/preset-docs-core/locales/en-US'),
@@ -276,7 +285,8 @@ export function UniverEditor(props: EditorProps) {
         const workbook = univerAPI.createWorkbook(
           workbookData(props.entryPath, props.sheets ?? []),
         )
-        if (props.selectedSheet) workbook.getSheetByName(props.selectedSheet)?.activate()
+        if (props.selectedSheet)
+          workbook.getSheetByName(props.selectedSheet)?.activate()
         const sheetEvent = univerAPI.addEvent(
           univerAPI.Event.ActiveSheetChanged,
           ({ activeSheet }) => {
@@ -356,7 +366,10 @@ export function UniverEditor(props: EditorProps) {
       setDirty(false)
       toast.success(`Published version ${nextVersion}.`)
       window.setTimeout(
-        () => location.assign(`/a/${encodeURIComponent(props.slug)}/${nextVersion}`),
+        () =>
+          location.assign(
+            `/${encodeURIComponent(props.organizationSlug)}/a/${encodeURIComponent(props.slug)}/v${nextVersion}`,
+          ),
         0,
       )
     } catch (reason) {
@@ -370,7 +383,11 @@ export function UniverEditor(props: EditorProps) {
     <div className="univer-editor-shell">
       <div className="univer-editor-actions">
         <span>{dirty ? 'Unsaved changes' : 'Current version'}</span>
-        <Button size="sm" disabled={!dirty || saving} onClick={() => void save()}>
+        <Button
+          size="sm"
+          disabled={!dirty || saving}
+          onClick={() => void save()}
+        >
           <Save size={14} /> {saving ? 'Saving…' : 'Save new version'}
         </Button>
       </div>

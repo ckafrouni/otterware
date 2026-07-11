@@ -1,6 +1,6 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Navigate } from '@tanstack/react-router'
 import { z } from 'zod'
-import { ArtifactViewer } from '#/components/artifact-viewer'
+import { useOrganizations } from '#/hooks/use-organizations'
 
 export const Route = createFileRoute('/a/$slug_/$version')({
   validateSearch: z.object({
@@ -12,19 +12,15 @@ export const Route = createFileRoute('/a/$slug_/$version')({
 function VersionRoute() {
   const { slug, version } = Route.useParams()
   const { sheet } = Route.useSearch()
-  const navigate = Route.useNavigate()
-  const number = Number(version.replace(/^v/, ''))
+  const { activeOrganization, loaded } = useOrganizations()
+  if (!loaded || !activeOrganization)
+    return <div className="viewer-message">Opening artifact…</div>
   return (
-    <ArtifactViewer
-      key={`${slug}:v${number}`}
-      slug={slug}
-      {...(sheet ? { sheet } : {})}
-      onSheetChange={(nextSheet) =>
-        void navigate({
-          search: nextSheet ? { sheet: nextSheet } : {},
-        })
-      }
-      {...(Number.isInteger(number) ? { version: number } : {})}
+    <Navigate
+      to="/$organizationSlug/a/$slug/$version"
+      params={{ organizationSlug: activeOrganization.slug, slug, version }}
+      search={sheet ? { sheet } : {}}
+      replace
     />
   )
 }

@@ -178,6 +178,7 @@ function mapArtifactRecord(
   env: Env,
   row: ArtifactRow,
   currentVersion: ArtifactVersion | null,
+  organizationSlug: string,
   thumbnailUrl?: string | null,
 ): Artifact {
   return {
@@ -193,7 +194,7 @@ function mapArtifactRecord(
     archivedAt: row.archived_at,
     currentVersion,
     versionCount: row.version_count,
-    url: new URL(`/a/${row.slug}/`, env.APP_URL).toString(),
+    url: new URL(`/${organizationSlug}/a/${row.slug}/`, env.APP_URL).toString(),
     ...(thumbnailUrl !== undefined ? { thumbnailUrl } : {}),
   }
 }
@@ -203,7 +204,24 @@ async function mapArtifact(env: Env, row: ArtifactRow): Promise<Artifact> {
     env,
     row,
     await versionById(env, row.current_version_id),
+    await organizationSlug(env, row.organization_id),
   )
+}
+
+async function organizationSlug(
+  env: Env,
+  organizationId: string,
+): Promise<string> {
+  const row = await env.DB.prepare('SELECT slug FROM organization WHERE id = ?')
+    .bind(organizationId)
+    .first<{ slug: string }>()
+  if (!row)
+    throw new HttpError(
+      404,
+      'organization_not_found',
+      'Organization not found.',
+    )
+  return row.slug
 }
 
 function joinedCurrentVersion(row: ArtifactListRow): ArtifactVersion | null {
@@ -322,6 +340,10 @@ export async function listArtifacts(
     .all<ArtifactListRow>()
   const hasMore = result.results.length > limit
   const rows = result.results.slice(0, limit)
+  const activeOrganizationSlug = await organizationSlug(
+    env,
+    actor.organizationId,
+  )
   const artifacts = await Promise.all(
     rows.map(async (row) => {
       const thumbnailUrl = row.cv_preview_r2_key
@@ -334,6 +356,7 @@ export async function listArtifacts(
         env,
         row,
         joinedCurrentVersion(row),
+        activeOrganizationSlug,
         thumbnailUrl,
       )
     }),

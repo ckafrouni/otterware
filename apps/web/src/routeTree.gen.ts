@@ -22,6 +22,8 @@ import { Route as RawSessionTokenRouteImport } from './routes/raw.session.$token
 import { Route as ApiV1SplatRouteImport } from './routes/api.v1.$'
 import { Route as ApiAuthSplatRouteImport } from './routes/api.auth.$'
 import { Route as ASlugVersionRouteImport } from './routes/a.$slug_.$version'
+import { Route as OrganizationSlugASlugRouteImport } from './routes/$organizationSlug.a.$slug'
+import { Route as OrganizationSlugASlugVersionRouteImport } from './routes/$organizationSlug.a.$slug_.$version'
 import { Route as RawAArtifactIdVersionIdSplatRouteImport } from './routes/raw.a.$artifactId.$versionId.$'
 
 const SettingsRoute = SettingsRouteImport.update({
@@ -89,6 +91,17 @@ const ASlugVersionRoute = ASlugVersionRouteImport.update({
   path: '/a/$slug/$version',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OrganizationSlugASlugRoute = OrganizationSlugASlugRouteImport.update({
+  id: '/$organizationSlug/a/$slug',
+  path: '/$organizationSlug/a/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OrganizationSlugASlugVersionRoute =
+  OrganizationSlugASlugVersionRouteImport.update({
+    id: '/$organizationSlug/a/$slug_/$version',
+    path: '/$organizationSlug/a/$slug/$version',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const RawAArtifactIdVersionIdSplatRoute =
   RawAArtifactIdVersionIdSplatRouteImport.update({
     id: '/raw/a/$artifactId/$versionId/$',
@@ -105,11 +118,13 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/a/$slug': typeof ASlugRoute
   '/invite/$invitationId': typeof InviteInvitationIdRoute
+  '/$organizationSlug/a/$slug': typeof OrganizationSlugASlugRoute
   '/a/$slug/$version': typeof ASlugVersionRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/v1/$': typeof ApiV1SplatRoute
   '/raw/session/$token': typeof RawSessionTokenRoute
   '/raw/thumbnail/$token': typeof RawThumbnailTokenRoute
+  '/$organizationSlug/a/$slug/$version': typeof OrganizationSlugASlugVersionRoute
   '/raw/a/$artifactId/$versionId/$': typeof RawAArtifactIdVersionIdSplatRoute
 }
 export interface FileRoutesByTo {
@@ -121,11 +136,13 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/a/$slug': typeof ASlugRoute
   '/invite/$invitationId': typeof InviteInvitationIdRoute
+  '/$organizationSlug/a/$slug': typeof OrganizationSlugASlugRoute
   '/a/$slug/$version': typeof ASlugVersionRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/v1/$': typeof ApiV1SplatRoute
   '/raw/session/$token': typeof RawSessionTokenRoute
   '/raw/thumbnail/$token': typeof RawThumbnailTokenRoute
+  '/$organizationSlug/a/$slug/$version': typeof OrganizationSlugASlugVersionRoute
   '/raw/a/$artifactId/$versionId/$': typeof RawAArtifactIdVersionIdSplatRoute
 }
 export interface FileRoutesById {
@@ -138,11 +155,13 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/a/$slug': typeof ASlugRoute
   '/invite/$invitationId': typeof InviteInvitationIdRoute
+  '/$organizationSlug/a/$slug': typeof OrganizationSlugASlugRoute
   '/a/$slug_/$version': typeof ASlugVersionRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/v1/$': typeof ApiV1SplatRoute
   '/raw/session/$token': typeof RawSessionTokenRoute
   '/raw/thumbnail/$token': typeof RawThumbnailTokenRoute
+  '/$organizationSlug/a/$slug_/$version': typeof OrganizationSlugASlugVersionRoute
   '/raw/a/$artifactId/$versionId/$': typeof RawAArtifactIdVersionIdSplatRoute
 }
 export interface FileRouteTypes {
@@ -156,11 +175,13 @@ export interface FileRouteTypes {
     | '/settings'
     | '/a/$slug'
     | '/invite/$invitationId'
+    | '/$organizationSlug/a/$slug'
     | '/a/$slug/$version'
     | '/api/auth/$'
     | '/api/v1/$'
     | '/raw/session/$token'
     | '/raw/thumbnail/$token'
+    | '/$organizationSlug/a/$slug/$version'
     | '/raw/a/$artifactId/$versionId/$'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -172,11 +193,13 @@ export interface FileRouteTypes {
     | '/settings'
     | '/a/$slug'
     | '/invite/$invitationId'
+    | '/$organizationSlug/a/$slug'
     | '/a/$slug/$version'
     | '/api/auth/$'
     | '/api/v1/$'
     | '/raw/session/$token'
     | '/raw/thumbnail/$token'
+    | '/$organizationSlug/a/$slug/$version'
     | '/raw/a/$artifactId/$versionId/$'
   id:
     | '__root__'
@@ -188,11 +211,13 @@ export interface FileRouteTypes {
     | '/settings'
     | '/a/$slug'
     | '/invite/$invitationId'
+    | '/$organizationSlug/a/$slug'
     | '/a/$slug_/$version'
     | '/api/auth/$'
     | '/api/v1/$'
     | '/raw/session/$token'
     | '/raw/thumbnail/$token'
+    | '/$organizationSlug/a/$slug_/$version'
     | '/raw/a/$artifactId/$versionId/$'
   fileRoutesById: FileRoutesById
 }
@@ -205,11 +230,13 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   ASlugRoute: typeof ASlugRoute
   InviteInvitationIdRoute: typeof InviteInvitationIdRoute
+  OrganizationSlugASlugRoute: typeof OrganizationSlugASlugRoute
   ASlugVersionRoute: typeof ASlugVersionRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiV1SplatRoute: typeof ApiV1SplatRoute
   RawSessionTokenRoute: typeof RawSessionTokenRoute
   RawThumbnailTokenRoute: typeof RawThumbnailTokenRoute
+  OrganizationSlugASlugVersionRoute: typeof OrganizationSlugASlugVersionRoute
   RawAArtifactIdVersionIdSplatRoute: typeof RawAArtifactIdVersionIdSplatRoute
 }
 
@@ -306,6 +333,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ASlugVersionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/$organizationSlug/a/$slug': {
+      id: '/$organizationSlug/a/$slug'
+      path: '/$organizationSlug/a/$slug'
+      fullPath: '/$organizationSlug/a/$slug'
+      preLoaderRoute: typeof OrganizationSlugASlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$organizationSlug/a/$slug_/$version': {
+      id: '/$organizationSlug/a/$slug_/$version'
+      path: '/$organizationSlug/a/$slug/$version'
+      fullPath: '/$organizationSlug/a/$slug/$version'
+      preLoaderRoute: typeof OrganizationSlugASlugVersionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/raw/a/$artifactId/$versionId/$': {
       id: '/raw/a/$artifactId/$versionId/$'
       path: '/raw/a/$artifactId/$versionId/$'
@@ -325,11 +366,13 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   ASlugRoute: ASlugRoute,
   InviteInvitationIdRoute: InviteInvitationIdRoute,
+  OrganizationSlugASlugRoute: OrganizationSlugASlugRoute,
   ASlugVersionRoute: ASlugVersionRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiV1SplatRoute: ApiV1SplatRoute,
   RawSessionTokenRoute: RawSessionTokenRoute,
   RawThumbnailTokenRoute: RawThumbnailTokenRoute,
+  OrganizationSlugASlugVersionRoute: OrganizationSlugASlugVersionRoute,
   RawAArtifactIdVersionIdSplatRoute: RawAArtifactIdVersionIdSplatRoute,
 }
 export const routeTree = rootRouteImport

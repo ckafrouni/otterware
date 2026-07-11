@@ -24,6 +24,7 @@ import {
 } from '@otterware/contracts'
 import { api, formatDate } from '#/lib/api'
 import { useCurrentActor } from '@/hooks/use-current-actor'
+import { useOrganizations } from '@/hooks/use-organizations'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -73,6 +74,7 @@ export function ArtifactListPage({
     null,
   )
   const { isOwner } = useCurrentActor()
+  const { activeOrganization } = useOrganizations()
   const query = search.q ?? ''
   const sort = search.sort ?? 'updated'
   const view = search.view ?? 'grid'
@@ -324,8 +326,11 @@ export function ArtifactListPage({
             {visibleArtifacts.map((artifact) => (
               <Link
                 key={artifact.id}
-                to="/a/$slug"
-                params={{ slug: artifact.slug }}
+                to="/$organizationSlug/a/$slug"
+                params={{
+                  organizationSlug: activeOrganization?.slug ?? 'team',
+                  slug: artifact.slug,
+                }}
                 className="artifact-card-link"
               >
                 <Card

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { authClient } from '#/lib/auth-client'
 
 export interface OrganizationSummary {
@@ -10,14 +10,17 @@ export interface OrganizationSummary {
 export function useOrganizations() {
   const session = authClient.useSession()
   const [organizations, setOrganizations] = useState<OrganizationSummary[]>([])
+  const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
     if (!session.data) return
     let active = true
     const refresh = () => {
       authClient.organization.list().then((result) => {
-        if (active)
+        if (active) {
           setOrganizations((result.data ?? []) as OrganizationSummary[])
+          setLoaded(true)
+        }
       })
     }
     refresh()
@@ -37,13 +40,16 @@ export function useOrganizations() {
     )
   }, [organizations, session.data?.session.activeOrganizationId])
 
-  async function selectOrganization(organizationId: string) {
-    if (organizationId === activeOrganization?.id) return
-    const result = await authClient.organization.setActive({ organizationId })
-    if (result.error) throw new Error(result.error.message)
-    await session.refetch()
-    location.reload()
-  }
+  const selectOrganization = useCallback(
+    async (organizationId: string) => {
+      if (organizationId === activeOrganization?.id) return
+      const result = await authClient.organization.setActive({ organizationId })
+      if (result.error) throw new Error(result.error.message)
+      await session.refetch()
+      location.reload()
+    },
+    [activeOrganization?.id, session],
+  )
 
-  return { activeOrganization, organizations, selectOrganization }
+  return { activeOrganization, loaded, organizations, selectOrganization }
 }

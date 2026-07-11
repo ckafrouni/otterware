@@ -55,6 +55,7 @@ describe('ArtifactDocumentPreview', () => {
       <ArtifactDocumentPreview
         contentType="text/csv"
         entryPath="report.csv"
+        organizationSlug="chris"
         slug="report"
         version={1}
       />,
@@ -83,6 +84,7 @@ describe('ArtifactDocumentPreview', () => {
       <ArtifactDocumentPreview
         contentType="text/markdown"
         entryPath="README.md"
+        organizationSlug="chris"
         slug="roadmap"
         version={2}
       />,
@@ -112,6 +114,7 @@ describe('ArtifactDocumentPreview', () => {
       <ArtifactDocumentPreview
         contentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         entryPath="report.xlsx"
+        organizationSlug="chris"
         onSheetChange={onSheetChange}
         slug="workbook"
         version={1}
