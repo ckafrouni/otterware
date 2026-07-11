@@ -804,85 +804,101 @@ select:focus {
   background: #f3fbf6;
 }
 
-.settings-grid {
+.settings-layout {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  grid-template-columns: 170px minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
 }
-.settings-card {
-  padding: 18px;
-  background: var(--surface);
+.settings-nav {
+  position: sticky;
+  top: 70px;
+  display: grid;
+  gap: 3px;
+}
+.settings-nav a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 9px;
+  border-radius: 7px;
+  color: var(--ink-soft);
+  text-decoration: none;
+  font-size: 13px;
+}
+.settings-nav a:hover {
+  color: var(--ink);
+  background: var(--muted);
+}
+.settings-content {
+  min-width: 0;
+  display: grid;
+  gap: 14px;
+}
+.settings-panel {
+  scroll-margin-top: 68px;
+  overflow: hidden;
+  gap: 0;
+  padding: 0;
   border: 1px solid var(--line);
   border-radius: 12px;
-}
-.wide-card {
-  grid-column: 1 / -1;
-}
-.settings-card-heading {
-  align-items: center;
-  display: flex;
-  gap: 10px;
-  margin-bottom: 16px;
-}
-.settings-card-icon {
-  width: 30px;
-  height: 30px;
-  display: grid;
-  flex: 0 0 auto;
-  place-items: center;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--surface-soft);
-  color: var(--ink-soft);
-}
-.settings-card h2 {
-  margin: 0 0 4px;
-  font-size: 16px;
-}
-.settings-card p {
-  margin: 0;
-  color: var(--ink-soft);
-  font-size: 12px;
-}
-.organization-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 6px;
-  margin-bottom: 4px;
-}
-.organization {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 9px 10px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
   background: var(--surface);
-  cursor: pointer;
+  box-shadow: none;
 }
-.organization.active {
-  border-color: #a8b9e8;
-  background: #f5f7ff;
+.settings-panel-heading {
+  padding: 17px 20px 15px;
+  border-bottom: 1px solid var(--line);
 }
-.settings-subsection {
+.settings-panel-heading h2 {
+  margin: 0 0 3px;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+}
+.settings-panel-heading p,
+.settings-help {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+.settings-panel-body {
+  display: grid;
+  gap: 18px;
+  padding: 20px;
+}
+.settings-field {
+  min-width: 0;
   display: grid;
   gap: 7px;
-  margin-top: 16px;
 }
-.team-settings-card .settings-subsection {
-  max-width: 560px;
-}
-.settings-subsection > label {
+.settings-field > label {
   color: var(--ink-soft);
   font-size: 12px;
   font-weight: 600;
 }
-.inline-form {
+.settings-control-row {
   display: flex;
   gap: 8px;
 }
-.inline-form input {
+.settings-control-row input {
   flex: 1;
+}
+.settings-control-row [data-slot='button'],
+.invite-form > [data-slot='button'] {
+  min-height: 38px;
+}
+.settings-field-separated {
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+.invite-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 150px auto;
+  gap: 8px;
+  align-items: end;
+}
+.settings-help {
+  max-width: 620px;
 }
 .notice {
   margin-bottom: 16px;
@@ -944,11 +960,17 @@ select:focus {
   .artifact-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .settings-grid {
+  .settings-layout {
     grid-template-columns: 1fr;
+    gap: 14px;
   }
-  .wide-card {
-    grid-column: auto;
+  .settings-nav {
+    position: static;
+    display: flex;
+    overflow-x: auto;
+  }
+  .settings-nav a {
+    flex: 0 0 auto;
   }
   .app-header {
     grid-template-columns: minmax(0, 1fr) auto;
@@ -1011,16 +1033,20 @@ select:focus {
   .viewer-byline {
     display: none;
   }
-  .settings-card {
-    padding: 17px;
-  }
   .settings-heading {
     align-items: flex-start;
     flex-direction: column;
     gap: 5px;
   }
-  .inline-form {
+  .settings-control-row,
+  .invite-form {
+    grid-template-columns: 1fr;
     flex-direction: column;
+  }
+  .settings-panel-heading,
+  .settings-panel-body {
+    padding-right: 16px;
+    padding-left: 16px;
   }
 }
 
