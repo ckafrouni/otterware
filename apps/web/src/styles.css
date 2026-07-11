@@ -470,7 +470,7 @@ button:disabled {
 .viewer-shell {
   height: 100vh;
   display: grid;
-  grid-template-rows: 42px 1fr;
+  grid-template-rows: 34px 1fr;
   overflow: hidden;
 }
 .viewer-header {
@@ -487,11 +487,6 @@ button:disabled {
   display: flex;
   align-items: center;
   gap: 7px;
-}
-.viewer-icon {
-  width: 27px;
-  height: 27px;
-  text-decoration: none;
 }
 .version-trigger {
   max-width: min(500px, 45vw);
