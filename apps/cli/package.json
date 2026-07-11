@@ -14,6 +14,9 @@
   "engines": {
     "node": "24.x"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "bin": {
     "otterware": "dist/index.mjs"
