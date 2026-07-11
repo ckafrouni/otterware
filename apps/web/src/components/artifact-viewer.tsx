@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from '@tanstack/react-router'
+import { toast } from 'sonner'
 import {
   Archive,
   ChevronDown,
@@ -99,7 +100,14 @@ export function ArtifactViewer({
     return () => controller.abort()
   }, [slug, version])
 
-  const copy = (value: string) => navigator.clipboard.writeText(value)
+  async function copy(value: string, message: string) {
+    try {
+      await navigator.clipboard.writeText(value)
+      toast.success(message)
+    } catch {
+      toast.error('Could not copy to the clipboard.')
+    }
+  }
 
   async function changeArchivedState() {
     if (!artifact) return
@@ -248,6 +256,7 @@ export function ArtifactViewer({
               onClick={() =>
                 void copy(
                   `Edit my Otterware artifact at ${artifact?.url}. Read the current version first and publish a new immutable version with the Otterware CLI.`,
+                  'Edit prompt copied.',
                 )
               }
             >
@@ -257,7 +266,9 @@ export function ArtifactViewer({
               variant="outline"
               size="sm"
               type="button"
-              onClick={() => artifact && void copy(artifact.url)}
+              onClick={() =>
+                artifact && void copy(artifact.url, 'Artifact link copied.')
+              }
             >
               <Copy size={14} /> Share
             </Button>

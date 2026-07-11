@@ -134,21 +134,20 @@ function SettingsPage() {
       <div className="app-shell">
         <AppHeader />
         <main className="settings-page">
-          <section className="page-heading">
-            <div>
-              <p className="eyebrow">Workspace</p>
-              <h1>Settings</h1>
-              <p>Organizations, collaborators, and agent credentials.</p>
-            </div>
+          <section className="settings-heading">
+            <h1>Settings</h1>
+            <p>Manage your active team, collaborators, and agent access.</p>
           </section>
           {message && <div className="notice">{message}</div>}
           <div className="settings-grid">
-            <Card className="settings-card">
+            <Card className="settings-card wide-card team-settings-card">
               <div className="settings-card-heading">
-                <Users size={17} />
+                <span className="settings-card-icon">
+                  <Users size={16} />
+                </span>
                 <div>
-                  <h2>Organizations</h2>
-                  <p>Artifacts are isolated by organization.</p>
+                  <h2>Teams</h2>
+                  <p>Switch teams or update the active workspace.</p>
                 </div>
               </div>
               <div className="organization-list">
@@ -214,9 +213,11 @@ function SettingsPage() {
 
             <Card className="settings-card">
               <div className="settings-card-heading">
-                <Users size={17} />
+                <span className="settings-card-icon">
+                  <Users size={16} />
+                </span>
                 <div>
-                  <h2>Invite collaborator</h2>
+                  <h2>Collaborators</h2>
                   <p>Create a private invitation link.</p>
                 </div>
               </div>
@@ -266,11 +267,13 @@ function SettingsPage() {
               )}
             </Card>
 
-            <Card className="settings-card wide-card">
+            <Card className="settings-card">
               <div className="settings-card-heading">
-                <KeyRound size={17} />
+                <span className="settings-card-icon">
+                  <KeyRound size={16} />
+                </span>
                 <div>
-                  <h2>Agent API key</h2>
+                  <h2>Agent access</h2>
                   <p>
                     Organization-scoped keys can access shared artifacts, never
                     private artifacts.
