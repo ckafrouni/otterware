@@ -272,6 +272,7 @@ export function UniverEditor(props: EditorProps) {
         presets: [preset],
       })
       if (isSheet) {
+        let acceptingChanges = false
         const workbook = univerAPI.createWorkbook(
           workbookData(props.entryPath, props.sheets ?? []),
         )
@@ -284,9 +285,16 @@ export function UniverEditor(props: EditorProps) {
             props.onSheetChange?.(name === first ? undefined : name)
           },
         )
-        const commands = univerAPI.onCommandExecuted(() => setDirty(true))
+        const commands = univerAPI.onCommandExecuted(() => {
+          if (acceptingChanges) setDirty(true)
+        })
+        const readyTimer = window.setTimeout(() => {
+          acceptingChanges = true
+          setDirty(false)
+        }, 500)
         handle.current = {
           dispose: () => {
+            clearTimeout(readyTimer)
             sheetEvent.dispose()
             commands.dispose()
             univer.dispose()
@@ -294,12 +302,20 @@ export function UniverEditor(props: EditorProps) {
           exportFile: async () => spreadsheetBlob(workbook.save(), props.entryPath),
         }
       } else {
+        let acceptingChanges = false
         const document = univerAPI.createUniverDoc(
           documentData(props.entryPath, props.text ?? ''),
         )
-        const commands = univerAPI.onCommandExecuted(() => setDirty(true))
+        const commands = univerAPI.onCommandExecuted(() => {
+          if (acceptingChanges) setDirty(true)
+        })
+        const readyTimer = window.setTimeout(() => {
+          acceptingChanges = true
+          setDirty(false)
+        }, 500)
         handle.current = {
           dispose: () => {
+            clearTimeout(readyTimer)
             commands.dispose()
             univer.dispose()
           },
