@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { api } from '#/lib/api'
 
 interface CurrentActorResponse {
@@ -7,22 +7,14 @@ interface CurrentActorResponse {
   }
 }
 
-export function useCurrentActor() {
-  const [roles, setRoles] = useState<string[]>([])
+export function useCurrentActor(organizationId?: string, enabled = true) {
+  const query = useQuery({
+    enabled,
+    queryKey: ['actor', organizationId ?? 'active'],
+    queryFn: () => api<CurrentActorResponse>('/api/v1/me', { organizationId }),
+    staleTime: 5 * 60_000,
+  })
+  const roles = query.data?.data.roles ?? []
 
-  useEffect(() => {
-    let active = true
-    api<CurrentActorResponse>('/api/v1/me')
-      .then((result) => {
-        if (active) setRoles(result.data.roles)
-      })
-      .catch(() => {
-        if (active) setRoles([])
-      })
-    return () => {
-      active = false
-    }
-  }, [])
-
-  return { isOwner: roles.includes('owner'), roles }
+  return { isOwner: roles.includes('owner'), roles, loading: query.isPending }
 }

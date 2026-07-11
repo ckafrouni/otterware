@@ -712,7 +712,7 @@ export async function readContent(
   headers.set('content-type', file.content_type)
   headers.set('content-length', String(file.size))
   headers.set('etag', object.httpEtag)
-  headers.set('cache-control', 'private, no-store')
+  headers.set('cache-control', 'private, max-age=31536000, immutable')
   headers.set('x-content-type-options', 'nosniff')
   return new Response(object.body, { headers })
 }
@@ -810,6 +810,63 @@ export async function previewArtifact(
       expiresAt: new Date(Date.now() + 5 * 60 * 1_000).toISOString(),
       version: mapVersion(version),
       contentType: entryFile.content_type,
+    },
+  })
+}
+
+export async function bootstrapArtifact(
+  request: Request,
+  env: Env,
+  actor: AuthenticatedActor,
+  reference: string,
+): Promise<Response> {
+  const artifact = await artifactRow(env, actor, reference)
+  const versionRows = await env.DB.prepare(
+    'SELECT * FROM artifact_version WHERE artifact_id = ? ORDER BY number DESC',
+  )
+    .bind(artifact.id)
+    .all<VersionRow>()
+  const requestedVersion = new URL(request.url).searchParams.get('version')
+  const selected = requestedVersion
+    ? versionRows.results.find(
+        (version) => version.number === Number(requestedVersion),
+      )
+    : versionRows.results.find(
+        (version) => version.id === artifact.current_version_id,
+      )
+  if (!selected)
+    throw new HttpError(404, 'version_not_found', 'Version not found.')
+  const entryFile = await env.DB.prepare(
+    'SELECT content_type FROM artifact_file WHERE version_id = ? AND path = ?',
+  )
+    .bind(selected.id, selected.entry_path)
+    .first<{ content_type: string }>()
+  if (!entryFile)
+    throw new HttpError(404, 'file_not_found', 'Artifact entry file not found.')
+  const versions = versionRows.results.map(mapVersion)
+  const currentVersion =
+    versions.find((version) => version.id === artifact.current_version_id) ??
+    null
+  const token = await signContentGrant(env, {
+    artifactId: artifact.id,
+    versionId: selected.id,
+    entryPath: selected.entry_path,
+  })
+  return json({
+    data: {
+      artifact: mapArtifactRecord(
+        env,
+        artifact,
+        currentVersion,
+        await organizationSlug(env, artifact.organization_id),
+      ),
+      versions,
+      preview: {
+        url: new URL(`/raw/session/${token}`, env.CONTENT_URL).toString(),
+        expiresAt: new Date(Date.now() + 5 * 60 * 1_000).toISOString(),
+        version: mapVersion(selected),
+        contentType: entryFile.content_type,
+      },
     },
   })
 }

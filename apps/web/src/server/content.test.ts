@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { signContentGrant, startContentSession } from './content'
+import {
+  signContentGrant,
+  signThumbnailGrant,
+  startContentSession,
+} from './content'
 import type { Env } from './types'
 
 function testEnv(): Env {
@@ -40,5 +44,12 @@ describe('content grants', () => {
       'Path=/raw/a/artifact-1/version-1/',
     )
     expect(response.headers.get('set-cookie')).not.toContain('Domain=')
+  })
+
+  it('reuses thumbnail grants within a cache window', async () => {
+    const env = testEnv()
+    expect(await signThumbnailGrant(env, 'previews/artifact/version.jpg')).toBe(
+      await signThumbnailGrant(env, 'previews/artifact/version.jpg'),
+    )
   })
 })

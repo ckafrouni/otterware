@@ -1,7 +1,7 @@
 import { apiErrorSchema } from '@otterware/contracts'
 
 export interface ApiRequestInit extends RequestInit {
-  organizationId?: string
+  organizationId?: string | undefined
 }
 
 export async function api<T>(
