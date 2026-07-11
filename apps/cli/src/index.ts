@@ -7,7 +7,7 @@ import { registerOrganizationCommands } from './organizations'
 const program = new Command()
   .name('otterware')
   .description('Build and collaborate with Otterware')
-  .version(packageJson.version, '-V, --cli-version', 'Show the CLI version')
+  .version(packageJson.version, '-v, --version', 'Show the CLI version')
   .option('--json', 'Emit machine-readable JSON')
   .option('--profile <name>', 'Use a named configuration profile')
   .showSuggestionAfterError()
