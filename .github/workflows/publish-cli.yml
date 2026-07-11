@@ -1,0 +1,76 @@
+name: Publish CLI to npm
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-cli.yml'
+      - 'apps/cli/**'
+      - 'packages/contracts/**'
+      - 'pnpm-lock.yaml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: publish-otterware-cli
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+
+      - name: Use an npm CLI with trusted publishing support
+        run: npm install --global npm@latest
+
+      - name: Check whether this version needs publishing
+        id: version
+        shell: bash
+        run: |
+          version="$(node -p "require('./apps/cli/package.json').version")"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if npm view "otterware@$version" version >/dev/null 2>&1; then
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+            echo "otterware@$version is already published."
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+            echo "otterware@$version will be published."
+          fi
+
+      - uses: pnpm/action-setup@v6.0.9
+        if: steps.version.outputs.publish == 'true'
+        with:
+          version: 11.9.0
+
+      - name: Install dependencies
+        if: steps.version.outputs.publish == 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify CLI
+        if: steps.version.outputs.publish == 'true'
+        run: |
+          pnpm --dir apps/cli typecheck
+          pnpm --dir apps/cli test
+          pnpm --dir apps/cli build
+
+      - name: Publish CLI
+        if: steps.version.outputs.publish == 'true'
+        working-directory: apps/cli
+        run: npm publish --access public
+
+      - name: Verify registry release
+        if: steps.version.outputs.publish == 'true'
+        shell: bash
+        run: |
+          published="$(npm view "otterware@${{ steps.version.outputs.version }}" version)"
+          test "$published" = "${{ steps.version.outputs.version }}"

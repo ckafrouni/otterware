@@ -100,6 +100,25 @@ otterware artifacts list
 
 Device login represents a user and can access that user's private artifacts. Organization API keys can only access organization artifacts.
 
+## Publish the CLI
+
+The CLI is published through npm trusted publishing; the repository does not store an npm token. When a change merged to `main` includes a new version in `apps/cli/package.json`, the `Publish CLI to npm` workflow verifies, builds, and publishes that version with provenance. If the version already exists on npm, the workflow exits successfully without publishing again.
+
+Prepare a release by updating the CLI version and lockfile in a pull request:
+
+```bash
+pnpm --dir apps/cli version patch --no-git-tag-version
+pnpm install --lockfile-only
+```
+
+After the pull request is merged, confirm the workflow succeeded and verify the registry version:
+
+```bash
+npm view otterware version
+npm install --global otterware@latest
+otterware --cli-version
+```
+
 ## Artifact commands
 
 ```bash
