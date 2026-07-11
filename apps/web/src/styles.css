@@ -477,8 +477,8 @@ button:disabled {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  padding: 2px 4px;
+  gap: 12px;
+  padding: 3px 6px;
   background: var(--bg);
 }
 .viewer-left,
@@ -486,7 +486,7 @@ button:disabled {
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 7px;
 }
 .version-trigger {
   max-width: min(500px, 45vw);
@@ -495,11 +495,11 @@ button:disabled {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  font-size: 12px;
+  font-size: 13px;
 }
 .viewer-byline {
   color: var(--ink-muted);
-  font-size: 10px;
+  font-size: 11px;
   white-space: nowrap;
 }
 .version-menu {

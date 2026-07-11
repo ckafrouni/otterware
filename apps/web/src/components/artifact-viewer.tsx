@@ -89,10 +89,10 @@ export function ArtifactViewer({
             <Button
               render={<Link to="/artifacts" />}
               variant="outline"
-              size="icon-xs"
+              size="icon-sm"
               aria-label="Back to artifacts"
             >
-              <Home size={13} />
+              <Home size={15} />
             </Button>
             {artifact && selected ? (
               <DropdownMenu>
@@ -100,13 +100,13 @@ export function ArtifactViewer({
                   render={
                     <Button
                       variant="ghost"
-                      size="xs"
+                      size="sm"
                       className="version-trigger"
                     />
                   }
                 >
                   <strong>{artifact.title}</strong>
-                  {versions.length > 1 && <ChevronDown size={13} />}
+                  {versions.length > 1 && <ChevronDown size={15} />}
                 </DropdownMenuTrigger>
                 {versions.length > 1 && (
                   <DropdownMenuContent align="start" className="version-menu">
@@ -151,7 +151,7 @@ export function ArtifactViewer({
           <div className="viewer-actions">
             <Button
               variant="outline"
-              size="icon-xs"
+              size="icon-sm"
               type="button"
               aria-label="Copy edit prompt"
               onClick={() =>
@@ -160,15 +160,15 @@ export function ArtifactViewer({
                 )
               }
             >
-              <Pencil size={13} />
+              <Pencil size={15} />
             </Button>
             <Button
               variant="outline"
-              size="xs"
+              size="sm"
               type="button"
               onClick={() => artifact && void copy(artifact.url)}
             >
-              <Copy size={12} /> Share
+              <Copy size={14} /> Share
             </Button>
           </div>
         </header>
