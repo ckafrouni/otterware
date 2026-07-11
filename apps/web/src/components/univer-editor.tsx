@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Save } from 'lucide-react'
 import { toast } from 'sonner'
-import { LocaleType } from '@univerjs/presets'
+import { defaultTheme, LocaleType } from '@univerjs/presets'
 import type {
   ICellData,
   IDocumentData,
@@ -267,6 +267,7 @@ export function UniverEditor(props: EditorProps) {
       const { univer, univerAPI } = createUniver({
         locale: LocaleType.EN_US,
         locales: { [LocaleType.EN_US]: mergeLocales(locale) },
+        theme: defaultTheme,
         presets: [preset],
       })
       if (isSheet) {
