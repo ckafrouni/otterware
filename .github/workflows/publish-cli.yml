@@ -72,5 +72,15 @@ jobs:
         if: steps.version.outputs.publish == 'true'
         shell: bash
         run: |
-          published="$(npm view "otterware@${{ steps.version.outputs.version }}" version)"
-          test "$published" = "${{ steps.version.outputs.version }}"
+          expected="${{ steps.version.outputs.version }}"
+          for attempt in {1..12}; do
+            published="$(npm view "otterware@$expected" version 2>/dev/null || true)"
+            if [ "$published" = "$expected" ]; then
+              echo "Verified otterware@$expected on npm."
+              exit 0
+            fi
+            echo "Registry has not propagated otterware@$expected yet (attempt $attempt/12)."
+            sleep 5
+          done
+          echo "otterware@$expected was not visible on npm after 60 seconds." >&2
+          exit 1
