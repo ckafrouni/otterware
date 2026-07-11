@@ -388,7 +388,10 @@ export function ArtifactListPage({
                         >
                           <MoreHorizontal size={14} />
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent
+                          align="end"
+                          className="artifact-actions-menu"
+                        >
                           <DropdownMenuItem
                             render={
                               <a

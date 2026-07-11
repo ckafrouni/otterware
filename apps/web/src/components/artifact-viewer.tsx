@@ -239,7 +239,10 @@ export function ArtifactViewer({
                 >
                   <MoreHorizontal size={15} />
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent
+                  align="end"
+                  className="artifact-actions-menu"
+                >
                   <DropdownMenuItem
                     variant={artifact.archivedAt ? 'default' : 'destructive'}
                     onClick={() => void changeArchivedState()}

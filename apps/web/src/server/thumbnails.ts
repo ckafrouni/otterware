@@ -1,6 +1,93 @@
 import puppeteer from '@cloudflare/puppeteer'
+import Papa from 'papaparse'
 import { signContentGrant } from './content'
 import type { Env } from './types'
+
+interface ThumbnailEntry {
+  content_type: string
+  r2_key: string
+}
+
+function escapeHtml(value: unknown): string {
+  return String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+}
+
+function columnName(index: number): string {
+  let value = index + 1
+  let output = ''
+  while (value > 0) {
+    value -= 1
+    output = String.fromCharCode(65 + (value % 26)) + output
+    value = Math.floor(value / 26)
+  }
+  return output
+}
+
+export function spreadsheetThumbnailHtml(rows: unknown[][]): string {
+  const visibleRows = rows.slice(0, 18)
+  const columns = Math.max(
+    6,
+    Math.min(
+      10,
+      visibleRows.reduce((maximum, row) => Math.max(maximum, row.length), 0),
+    ),
+  )
+  const bodyRows = Array.from(
+    { length: Math.max(visibleRows.length, 18) },
+    (_, index) => visibleRows[index] ?? [],
+  )
+  return `<!doctype html><html><head><meta charset="utf-8"><style>
+    *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#fff;color:#202124;font-family:Arial,sans-serif}
+    table{width:max-content;min-width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed;font-size:18px}
+    th,td{height:39px;min-width:170px;max-width:250px;overflow:hidden;border-right:1px solid #dadce0;border-bottom:1px solid #dadce0;padding:6px 9px;text-align:left;text-overflow:ellipsis;white-space:nowrap}
+    thead th{height:34px;background:#f8f9fa;color:#5f6368;font-weight:600;text-align:center}
+    tbody th,.corner{width:54px;min-width:54px;background:#f8f9fa;color:#5f6368;font-weight:500;text-align:right}
+  </style></head><body><table><thead><tr><th class="corner"></th>${Array.from(
+    { length: columns },
+    (_, index) => `<th>${columnName(index)}</th>`,
+  ).join('')}</tr></thead><tbody>${bodyRows
+    .map(
+      (row, rowIndex) =>
+        `<tr><th>${rowIndex + 1}</th>${Array.from(
+          { length: columns },
+          (_, columnIndex) => `<td>${escapeHtml(row[columnIndex])}</td>`,
+        ).join('')}</tr>`,
+    )
+    .join('')}</tbody></table></body></html>`
+}
+
+async function spreadsheetRows(
+  contentType: string,
+  entryPath: string,
+  bytes: ArrayBuffer,
+): Promise<unknown[][] | null> {
+  const extension = entryPath.split('.').pop()?.toLowerCase()
+  if (
+    contentType.includes('text/csv') ||
+    ['csv', 'tsv'].includes(extension ?? '')
+  ) {
+    return Papa.parse<unknown[]>(new TextDecoder().decode(bytes), {
+      delimiter: extension === 'tsv' ? '\t' : '',
+    }).data
+  }
+  if (contentType.includes('spreadsheetml.sheet') || extension === 'xlsx') {
+    const XLSX = await import('@e965/xlsx')
+    const workbook = XLSX.read(bytes, { type: 'array', cellDates: true })
+    const firstSheet = workbook.SheetNames[0]
+    return firstSheet
+      ? XLSX.utils.sheet_to_json<unknown[]>(workbook.Sheets[firstSheet]!, {
+          header: 1,
+          defval: null,
+          raw: false,
+        })
+      : []
+  }
+  return null
+}
 
 async function launchBrowser(env: Env) {
   let lastError: unknown
@@ -27,12 +114,34 @@ export async function generateThumbnail(
     entryPath,
   })
   const url = new URL(`/raw/session/${token}`, env.CONTENT_URL).toString()
+  const entry = await env.DB.prepare(
+    'SELECT content_type, r2_key FROM artifact_file WHERE version_id = ? AND path = ?',
+  )
+    .bind(versionId, entryPath)
+    .first<ThumbnailEntry>()
+  let sheetRows: unknown[][] | null = null
+  if (entry) {
+    const object = await env.ARTIFACTS.get(entry.r2_key)
+    if (object) {
+      sheetRows = await spreadsheetRows(
+        entry.content_type,
+        entryPath,
+        await object.arrayBuffer(),
+      )
+    }
+  }
   const browser = await launchBrowser(env)
   let screenshot: Uint8Array
   try {
     const page = await browser.newPage()
     await page.setViewport({ width: 1200, height: 750, deviceScaleFactor: 1 })
-    await page.goto(url, { waitUntil: 'networkidle2', timeout: 25_000 })
+    if (sheetRows) {
+      await page.setContent(spreadsheetThumbnailHtml(sheetRows), {
+        waitUntil: 'load',
+      })
+    } else {
+      await page.goto(url, { waitUntil: 'networkidle2', timeout: 25_000 })
+    }
     screenshot = await page.screenshot({
       type: 'jpeg',
       quality: 72,
