@@ -29,8 +29,30 @@ export const Route = createRootRouteWithContext<RouterContext>()({
         name: 'description',
         content: 'Private artifacts for people and agents.',
       },
+      {
+        name: 'theme-color',
+        content: '#171717',
+      },
     ],
     links: [
+      {
+        rel: 'icon',
+        href: '/favicon.svg',
+        type: 'image/svg+xml',
+      },
+      {
+        rel: 'icon',
+        href: '/favicon.ico',
+        sizes: 'any',
+      },
+      {
+        rel: 'apple-touch-icon',
+        href: '/logo192.png',
+      },
+      {
+        rel: 'manifest',
+        href: '/manifest.json',
+      },
       {
         rel: 'stylesheet',
         href: appCss,

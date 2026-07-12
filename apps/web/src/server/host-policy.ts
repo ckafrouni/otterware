@@ -19,6 +19,7 @@ export function isAllowedHostPath(request: Request, env: Env): boolean {
 
 const PUBLIC_ASSET_PATHS = new Set([
   '/favicon.ico',
+  '/favicon.svg',
   '/logo192.png',
   '/logo512.png',
   '/manifest.json',
