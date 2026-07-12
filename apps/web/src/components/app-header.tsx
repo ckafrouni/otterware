@@ -157,7 +157,52 @@ export function AppHeader() {
           <ChevronsUpDown />
         </div>
         <strong>{pageTitle}</strong>
-        <span />
+        <div className="mobile-account-menu">
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="Open account menu"
+                />
+              }
+            >
+              <span className="avatar">
+                {session.data?.user.name?.slice(0, 2).toUpperCase() ?? 'OT'}
+              </span>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="user-menu">
+              <DropdownMenuGroup>
+                <DropdownMenuLabel className="user-menu-identity">
+                  <strong>{session.data?.user.name}</strong>
+                  <small>{session.data?.user.email}</small>
+                </DropdownMenuLabel>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem render={<Link to="/artifacts" />}>
+                <FileBox /> Artifacts
+              </DropdownMenuItem>
+              <DropdownMenuItem render={<Link to="/settings" />}>
+                <Settings /> Settings
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <ThemeMenu />
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() =>
+                  authClient.signOut({
+                    fetchOptions: {
+                      onSuccess: () => location.assign('/login'),
+                    },
+                  })
+                }
+              >
+                <LogOut /> Sign out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </header>
     </>
   )

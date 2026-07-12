@@ -2128,6 +2128,11 @@ body {
   height: 13px;
 }
 
+.mobile-account-menu {
+  display: none;
+  justify-self: end;
+}
+
 .app-shell > main {
   margin-left: var(--sidebar-width);
   padding-top: var(--topbar-height);
@@ -2286,5 +2291,226 @@ body {
   }
   .artifact-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+/* Responsive composition ------------------------------------------------ */
+.viewer-shell {
+  grid-template-rows: 48px minmax(0, 1fr);
+}
+
+.viewer-header {
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.version-trigger strong {
+  font-size: 14px;
+}
+
+@media (max-width: 700px) {
+  :root {
+    --topbar-height: 52px;
+  }
+
+  .app-header {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    padding-inline: 14px;
+  }
+
+  .app-header > strong {
+    font-size: 14px;
+  }
+
+  .header-context {
+    font-size: 13px;
+  }
+
+  .app-sidebar {
+    display: none;
+  }
+
+  .mobile-account-menu {
+    display: block;
+  }
+
+  .mobile-account-menu .avatar {
+    width: 26px;
+    height: 26px;
+  }
+
+  .app-shell > main {
+    padding-bottom: 0;
+  }
+
+  .artifact-home,
+  .settings-page {
+    width: 100%;
+    margin: 0;
+    padding: 16px 12px 28px;
+  }
+
+  .artifact-commandbar {
+    gap: 10px;
+    margin: 0;
+    padding: 0 0 16px;
+  }
+
+  .artifact-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 44px auto;
+    gap: 8px;
+    overflow: visible;
+    padding: 0;
+  }
+
+  .artifact-search-field {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-width: 0;
+    flex: none;
+  }
+
+  .artifact-search-field input {
+    height: 40px;
+  }
+
+  .artifact-status-trigger {
+    width: 100%;
+  }
+
+  .artifact-sort-trigger {
+    width: 44px;
+    padding-inline: 0;
+  }
+
+  .artifact-sort-trigger [data-slot='select-value'],
+  .artifact-sort-trigger [data-slot='select-icon'],
+  .artifact-toolbar > [data-slot='toggle-group'],
+  .artifact-toolbar > [data-slot='badge'] {
+    display: none;
+  }
+
+  .artifact-toolbar > [data-slot='dropdown-menu-root'] {
+    justify-self: end;
+  }
+
+  .artifact-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .artifact-card {
+    display: grid;
+    grid-template-columns: 116px minmax(0, 1fr);
+    grid-template-rows: minmax(104px, auto) 38px;
+    border-radius: 8px;
+  }
+
+  .artifact-preview {
+    height: 100%;
+    min-height: 104px;
+    padding: 6px;
+    border-right: 1px solid var(--line);
+    border-bottom: 0;
+    border-radius: 7px 0 0 0;
+  }
+
+  .artifact-preview img,
+  .preview-placeholder {
+    border-radius: 5px;
+  }
+
+  .artifact-card-body {
+    min-height: 104px;
+    padding: 13px 12px 10px;
+  }
+
+  .artifact-card h2 {
+    margin: 6px 0 5px;
+    font-size: 14px;
+    line-height: 1.25;
+  }
+
+  .artifact-card p {
+    font-size: 12px;
+    line-height: 1.35;
+    -webkit-line-clamp: 2;
+  }
+
+  .artifact-card-meta {
+    grid-column: 1 / -1;
+    min-height: 38px;
+    padding: 5px 7px 5px 12px;
+  }
+
+  .settings-layout {
+    display: block;
+    padding: 0;
+  }
+
+  .settings-nav {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .settings-nav a {
+    min-height: 34px;
+    padding: 7px 9px;
+    white-space: nowrap;
+  }
+
+  .settings-content {
+    gap: 12px;
+  }
+
+  .settings-panel-heading,
+  .settings-panel-body {
+    padding: 16px;
+  }
+
+  .settings-control-row,
+  .invite-form {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .viewer-shell {
+    grid-template-rows: 48px minmax(0, 1fr);
+  }
+
+  .viewer-header {
+    gap: 6px;
+    padding: 7px 8px;
+  }
+
+  .viewer-left,
+  .viewer-actions {
+    gap: 4px;
+  }
+
+  .version-trigger {
+    max-width: calc(100vw - 210px);
+  }
+
+  .version-trigger strong {
+    font-size: 13px;
+  }
+
+  .viewer-byline,
+  .viewer-left > [data-slot='badge'] {
+    display: none;
+  }
+
+  .viewer-actions [aria-label='Copy edit prompt'] {
+    display: none;
+  }
+
+  .viewer-main {
+    padding: 6px 6px 0;
   }
 }

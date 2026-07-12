@@ -188,10 +188,6 @@ export function ArtifactListPage({
             className="artifact-commandbar"
             aria-label="Artifact controls"
           >
-            <div className="artifact-titleblock">
-              <h1>Artifacts</h1>
-              <p>Private work and shared organization deliverables.</p>
-            </div>
             <div className="artifact-toolbar">
               <label className="artifact-search-field">
                 <Search className="artifact-search-icon" size={16} />

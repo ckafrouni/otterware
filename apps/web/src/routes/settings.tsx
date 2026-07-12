@@ -134,10 +134,6 @@ export function SettingsPage() {
       <div className="app-shell">
         <AppHeader />
         <main className="settings-page">
-          <section className="settings-heading">
-            <h1>Settings</h1>
-            <p>Workspace preferences and access.</p>
-          </section>
           <div className="settings-layout">
             <nav className="settings-nav" aria-label="Settings sections">
               <a href="#team">
