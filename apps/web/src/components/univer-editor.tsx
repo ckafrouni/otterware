@@ -301,7 +301,8 @@ export function UniverEditor(props: EditorProps) {
           },
         )
         const commands = univerAPI.onCommandExecuted((command) => {
-          if (acceptingChanges && changesSnapshot(command)) setDirty(true)
+          if (acceptingChanges && changesSnapshot(command, 'spreadsheet'))
+            setDirty(true)
         })
         const readyTimer = window.setTimeout(() => {
           acceptingChanges = true
@@ -325,7 +326,8 @@ export function UniverEditor(props: EditorProps) {
           documentData(props.entryPath, props.text ?? ''),
         )
         const commands = univerAPI.onCommandExecuted((command) => {
-          if (acceptingChanges && changesSnapshot(command)) setDirty(true)
+          if (acceptingChanges && changesSnapshot(command, 'document'))
+            setDirty(true)
         })
         const readyTimer = window.setTimeout(() => {
           acceptingChanges = true
