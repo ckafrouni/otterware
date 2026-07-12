@@ -7,6 +7,7 @@ import { authClient } from '#/lib/auth-client'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 const searchSchema = z.object({
   callback: z.string().optional(),
@@ -72,6 +73,7 @@ function LoginPage() {
 
   return (
     <main className="auth-page">
+      <ThemeToggle className="auth-theme-toggle" />
       <Card className="auth-card">
         <div className="auth-brand">
           <Box size={19} /> Otterware

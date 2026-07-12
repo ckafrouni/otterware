@@ -5,6 +5,7 @@ import { authClient } from '#/lib/auth-client'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 const searchSchema = z.object({
   user_code: z.string().optional(),
@@ -55,6 +56,7 @@ function DevicePage() {
 
   return (
     <main className="auth-page">
+      <ThemeToggle className="auth-theme-toggle" />
       <Card className="auth-card device-card">
         <p className="eyebrow">CLI authorization</p>
         <h1>Connect a device</h1>
