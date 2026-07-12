@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 
 import * as React from 'react'
-import { fireEvent, render, screen } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { AppHeader } from './app-header'
 
 vi.mock('@tanstack/react-router', () => ({
@@ -36,7 +36,18 @@ vi.mock('@/hooks/use-organizations', () => ({
   }),
 }))
 
+afterEach(cleanup)
+
 describe('AppHeader', () => {
+  it('keeps the page title centered without duplicating the team in the header', () => {
+    const { container } = render(<AppHeader />)
+
+    expect(container.querySelector('.app-header > strong')?.textContent).toBe(
+      'Artifacts',
+    )
+    expect(container.querySelector('.header-context')).toBeNull()
+  })
+
   it('opens the compact user menu with account actions', async () => {
     render(<AppHeader />)
 

@@ -136,10 +136,6 @@ export function AppHeader() {
       </aside>
 
       <header className="app-header">
-        <div className="header-context">
-          <span>{activeOrganization?.name ?? 'Workspace'}</span>
-          <ChevronsUpDown />
-        </div>
         <strong>{pageTitle}</strong>
         <div className="mobile-account-menu">
           <DropdownMenu>
