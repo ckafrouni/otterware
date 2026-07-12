@@ -71,6 +71,12 @@ describe('production host isolation', () => {
     ).toBe(true)
     expect(
       isApplicationAsset(
+        new Request('https://app.otterware.dev/favicon.svg'),
+        env,
+      ),
+    ).toBe(true)
+    expect(
+      isApplicationAsset(
         new Request('https://usercontent.otterware.dev/assets/app.js'),
         env,
       ),
