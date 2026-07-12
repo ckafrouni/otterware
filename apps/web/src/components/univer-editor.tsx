@@ -11,6 +11,7 @@ import type {
 import { api } from '#/lib/api'
 import { removeSessionCachePrefix } from '#/lib/session-cache'
 import { Button } from '@/components/ui/button'
+import { changesSnapshot } from './univer-change-tracking'
 
 import '@univerjs/preset-sheets-core/lib/index.css'
 import '@univerjs/preset-docs-core/lib/index.css'
@@ -299,8 +300,8 @@ export function UniverEditor(props: EditorProps) {
             props.onSheetChange?.(name === first ? undefined : name)
           },
         )
-        const commands = univerAPI.onCommandExecuted(() => {
-          if (acceptingChanges) setDirty(true)
+        const commands = univerAPI.onCommandExecuted((command) => {
+          if (acceptingChanges && changesSnapshot(command)) setDirty(true)
         })
         const readyTimer = window.setTimeout(() => {
           acceptingChanges = true
@@ -323,8 +324,8 @@ export function UniverEditor(props: EditorProps) {
         const document = univerAPI.createUniverDoc(
           documentData(props.entryPath, props.text ?? ''),
         )
-        const commands = univerAPI.onCommandExecuted(() => {
-          if (acceptingChanges) setDirty(true)
+        const commands = univerAPI.onCommandExecuted((command) => {
+          if (acceptingChanges && changesSnapshot(command)) setDirty(true)
         })
         const readyTimer = window.setTimeout(() => {
           acceptingChanges = true
