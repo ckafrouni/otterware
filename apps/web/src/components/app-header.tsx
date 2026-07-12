@@ -4,7 +4,9 @@ import {
   Check,
   ChevronDown,
   ChevronsUpDown,
+  FileBox,
   LogOut,
+  Search,
   Settings,
   Users,
 } from 'lucide-react'
@@ -26,95 +28,137 @@ export function AppHeader() {
   const session = authClient.useSession()
   const { activeOrganization, organizations, selectOrganization } =
     useOrganizations()
+  const pageTitle = globalThis.location?.pathname.startsWith('/settings')
+    ? 'Settings'
+    : 'Artifacts'
+
   return (
-    <header className="app-header">
-      <div className="workspace-navigation">
-        <Link to="/artifacts" className="brand" aria-label="Otterware home">
-          <span className="brand-mark">
-            <Box size={16} />
-          </span>
-          <span>Otterware</span>
-        </Link>
-        <span className="workspace-divider" />
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <Button
-                variant="ghost"
-                size="sm"
-                className="team-switcher-trigger"
-              />
-            }
+    <>
+      <aside className="app-sidebar">
+        <div className="sidebar-workspace">
+          <Link
+            to="/artifacts"
+            className="sidebar-brand"
+            aria-label="Otterware home"
           >
-            <span className="team-avatar">
-              {(activeOrganization?.name ?? 'T').slice(0, 1).toUpperCase()}
+            <span className="brand-mark">
+              <Box />
             </span>
-            <span>{activeOrganization?.name ?? 'Select team'}</span>
-            <ChevronsUpDown size={13} />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="team-switcher-menu">
-            <DropdownMenuGroup>
-              <DropdownMenuLabel>Teams</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {organizations.map((organization) => (
-                <DropdownMenuItem
-                  key={organization.id}
-                  onClick={() => void selectOrganization(organization.id)}
-                >
-                  <Users size={14} />
-                  <span>{organization.name}</span>
-                  {organization.id === activeOrganization?.id && (
-                    <Check className="team-check" size={14} />
-                  )}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
-        <span className="workspace-divider" />
-        <nav className="workspace-links">
+            <span>Otterware</span>
+          </Link>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button variant="ghost" className="sidebar-team-trigger" />
+              }
+            >
+              <span className="team-avatar">
+                {(activeOrganization?.name ?? 'T').slice(0, 1).toUpperCase()}
+              </span>
+              <span className="sidebar-team-name">
+                {activeOrganization?.name ?? 'Select team'}
+              </span>
+              <ChevronsUpDown />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="team-switcher-menu">
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>Teams</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {organizations.map((organization) => (
+                  <DropdownMenuItem
+                    key={organization.id}
+                    onClick={() => void selectOrganization(organization.id)}
+                  >
+                    <Users />
+                    <span>{organization.name}</span>
+                    {organization.id === activeOrganization?.id && (
+                      <Check className="menu-item-check" />
+                    )}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        <button
+          className="sidebar-search"
+          type="button"
+          onClick={() => {
+            const input = document.querySelector<HTMLInputElement>(
+              '.artifact-search-field input',
+            )
+            input?.focus()
+          }}
+        >
+          <Search />
+          <span>Find</span>
+          <kbd>F</kbd>
+        </button>
+
+        <nav className="sidebar-nav" aria-label="Workspace navigation">
           <Link to="/artifacts" activeProps={{ className: 'active' }}>
-            Artifacts
+            <FileBox /> Artifacts
+          </Link>
+          <Link to="/settings" activeProps={{ className: 'active' }}>
+            <Settings /> Settings
           </Link>
         </nav>
-      </div>
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          render={
-            <Button variant="ghost" size="sm" className="user-menu-trigger" />
-          }
-        >
-          <span className="avatar">
-            {session.data?.user.name?.slice(0, 2).toUpperCase() ?? 'OT'}
-          </span>
-          <span className="account-name">{session.data?.user.name}</span>
-          <ChevronDown size={13} />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="user-menu">
-          <DropdownMenuGroup>
-            <DropdownMenuLabel className="user-menu-identity">
-              <strong>{session.data?.user.name}</strong>
-              <small>{session.data?.user.email}</small>
-            </DropdownMenuLabel>
-          </DropdownMenuGroup>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem render={<Link to="/settings" />}>
-            <Settings size={14} /> Settings
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <ThemeMenu />
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            onClick={() =>
-              authClient.signOut({
-                fetchOptions: { onSuccess: () => location.assign('/login') },
-              })
-            }
-          >
-            <LogOut size={14} /> Sign out
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </header>
+
+        <div className="sidebar-account">
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button variant="ghost" className="sidebar-user-trigger" />
+              }
+            >
+              <span className="avatar">
+                {session.data?.user.name?.slice(0, 2).toUpperCase() ?? 'OT'}
+              </span>
+              <span className="sidebar-user-copy">
+                <strong>{session.data?.user.name}</strong>
+                <small>Account</small>
+              </span>
+              <ChevronDown />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" side="top" className="user-menu">
+              <DropdownMenuGroup>
+                <DropdownMenuLabel className="user-menu-identity">
+                  <strong>{session.data?.user.name}</strong>
+                  <small>{session.data?.user.email}</small>
+                </DropdownMenuLabel>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem render={<Link to="/settings" />}>
+                <Settings /> Settings
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <ThemeMenu />
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() =>
+                  authClient.signOut({
+                    fetchOptions: {
+                      onSuccess: () => location.assign('/login'),
+                    },
+                  })
+                }
+              >
+                <LogOut /> Sign out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </aside>
+
+      <header className="app-header">
+        <div className="header-context">
+          <span>{activeOrganization?.name ?? 'Workspace'}</span>
+          <ChevronsUpDown />
+        </div>
+        <strong>{pageTitle}</strong>
+        <span />
+      </header>
+    </>
   )
 }
