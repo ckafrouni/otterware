@@ -21,6 +21,7 @@
     "APP_URL": "https://app.otterware.dev",
     "CONTENT_URL": "https://usercontent.otterware.dev",
     "ADMIN_EMAIL": "chris.kafrouni@gmail.com",
+    "EMAIL_FROM": "Otterware <noreply@otterware.dev>",
   },
   "d1_databases": [
     {
