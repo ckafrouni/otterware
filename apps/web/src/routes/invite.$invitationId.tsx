@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { authClient } from '#/lib/auth-client'
 import { AuthGate } from '#/components/auth-gate'
+import { ThemeToggle } from '@/components/theme-toggle'
+import { Card } from '@/components/ui/card'
 
 export const Route = createFileRoute('/invite/$invitationId')({
   component: InvitePage,
@@ -25,8 +27,12 @@ function InvitePage() {
   return (
     <AuthGate>
       <main className="centered-state">
-        <h1>Otterware invitation</h1>
-        <p>{status}</p>
+        <ThemeToggle className="auth-theme-toggle" />
+        <Card className="auth-card invitation-card">
+          <p className="eyebrow">Team invitation</p>
+          <h1>Joining Otterware</h1>
+          <p>{status}</p>
+        </Card>
       </main>
     </AuthGate>
   )

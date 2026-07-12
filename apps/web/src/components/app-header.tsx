@@ -20,6 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { ThemeMenu } from '@/components/theme-menu'
 
 export function AppHeader() {
   const session = authClient.useSession()
@@ -28,7 +29,7 @@ export function AppHeader() {
   return (
     <header className="app-header">
       <div className="workspace-navigation">
-        <Link to="/artifacts" className="brand">
+        <Link to="/artifacts" className="brand" aria-label="Otterware home">
           <span className="brand-mark">
             <Box size={16} />
           </span>
@@ -100,6 +101,8 @@ export function AppHeader() {
           <DropdownMenuItem render={<Link to="/settings" />}>
             <Settings size={14} /> Settings
           </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <ThemeMenu />
           <DropdownMenuSeparator />
           <DropdownMenuItem
             onClick={() =>

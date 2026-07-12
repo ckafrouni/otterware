@@ -5,6 +5,7 @@ import {
 } from '@tanstack/react-router'
 import { QueryClientProvider, type QueryClient } from '@tanstack/react-query'
 import { Toaster } from '@/components/ui/sonner'
+import { ThemeProvider } from '@/components/theme-provider'
 
 import appCss from '../styles.css?url'
 
@@ -31,7 +32,13 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       },
       {
         name: 'theme-color',
-        content: '#171717',
+        content: '#ffffff',
+        media: '(prefers-color-scheme: light)',
+      },
+      {
+        name: 'theme-color',
+        content: '#000000',
+        media: '(prefers-color-scheme: dark)',
       },
     ],
     links: [
@@ -66,13 +73,15 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   const { queryClient } = Route.useRouteContext()
   return (
     <QueryClientProvider client={queryClient}>
-      <html lang="en">
+      <html lang="en" suppressHydrationWarning>
         <head>
           <HeadContent />
         </head>
         <body>
-          {children}
-          <Toaster position="bottom-right" richColors closeButton />
+          <ThemeProvider>
+            {children}
+            <Toaster position="bottom-right" richColors closeButton />
+          </ThemeProvider>
           <Scripts />
         </body>
       </html>
