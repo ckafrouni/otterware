@@ -733,7 +733,8 @@ button:disabled {
   text-overflow: ellipsis;
   font-size: 13px;
 }
-.viewer-byline {
+.viewer-team,
+.viewer-visibility {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -741,7 +742,7 @@ button:disabled {
   font-size: 11px;
   white-space: nowrap;
 }
-.viewer-byline strong {
+.viewer-team strong {
   color: var(--ink-soft);
   font-weight: 550;
 }
@@ -1494,7 +1495,8 @@ select:focus {
   .team-switcher-trigger {
     max-width: 130px;
   }
-  .viewer-byline {
+  .viewer-team,
+  .viewer-visibility {
     display: none;
   }
   .settings-heading {
@@ -2145,29 +2147,12 @@ body {
 }
 
 .app-header > strong {
+  grid-column: 2;
   font-weight: 550;
 }
 
-.header-context {
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--ink-soft);
-}
-
-.header-context span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.header-context svg {
-  width: 13px;
-  height: 13px;
-}
-
 .mobile-account-menu {
+  grid-column: 3;
   display: none;
   justify-self: end;
 }
@@ -2365,10 +2350,6 @@ body {
     font-size: 14px;
   }
 
-  .header-context {
-    font-size: 13px;
-  }
-
   .app-sidebar {
     display: none;
   }
@@ -2544,7 +2525,8 @@ body {
     font-size: 13px;
   }
 
-  .viewer-byline,
+  .viewer-team,
+  .viewer-visibility,
   .viewer-left > [data-slot='badge'] {
     display: none;
   }

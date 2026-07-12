@@ -167,6 +167,12 @@ export function ArtifactViewer({
           >
             <Home size={15} />
           </Button>
+          {artifact && (
+            <span className="viewer-team">
+              <strong>{artifactOrganization?.name ?? 'Team'}</strong>
+              <span aria-hidden="true">/</span>
+            </span>
+          )}
           {artifact && selected ? (
             <DropdownMenu>
               <DropdownMenuTrigger
@@ -214,8 +220,7 @@ export function ArtifactViewer({
             <strong>Otterware Artifact</strong>
           )}
           {artifact && (
-            <span className="viewer-byline">
-              <strong>{artifactOrganization?.name ?? 'Team'}</strong>
+            <span className="viewer-visibility">
               <span aria-hidden="true">·</span>
               {artifact.visibility === 'private' ? 'Private' : 'Shared'}
             </span>
