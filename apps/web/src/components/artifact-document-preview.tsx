@@ -28,6 +28,7 @@ export function columnName(index: number): string {
 }
 
 interface ArtifactDocumentPreviewProps {
+  actionsContainer?: HTMLDivElement | null | undefined
   contentType: string
   entryPath: string
   expectedCurrentVersion?: number | undefined
@@ -63,6 +64,7 @@ async function loadContent(
 }
 
 export function ArtifactDocumentPreview({
+  actionsContainer,
   contentType,
   entryPath,
   expectedCurrentVersion,
@@ -166,6 +168,7 @@ export function ArtifactDocumentPreview({
     return (
       <Suspense fallback={<ArtifactContentLoadingState />}>
         <UniverEditor
+          actionsContainer={actionsContainer}
           entryPath={entryPath}
           expectedCurrentVersion={expectedCurrentVersion ?? version}
           kind="document"
@@ -181,6 +184,7 @@ export function ArtifactDocumentPreview({
     return (
       <Suspense fallback={<ArtifactContentLoadingState />}>
         <UniverEditor
+          actionsContainer={actionsContainer}
           entryPath={entryPath}
           expectedCurrentVersion={expectedCurrentVersion ?? version}
           kind="spreadsheet"
