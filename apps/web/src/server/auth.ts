@@ -7,7 +7,9 @@ import {
   organization,
 } from 'better-auth/plugins'
 import { tanstackStartCookies } from 'better-auth/tanstack-start'
+import { waitUntil } from 'cloudflare:workers'
 import { authorizeNewUser, normalizeEmail } from './auth-policy'
+import { sendPasswordResetEmail } from './email'
 import type { Env } from './types'
 import {
   accessControl,
@@ -49,6 +51,14 @@ export function createAuth(env: Env) {
     emailAndPassword: {
       enabled: !googleEnabled,
       disableSignUp: googleEnabled,
+      revokeSessionsOnPasswordReset: true,
+      sendResetPassword: async ({ user, url }) => {
+        waitUntil(
+          sendPasswordResetEmail(env, user.email, url).catch((error) => {
+            console.error('Could not send a password reset email.', error)
+          }),
+        )
+      },
     },
     databaseHooks: {
       user: {

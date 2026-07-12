@@ -138,6 +138,11 @@ function LoginPage() {
                   onChange={(event) => setPassword(event.target.value)}
                 />
               </label>
+              {!signingUp && (
+                <a className="auth-link" href="/forgot-password">
+                  Forgot your password?
+                </a>
+              )}
               {error && <p className="form-error">{error}</p>}
               <Button className="w-full" type="submit">
                 {signingUp ? 'Create account' : 'Sign in'}

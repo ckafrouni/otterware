@@ -1223,6 +1223,17 @@ select:focus {
   color: var(--red) !important;
   font-size: 12px;
 }
+.auth-link {
+  width: fit-content;
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.auth-link:hover {
+  color: var(--ink);
+}
 .link-button {
   border: 0;
   background: transparent;

@@ -166,7 +166,14 @@ Configure production secrets:
 ```bash
 pnpm exec wrangler secret put BETTER_AUTH_SECRET
 pnpm exec wrangler secret put CONTENT_SIGNING_KEY
+pnpm exec wrangler secret put RESEND_API_KEY
 ```
+
+Password reset emails are delivered through Resend. Add and verify
+`otterware.dev` in Resend, including its DKIM and SPF records, before deploying.
+The sender is configured by `EMAIL_FROM` in `apps/web/wrangler.jsonc`; it must
+use the verified domain. For local reset-email testing, also set
+`RESEND_API_KEY` in `apps/web/.dev.vars`.
 
 Set `ADMIN_EMAIL` in `wrangler.jsonc`, apply the migrations, and seed the administrator from an authenticated deployment checkout. The command prompts for a password without accepting it in arguments or environment variables and refuses to overwrite an existing account:
 

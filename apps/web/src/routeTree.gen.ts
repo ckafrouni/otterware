@@ -10,8 +10,10 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LRouteImport } from './routes/l'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as DeviceRouteImport } from './routes/device'
 import { Route as ArtifactsRouteImport } from './routes/artifacts'
 import { Route as IndexRouteImport } from './routes/index'
@@ -31,6 +33,11 @@ const SettingsRoute = SettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -39,6 +46,11 @@ const LoginRoute = LoginRouteImport.update({
 const LRoute = LRouteImport.update({
   id: '/l',
   path: '/l',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DeviceRoute = DeviceRouteImport.update({
@@ -113,8 +125,10 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/artifacts': typeof ArtifactsRoute
   '/device': typeof DeviceRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/l': typeof LRoute
   '/login': typeof LoginRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/settings': typeof SettingsRoute
   '/a/$slug': typeof ASlugRoute
   '/invite/$invitationId': typeof InviteInvitationIdRoute
@@ -131,8 +145,10 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/artifacts': typeof ArtifactsRoute
   '/device': typeof DeviceRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/l': typeof LRoute
   '/login': typeof LoginRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/settings': typeof SettingsRoute
   '/a/$slug': typeof ASlugRoute
   '/invite/$invitationId': typeof InviteInvitationIdRoute
@@ -150,8 +166,10 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/artifacts': typeof ArtifactsRoute
   '/device': typeof DeviceRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/l': typeof LRoute
   '/login': typeof LoginRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/settings': typeof SettingsRoute
   '/a/$slug': typeof ASlugRoute
   '/invite/$invitationId': typeof InviteInvitationIdRoute
@@ -170,8 +188,10 @@ export interface FileRouteTypes {
     | '/'
     | '/artifacts'
     | '/device'
+    | '/forgot-password'
     | '/l'
     | '/login'
+    | '/reset-password'
     | '/settings'
     | '/a/$slug'
     | '/invite/$invitationId'
@@ -188,8 +208,10 @@ export interface FileRouteTypes {
     | '/'
     | '/artifacts'
     | '/device'
+    | '/forgot-password'
     | '/l'
     | '/login'
+    | '/reset-password'
     | '/settings'
     | '/a/$slug'
     | '/invite/$invitationId'
@@ -206,8 +228,10 @@ export interface FileRouteTypes {
     | '/'
     | '/artifacts'
     | '/device'
+    | '/forgot-password'
     | '/l'
     | '/login'
+    | '/reset-password'
     | '/settings'
     | '/a/$slug'
     | '/invite/$invitationId'
@@ -225,8 +249,10 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ArtifactsRoute: typeof ArtifactsRoute
   DeviceRoute: typeof DeviceRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   LRoute: typeof LRoute
   LoginRoute: typeof LoginRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SettingsRoute: typeof SettingsRoute
   ASlugRoute: typeof ASlugRoute
   InviteInvitationIdRoute: typeof InviteInvitationIdRoute
@@ -249,6 +275,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -261,6 +294,13 @@ declare module '@tanstack/react-router' {
       path: '/l'
       fullPath: '/l'
       preLoaderRoute: typeof LRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/device': {
@@ -361,8 +401,10 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ArtifactsRoute: ArtifactsRoute,
   DeviceRoute: DeviceRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   LRoute: LRoute,
   LoginRoute: LoginRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SettingsRoute: SettingsRoute,
   ASlugRoute: ASlugRoute,
   InviteInvitationIdRoute: InviteInvitationIdRoute,
