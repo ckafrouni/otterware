@@ -3,12 +3,44 @@ import { changesSnapshot } from './univer-change-tracking'
 
 describe('changesSnapshot', () => {
   it('ignores commands and UI-only operations such as cell selection', () => {
-    expect(changesSnapshot({ type: 0 })).toBe(false)
-    expect(changesSnapshot({ type: 1 })).toBe(false)
-    expect(changesSnapshot({})).toBe(false)
+    expect(
+      changesSnapshot(
+        { id: 'sheet.command.set-range-values', type: 0 },
+        'spreadsheet',
+      ),
+    ).toBe(false)
+    expect(
+      changesSnapshot(
+        { id: 'sheet.operation.set-selections', type: 1 },
+        'spreadsheet',
+      ),
+    ).toBe(false)
   })
 
-  it('tracks mutations persisted in the document snapshot', () => {
-    expect(changesSnapshot({ type: 2 })).toBe(true)
+  it('ignores document-editor mutations caused by selecting a cell', () => {
+    expect(
+      changesSnapshot(
+        { id: 'doc.mutation.rich-text-editing', type: 2 },
+        'spreadsheet',
+      ),
+    ).toBe(false)
+  })
+
+  it('tracks mutations persisted in the workbook snapshot', () => {
+    expect(
+      changesSnapshot(
+        { id: 'sheet.mutation.set-range-values', type: 2 },
+        'spreadsheet',
+      ),
+    ).toBe(true)
+  })
+
+  it('tracks mutations in document editors', () => {
+    expect(
+      changesSnapshot(
+        { id: 'doc.mutation.rich-text-editing', type: 2 },
+        'document',
+      ),
+    ).toBe(true)
   })
 })
