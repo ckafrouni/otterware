@@ -36,27 +36,18 @@ export function AppHeader() {
     <>
       <aside className="app-sidebar">
         <div className="sidebar-workspace">
-          <Link
-            to="/artifacts"
-            className="sidebar-brand"
-            aria-label="Otterware home"
-          >
-            <span className="brand-mark">
-              <Box />
-            </span>
-            <span>Otterware</span>
-          </Link>
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
                 <Button variant="ghost" className="sidebar-team-trigger" />
               }
             >
-              <span className="team-avatar">
-                {(activeOrganization?.name ?? 'T').slice(0, 1).toUpperCase()}
+              <span className="brand-mark">
+                <Box />
               </span>
-              <span className="sidebar-team-name">
-                {activeOrganization?.name ?? 'Select team'}
+              <span className="sidebar-workspace-copy">
+                <strong>{activeOrganization?.name ?? 'Select team'}</strong>
+                <small>Otterware</small>
               </span>
               <ChevronsUpDown />
             </DropdownMenuTrigger>
@@ -122,13 +113,6 @@ export function AppHeader() {
               <ChevronDown />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" side="top" className="user-menu">
-              <DropdownMenuGroup>
-                <DropdownMenuLabel className="user-menu-identity">
-                  <strong>{session.data?.user.name}</strong>
-                  <small>{session.data?.user.email}</small>
-                </DropdownMenuLabel>
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator />
               <DropdownMenuItem render={<Link to="/settings" />}>
                 <Settings /> Settings
               </DropdownMenuItem>
