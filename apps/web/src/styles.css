@@ -2137,7 +2137,7 @@ body {
 .settings-page {
   width: min(100% - 48px, 1120px);
   margin: 0;
-  padding: 34px 0 72px 24px;
+  padding: 24px 0 72px 24px;
 }
 
 .artifact-commandbar {
@@ -2145,6 +2145,11 @@ body {
   gap: 22px;
   padding-bottom: 22px;
   border: 0;
+}
+
+.artifact-titleblock,
+.settings-heading {
+  display: none;
 }
 
 .artifact-titleblock h1,
@@ -2206,7 +2211,7 @@ body {
 .settings-layout {
   grid-template-columns: 150px minmax(0, 720px);
   gap: 36px;
-  padding-top: 24px;
+  padding-top: 0;
 }
 
 .settings-panel {
