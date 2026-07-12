@@ -37,13 +37,15 @@ vi.mock('@/hooks/use-organizations', () => ({
 }))
 
 describe('AppHeader', () => {
-  it('opens the user menu with standard grouped labels', async () => {
+  it('opens the compact user menu with account actions', async () => {
     render(<AppHeader />)
 
     fireEvent.click(screen.getByRole('button', { name: /Chris Kafrouni/i }))
 
-    expect(await screen.findByText('chris@example.com')).not.toBeNull()
-    expect(screen.getByRole('menuitem', { name: 'Settings' })).not.toBeNull()
+    expect(
+      await screen.findByRole('menuitem', { name: 'Settings' }),
+    ).not.toBeNull()
+    expect(screen.getByText('Theme')).not.toBeNull()
     expect(screen.getByRole('menuitem', { name: 'Sign out' })).not.toBeNull()
   })
 })
