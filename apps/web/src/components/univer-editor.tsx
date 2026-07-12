@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Save } from 'lucide-react'
 import { toast } from 'sonner'
 import { defaultTheme, LocaleType } from '@univerjs/presets'
@@ -24,6 +25,7 @@ export interface UniverSheet {
 }
 
 interface EditorProps {
+  actionsContainer?: HTMLDivElement | null | undefined
   entryPath: string
   expectedCurrentVersion: number
   kind: 'document' | 'spreadsheet'
@@ -391,19 +393,29 @@ export function UniverEditor(props: EditorProps) {
     }
   }
 
-  return (
-    <div className="univer-editor-shell">
-      <div className="univer-editor-actions">
-        <span>{dirty ? 'Unsaved changes' : 'Current version'}</span>
-        <Button
-          size="sm"
-          disabled={!dirty || saving}
-          onClick={() => void save()}
-        >
-          <Save size={14} /> {saving ? 'Saving…' : 'Save new version'}
-        </Button>
-      </div>
-      <div id={containerId} ref={container} className="univer-editor" />
+  const actions = (
+    <div className="viewer-editor-actions">
+      <span>{dirty ? 'Unsaved changes' : 'Current version'}</span>
+      <Button
+        size="sm"
+        disabled={!dirty || saving}
+        aria-label={saving ? 'Saving new version' : 'Save new version'}
+        onClick={() => void save()}
+      >
+        <Save size={14} />
+        <span className="editor-save-label">
+          {saving ? 'Saving…' : 'Save new version'}
+        </span>
+      </Button>
     </div>
+  )
+
+  return (
+    <>
+      {props.actionsContainer && createPortal(actions, props.actionsContainer)}
+      <div className="univer-editor-shell">
+        <div id={containerId} ref={container} className="univer-editor" />
+      </div>
+    </>
   )
 }

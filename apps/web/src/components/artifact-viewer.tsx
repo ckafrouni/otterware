@@ -58,6 +58,8 @@ export function ArtifactViewer({
   const [actionError, setActionError] = useState<string | null>(null)
   const [changingArchivedState, setChangingArchivedState] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [editorActionsContainer, setEditorActionsContainer] =
+    useState<HTMLDivElement | null>(null)
   const { organizations } = useOrganizations()
   const { isOwner } = useCurrentActor(organizationId)
   const queryClient = useQueryClient()
@@ -224,6 +226,10 @@ export function ArtifactViewer({
           {artifact?.archivedAt && <Badge variant="secondary">Archived</Badge>}
         </div>
         <div className="viewer-actions">
+          <div
+            ref={setEditorActionsContainer}
+            className="viewer-editor-actions-slot"
+          />
           {artifact && (
             <DropdownMenu>
               <DropdownMenuTrigger
@@ -317,6 +323,7 @@ export function ArtifactViewer({
         isDocumentPreview(previewContentType, selected.entryPath) ? (
           <Suspense fallback={<ArtifactLoadingState />}>
             <ArtifactDocumentPreview
+              actionsContainer={editorActionsContainer}
               contentType={previewContentType}
               entryPath={selected.entryPath}
               expectedCurrentVersion={artifact.versionCount}
