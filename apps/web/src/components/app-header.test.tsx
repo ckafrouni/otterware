@@ -15,6 +15,15 @@ vi.mock('@tanstack/react-router', () => ({
   >(function MockLink({ to, activeProps: _activeProps, ...props }, ref) {
     return <a ref={ref} href={to} {...props} />
   }),
+  useLocation: ({
+    select,
+  }: {
+    select?: (location: { pathname: string }) => unknown
+  } = {}) => {
+    const location = { pathname: '/artifacts' }
+    return select ? select(location) : location
+  },
+  useNavigate: () => vi.fn(),
 }))
 
 vi.mock('#/lib/auth-client', () => ({

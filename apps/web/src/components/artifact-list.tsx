@@ -74,7 +74,7 @@ export function ArtifactListPage({
   const [deletingArtifact, setDeletingArtifact] = useState<Artifact | null>(
     null,
   )
-  const { activeOrganization } = useOrganizations()
+  const { activeOrganization, loaded, organizations } = useOrganizations()
   const { isOwner } = useCurrentActor(
     activeOrganization?.id,
     Boolean(activeOrganization),
@@ -118,7 +118,8 @@ export function ArtifactListPage({
     staleTime: 60_000,
   })
   const artifacts = artifactsQuery.data ?? []
-  const loading = !activeOrganization || artifactsQuery.isPending
+  const noTeam = loaded && organizations.length === 0
+  const loading = !noTeam && (!activeOrganization || artifactsQuery.isPending)
   const error =
     actionError ??
     (artifactsQuery.error instanceof Error
@@ -254,7 +255,6 @@ export function ArtifactListPage({
                 }}
                 variant="outline"
                 spacing={0}
-                size="sm"
                 aria-label="Artifact layout"
               >
                 <ToggleGroupItem value="list" aria-label="List view">
@@ -271,11 +271,7 @@ export function ArtifactListPage({
               <DropdownMenu>
                 <DropdownMenuTrigger
                   render={
-                    <Button
-                      size="sm"
-                      type="button"
-                      aria-label="Publish artifact"
-                    />
+                    <Button type="button" aria-label="Publish artifact" />
                   }
                 >
                   <Plus size={15} /> Publish
@@ -327,7 +323,16 @@ export function ArtifactListPage({
               )}
             </div>
           )}
-          {!loading && !error && artifacts.length === 0 && (
+          {noTeam && !error && (
+            <div className="empty-panel">
+              <h2>Create your first team</h2>
+              <p>
+                Artifacts live in a team workspace. Create one in{' '}
+                <Link to="/settings">Settings</Link> to get started.
+              </p>
+            </div>
+          )}
+          {!noTeam && !loading && !error && artifacts.length === 0 && (
             <div className="empty-panel">
               {status === 'archived' ? (
                 <h2>No archived artifacts</h2>
@@ -525,27 +530,25 @@ export function ArtifactListPage({
 function ArtifactHomeLoadingState({ view }: { view: 'grid' | 'list' }) {
   return (
     <div className="app-shell artifact-home-loading" role="status">
+      <aside className="app-sidebar" aria-hidden="true">
+        <div className="skeleton-block home-loading-workspace" />
+        <div className="skeleton-block home-loading-find" />
+        <div className="skeleton-block home-loading-navitem" />
+        <div className="skeleton-block home-loading-navitem" />
+        <div className="skeleton-block home-loading-account" />
+      </aside>
       <header className="app-header" aria-hidden="true">
-        <div className="home-loading-navigation">
-          <div className="home-loading-brand" />
-          <div className="home-loading-team" />
-          <div className="home-loading-nav" />
-        </div>
-        <div className="home-loading-user" />
+        <div className="skeleton-block home-loading-heading" />
       </header>
       <main className="artifact-home">
         <section className="artifact-commandbar" aria-hidden="true">
-          <div className="artifact-titleblock">
-            <div className="home-loading-heading" />
-            <div className="home-loading-subtitle" />
-          </div>
           <div className="artifact-toolbar">
-            <div className="home-loading-search" />
-            <div className="home-loading-filter" />
-            <div className="home-loading-sort" />
-            <div className="home-loading-layout" />
-            <div className="home-loading-count" />
-            <div className="home-loading-publish" />
+            <div className="skeleton-block home-loading-search" />
+            <div className="skeleton-block home-loading-filter" />
+            <div className="skeleton-block home-loading-sort" />
+            <div className="skeleton-block home-loading-layout" />
+            <div className="skeleton-block home-loading-count" />
+            <div className="skeleton-block home-loading-publish" />
           </div>
         </section>
         <section

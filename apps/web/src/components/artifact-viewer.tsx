@@ -282,20 +282,22 @@ export function ArtifactViewer({
               </DropdownMenuContent>
             </DropdownMenu>
           )}
-          <Button
-            variant="outline"
-            size="icon-sm"
-            type="button"
-            aria-label="Copy edit prompt"
-            onClick={() =>
-              void copy(
-                `Edit my Otterware artifact at ${artifact?.url}. Read the current version first and publish a new immutable version with the Otterware CLI.`,
-                'Edit prompt copied.',
-              )
-            }
-          >
-            <Pencil size={15} />
-          </Button>
+          {artifact && (
+            <Button
+              variant="outline"
+              size="icon-sm"
+              type="button"
+              aria-label="Copy edit prompt"
+              onClick={() =>
+                void copy(
+                  `Edit my Otterware artifact at ${artifact.url}. Read the current version first and publish a new immutable version with the Otterware CLI.`,
+                  'Edit prompt copied.',
+                )
+              }
+            >
+              <Pencil size={15} />
+            </Button>
+          )}
           {artifact && selected && (
             <Button
               variant="outline"

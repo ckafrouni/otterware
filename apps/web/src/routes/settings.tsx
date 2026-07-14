@@ -34,7 +34,10 @@ export function SettingsPage() {
   const [inviteLink, setInviteLink] = useState<string | null>(null)
   const [keyName, setKeyName] = useState('Agent')
   const [createdKey, setCreatedKey] = useState<string | null>(null)
-  const [message, setMessage] = useState<string | null>(null)
+  const [message, setMessage] = useState<{
+    kind: 'error' | 'success'
+    text: string
+  } | null>(null)
   const { roles } = useCurrentActor()
 
   const activeOrganizationId =
@@ -68,18 +71,22 @@ export function SettingsPage() {
       .replace(/^-|-$/g, '')
     const result = await authClient.organization.create({ name: orgName, slug })
     if (result.error)
-      setMessage(result.error.message ?? 'Could not create organization.')
+      setMessage({
+        kind: 'error',
+        text: result.error.message ?? 'Could not create organization.',
+      })
     else {
       setOrgName('')
-      setMessage('Organization created.')
+      setMessage({ kind: 'success', text: 'Organization created.' })
       await refreshOrganizations()
+      window.dispatchEvent(new Event('otterware:organizations-changed'))
     }
   }
 
   async function selectOrganization(organizationId: string) {
     await authClient.organization.setActive({ organizationId })
     await session.refetch()
-    setMessage('Active organization changed.')
+    setMessage({ kind: 'success', text: 'Active organization changed.' })
   }
 
   async function renameOrganization(event: React.FormEvent) {
@@ -91,10 +98,13 @@ export function SettingsPage() {
       data: { name },
     })
     if (result.error) {
-      setMessage(result.error.message ?? 'Could not rename the team.')
+      setMessage({
+        kind: 'error',
+        text: result.error.message ?? 'Could not rename the team.',
+      })
       return
     }
-    setMessage('Team renamed.')
+    setMessage({ kind: 'success', text: 'Team renamed.' })
     await refreshOrganizations()
     window.dispatchEvent(new Event('otterware:organizations-changed'))
   }
@@ -108,7 +118,10 @@ export function SettingsPage() {
       organizationId: activeOrganizationId,
     })
     if (result.error)
-      setMessage(result.error.message ?? 'Could not create invitation.')
+      setMessage({
+        kind: 'error',
+        text: result.error.message ?? 'Could not create invitation.',
+      })
     else if (result.data) {
       setInviteLink(`${location.origin}/invite/${result.data.id}`)
       setInviteEmail('')
@@ -125,7 +138,10 @@ export function SettingsPage() {
       prefix: 'otw_',
     })
     if (result.error)
-      setMessage(result.error.message ?? 'Could not create API key.')
+      setMessage({
+        kind: 'error',
+        text: result.error.message ?? 'Could not create API key.',
+      })
     else if (result.data) setCreatedKey(result.data.key)
   }
 
@@ -148,7 +164,16 @@ export function SettingsPage() {
             </nav>
 
             <div className="settings-content">
-              {message && <div className="notice">{message}</div>}
+              {message && (
+                <div
+                  className={
+                    message.kind === 'error' ? 'notice notice-error' : 'notice'
+                  }
+                  role={message.kind === 'error' ? 'alert' : 'status'}
+                >
+                  {message.text}
+                </div>
+              )}
 
               <Card id="team" className="settings-panel">
                 <div className="settings-panel-heading">

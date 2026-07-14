@@ -151,7 +151,7 @@ function LoginPage() {
           </>
         )}
         {!config && !error && (
-          <div className="centered-state compact">
+          <div className="auth-loading" role="status" aria-label="Loading">
             <div className="spinner" />
           </div>
         )}

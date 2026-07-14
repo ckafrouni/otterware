@@ -1,4 +1,5 @@
-import { Link } from '@tanstack/react-router'
+import { useCallback, useEffect } from 'react'
+import { Link, useLocation, useNavigate } from '@tanstack/react-router'
 import {
   Box,
   Check,
@@ -28,9 +29,38 @@ export function AppHeader() {
   const session = authClient.useSession()
   const { activeOrganization, organizations, selectOrganization } =
     useOrganizations()
-  const pageTitle = globalThis.location?.pathname.startsWith('/settings')
-    ? 'Settings'
-    : 'Artifacts'
+  const navigate = useNavigate()
+  const pathname = useLocation({ select: (location) => location.pathname })
+  const pageTitle = pathname.startsWith('/settings') ? 'Settings' : 'Artifacts'
+
+  const focusSearch = useCallback(() => {
+    const input = document.querySelector<HTMLInputElement>(
+      '.artifact-search-field input',
+    )
+    if (input) input.focus()
+    else void navigate({ to: '/artifacts' })
+  }, [navigate])
+
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (
+        event.defaultPrevented ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.altKey
+      )
+        return
+      const target = event.target as HTMLElement | null
+      if (target?.closest('input, textarea, select, [contenteditable="true"]'))
+        return
+      if (event.key === 'f' || event.key === '/') {
+        event.preventDefault()
+        focusSearch()
+      }
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [focusSearch])
 
   return (
     <>
@@ -72,16 +102,7 @@ export function AppHeader() {
           </DropdownMenu>
         </div>
 
-        <button
-          className="sidebar-search"
-          type="button"
-          onClick={() => {
-            const input = document.querySelector<HTMLInputElement>(
-              '.artifact-search-field input',
-            )
-            input?.focus()
-          }}
-        >
+        <button className="sidebar-search" type="button" onClick={focusSearch}>
           <Search />
           <span>Find</span>
           <kbd>F</kbd>
