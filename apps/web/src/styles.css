@@ -680,42 +680,68 @@ a {
   gap: 5px;
 }
 
-/* List layout reuses the card pieces in a row. */
+/* List layout reuses the card pieces as one compact row. */
 .artifact-row {
   display: grid;
-  grid-template-columns: 58px minmax(0, 1fr) minmax(170px, auto);
+  grid-template-columns: 56px minmax(0, 1fr) auto;
   align-items: center;
-  min-height: 66px;
+  min-height: 60px;
 }
 
 .artifact-row .artifact-preview {
-  width: 44px;
-  height: 44px;
-  margin-left: 11px;
+  width: 40px;
+  height: 40px;
+  margin-left: 10px;
   padding: 0;
   border: 0;
-  border-radius: 9px;
+  border-radius: 8px;
 }
 
 .artifact-row .preview-placeholder span {
-  font-size: 20px;
+  font-size: 18px;
 }
 
 .artifact-row .artifact-card-body {
   min-height: 0;
   padding: 10px 14px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    'title label'
+    'description description';
+  align-items: center;
+  column-gap: 10px;
+  row-gap: 2px;
+}
+
+.artifact-row .artifact-card-body h2 {
+  grid-area: title;
+  margin: 0;
+  overflow: hidden;
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.artifact-row .visibility-label {
+  grid-area: label;
+  justify-self: start;
 }
 
 .artifact-row .artifact-card-body p {
+  grid-area: description;
   -webkit-line-clamp: 1;
+  font-size: 12px;
 }
 
 .artifact-row .artifact-card-meta {
-  min-height: 44px;
+  min-height: 0;
   margin: 0;
-  padding: 0 9px 0 14px;
-  border-top: 0;
-  border-left: 1px solid var(--line);
+  padding: 0 12px 0 0;
+  border: 0;
+  background: none;
+  justify-content: flex-end;
+  gap: 14px;
 }
 
 .empty-panel {
@@ -1516,7 +1542,7 @@ p.security-note {
   }
 
   .artifact-row {
-    grid-template-columns: 58px minmax(0, 1fr);
+    grid-template-columns: 56px minmax(0, 1fr);
     grid-template-rows: auto auto;
   }
 
@@ -1529,9 +1555,9 @@ p.security-note {
   .artifact-row .artifact-card-meta {
     grid-column: 1 / -1;
     min-height: 34px;
-    padding-left: 12px;
+    padding: 4px 8px 4px 12px;
     border-top: 1px solid var(--line);
-    border-left: 0;
+    justify-content: space-between;
   }
 
   .settings-topbar {
