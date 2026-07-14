@@ -771,16 +771,11 @@ a {
 }
 
 /* Loading skeletons ------------------------------------------------------- */
-.skeleton-block,
 .skeleton-line,
 .viewer-loading-control,
 .viewer-loading-title,
 .viewer-loading-share {
   background: color-mix(in srgb, var(--ink) 6%, transparent);
-}
-
-.skeleton-block {
-  border-radius: 6px;
 }
 
 .skeleton-line {
@@ -820,58 +815,6 @@ a {
 .artifact-card-skeleton .artifact-card-meta {
   justify-content: flex-start;
   background: none;
-}
-
-.home-loading-workspace {
-  height: 44px;
-  margin-bottom: 10px;
-}
-
-.home-loading-find {
-  height: 32px;
-  margin-bottom: 10px;
-}
-
-.home-loading-navitem {
-  height: 34px;
-  margin-bottom: 2px;
-}
-
-.home-loading-account {
-  height: 42px;
-  margin-top: auto;
-}
-
-.home-loading-heading {
-  width: 94px;
-  height: 14px;
-  border-radius: 999px;
-}
-
-.home-loading-search {
-  flex: 1 1 220px;
-  max-width: 420px;
-  height: 32px;
-}
-
-.home-loading-filter {
-  width: 122px;
-  height: 32px;
-}
-
-.home-loading-sort {
-  width: 184px;
-  height: 32px;
-}
-
-.home-loading-layout {
-  width: 64px;
-  height: 32px;
-}
-
-.home-loading-publish {
-  width: 96px;
-  height: 32px;
 }
 
 /* Artifact viewer --------------------------------------------------------- */
@@ -1522,17 +1465,6 @@ p.security-note {
 
   .artifact-toolbar > [data-slot='dropdown-menu-root'] {
     justify-self: end;
-  }
-
-  .home-loading-filter,
-  .home-loading-sort,
-  .home-loading-layout {
-    display: none;
-  }
-
-  .home-loading-search {
-    grid-column: 1 / -1;
-    max-width: none;
   }
 
   .artifact-grid {

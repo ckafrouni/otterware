@@ -630,29 +630,8 @@ export function ArtifactListPage({
 
 function ArtifactHomeLoadingState({ view }: { view: 'grid' | 'list' }) {
   return (
-    <div
-      className="app-shell artifact-shell artifact-home-loading"
-      role="status"
-    >
-      <aside className="app-sidebar" aria-hidden="true">
-        <div className="skeleton-block home-loading-workspace" />
-        <div className="skeleton-block home-loading-find" />
-        <div className="skeleton-block home-loading-navitem" />
-        <div className="skeleton-block home-loading-navitem" />
-        <div className="skeleton-block home-loading-account" />
-      </aside>
-      <header className="app-header" aria-hidden="true">
-        <div className="skeleton-block home-loading-heading" />
-        <div className="app-header-actions">
-          <div className="artifact-toolbar">
-            <div className="skeleton-block home-loading-search" />
-            <div className="skeleton-block home-loading-filter" />
-            <div className="skeleton-block home-loading-sort" />
-            <div className="skeleton-block home-loading-layout" />
-            <div className="skeleton-block home-loading-publish" />
-          </div>
-        </div>
-      </header>
+    <div className="app-shell artifact-shell" role="status">
+      <AppHeader />
       <main className="artifact-home">
         <div className="artifact-scroll">
           <section
