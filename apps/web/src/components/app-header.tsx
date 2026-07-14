@@ -1,8 +1,8 @@
-import { Link } from '@tanstack/react-router'
+import { useCallback, useEffect } from 'react'
+import { Link, useLocation, useNavigate } from '@tanstack/react-router'
 import {
   Box,
   Check,
-  ChevronDown,
   ChevronsUpDown,
   FileBox,
   LogOut,
@@ -24,13 +24,42 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { ThemeMenu } from '@/components/theme-menu'
 
-export function AppHeader() {
+export function AppHeader({ actions }: { actions?: React.ReactNode }) {
   const session = authClient.useSession()
   const { activeOrganization, organizations, selectOrganization } =
     useOrganizations()
-  const pageTitle = globalThis.location?.pathname.startsWith('/settings')
-    ? 'Settings'
-    : 'Artifacts'
+  const navigate = useNavigate()
+  const pathname = useLocation({ select: (location) => location.pathname })
+  const pageTitle = pathname.startsWith('/settings') ? 'Settings' : 'Artifacts'
+
+  const focusSearch = useCallback(() => {
+    const input = document.querySelector<HTMLInputElement>(
+      '.artifact-search-field input',
+    )
+    if (input) input.focus()
+    else void navigate({ to: '/artifacts' })
+  }, [navigate])
+
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (
+        event.defaultPrevented ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.altKey
+      )
+        return
+      const target = event.target as HTMLElement | null
+      if (target?.closest('input, textarea, select, [contenteditable="true"]'))
+        return
+      if (event.key === 'f' || event.key === '/') {
+        event.preventDefault()
+        focusSearch()
+      }
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [focusSearch])
 
   return (
     <>
@@ -53,8 +82,14 @@ export function AppHeader() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="team-switcher-menu">
               <DropdownMenuGroup>
+                <DropdownMenuLabel className="user-menu-identity">
+                  <strong>{session.data?.user.name}</strong>
+                  <small>{session.data?.user.email}</small>
+                </DropdownMenuLabel>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
                 <DropdownMenuLabel>Teams</DropdownMenuLabel>
-                <DropdownMenuSeparator />
                 {organizations.map((organization) => (
                   <DropdownMenuItem
                     key={organization.id}
@@ -68,51 +103,7 @@ export function AppHeader() {
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-
-        <button
-          className="sidebar-search"
-          type="button"
-          onClick={() => {
-            const input = document.querySelector<HTMLInputElement>(
-              '.artifact-search-field input',
-            )
-            input?.focus()
-          }}
-        >
-          <Search />
-          <span>Find</span>
-          <kbd>F</kbd>
-        </button>
-
-        <nav className="sidebar-nav" aria-label="Workspace navigation">
-          <Link to="/artifacts" activeProps={{ className: 'active' }}>
-            <FileBox /> Artifacts
-          </Link>
-          <Link to="/settings" activeProps={{ className: 'active' }}>
-            <Settings /> Settings
-          </Link>
-        </nav>
-
-        <div className="sidebar-account">
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={
-                <Button variant="ghost" className="sidebar-user-trigger" />
-              }
-            >
-              <span className="avatar">
-                {session.data?.user.name?.slice(0, 2).toUpperCase() ?? 'OT'}
-              </span>
-              <span className="sidebar-user-copy">
-                <strong>{session.data?.user.name}</strong>
-                <small>Account</small>
-              </span>
-              <ChevronDown />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" side="top" className="user-menu">
+              <DropdownMenuSeparator />
               <DropdownMenuItem render={<Link to="/settings" />}>
                 <Settings /> Settings
               </DropdownMenuItem>
@@ -133,10 +124,23 @@ export function AppHeader() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+
+        <button className="sidebar-search" type="button" onClick={focusSearch}>
+          <Search />
+          <span>Find</span>
+          <kbd>F</kbd>
+        </button>
+
+        <nav className="sidebar-nav" aria-label="Workspace navigation">
+          <Link to="/artifacts" activeProps={{ className: 'active' }}>
+            <FileBox /> Artifacts
+          </Link>
+        </nav>
       </aside>
 
       <header className="app-header">
         <strong>{pageTitle}</strong>
+        {actions && <div className="app-header-actions">{actions}</div>}
         <div className="mobile-account-menu">
           <DropdownMenu>
             <DropdownMenuTrigger
