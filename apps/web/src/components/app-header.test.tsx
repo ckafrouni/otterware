@@ -57,14 +57,18 @@ describe('AppHeader', () => {
     expect(container.querySelector('.header-context')).toBeNull()
   })
 
-  it('opens the compact user menu with account actions', async () => {
+  it('merges teams and account actions into the workspace menu', async () => {
     render(<AppHeader />)
 
-    fireEvent.click(screen.getByRole('button', { name: /Chris Kafrouni/i }))
+    fireEvent.click(
+      screen.getByRole('button', { name: /Select team|Otterware/ }),
+    )
 
-    expect(
-      await screen.findByRole('menuitem', { name: 'Settings' }),
-    ).not.toBeNull()
+    expect(await screen.findByText('Chris Kafrouni')).not.toBeNull()
+    expect(screen.getByText('chris@example.com')).not.toBeNull()
+    expect(screen.getByText('Teams')).not.toBeNull()
+    expect(screen.getByRole('menuitem', { name: /Otterware/ })).not.toBeNull()
+    expect(screen.getByRole('menuitem', { name: 'Settings' })).not.toBeNull()
     expect(screen.getByText('Theme')).not.toBeNull()
     expect(screen.getByRole('menuitem', { name: 'Sign out' })).not.toBeNull()
   })

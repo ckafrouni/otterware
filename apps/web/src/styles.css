@@ -236,8 +236,7 @@ a {
   color: var(--bg);
 }
 
-.sidebar-team-trigger,
-.sidebar-user-trigger {
+.sidebar-team-trigger {
   width: 100%;
   min-width: 0;
   justify-content: flex-start;
@@ -259,8 +258,7 @@ a {
   height: 15px;
 }
 
-.sidebar-workspace-copy,
-.sidebar-user-copy {
+.sidebar-workspace-copy {
   min-width: 0;
   display: grid;
   gap: 1px;
@@ -268,9 +266,7 @@ a {
 }
 
 .sidebar-workspace-copy strong,
-.sidebar-workspace-copy small,
-.sidebar-user-copy strong,
-.sidebar-user-copy small {
+.sidebar-workspace-copy small {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -288,8 +284,7 @@ a {
   font-weight: 450;
 }
 
-.sidebar-team-trigger > svg,
-.sidebar-user-trigger > svg {
+.sidebar-team-trigger > svg {
   width: 14px;
   height: 14px;
   margin-left: auto;
@@ -368,29 +363,6 @@ a {
   font-weight: 550;
 }
 
-.sidebar-account {
-  margin-top: auto;
-  padding-top: 10px;
-  border-top: 1px solid var(--line);
-}
-
-.sidebar-user-trigger {
-  height: 42px;
-  padding: 0 7px;
-}
-
-.sidebar-user-copy strong {
-  color: var(--ink);
-  font-size: 13px;
-  font-weight: 550;
-}
-
-.sidebar-user-copy small {
-  color: var(--ink-muted);
-  font-size: 11px;
-  font-weight: 400;
-}
-
 .avatar {
   width: 27px;
   height: 27px;
@@ -460,7 +432,7 @@ a {
 }
 
 .team-switcher-menu {
-  width: 220px;
+  width: 240px;
 }
 
 .user-menu {

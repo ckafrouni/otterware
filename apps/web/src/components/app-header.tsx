@@ -3,7 +3,6 @@ import { Link, useLocation, useNavigate } from '@tanstack/react-router'
 import {
   Box,
   Check,
-  ChevronDown,
   ChevronsUpDown,
   FileBox,
   LogOut,
@@ -83,8 +82,14 @@ export function AppHeader({ actions }: { actions?: React.ReactNode }) {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="team-switcher-menu">
               <DropdownMenuGroup>
+                <DropdownMenuLabel className="user-menu-identity">
+                  <strong>{session.data?.user.name}</strong>
+                  <small>{session.data?.user.email}</small>
+                </DropdownMenuLabel>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
                 <DropdownMenuLabel>Teams</DropdownMenuLabel>
-                <DropdownMenuSeparator />
                 {organizations.map((organization) => (
                   <DropdownMenuItem
                     key={organization.id}
@@ -98,42 +103,7 @@ export function AppHeader({ actions }: { actions?: React.ReactNode }) {
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-
-        <button className="sidebar-search" type="button" onClick={focusSearch}>
-          <Search />
-          <span>Find</span>
-          <kbd>F</kbd>
-        </button>
-
-        <nav className="sidebar-nav" aria-label="Workspace navigation">
-          <Link to="/artifacts" activeProps={{ className: 'active' }}>
-            <FileBox /> Artifacts
-          </Link>
-          <Link to="/settings" activeProps={{ className: 'active' }}>
-            <Settings /> Settings
-          </Link>
-        </nav>
-
-        <div className="sidebar-account">
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={
-                <Button variant="ghost" className="sidebar-user-trigger" />
-              }
-            >
-              <span className="avatar">
-                {session.data?.user.name?.slice(0, 2).toUpperCase() ?? 'OT'}
-              </span>
-              <span className="sidebar-user-copy">
-                <strong>{session.data?.user.name}</strong>
-                <small>Account</small>
-              </span>
-              <ChevronDown />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" side="top" className="user-menu">
+              <DropdownMenuSeparator />
               <DropdownMenuItem render={<Link to="/settings" />}>
                 <Settings /> Settings
               </DropdownMenuItem>
@@ -154,6 +124,21 @@ export function AppHeader({ actions }: { actions?: React.ReactNode }) {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+
+        <button className="sidebar-search" type="button" onClick={focusSearch}>
+          <Search />
+          <span>Find</span>
+          <kbd>F</kbd>
+        </button>
+
+        <nav className="sidebar-nav" aria-label="Workspace navigation">
+          <Link to="/artifacts" activeProps={{ className: 'active' }}>
+            <FileBox /> Artifacts
+          </Link>
+          <Link to="/settings" activeProps={{ className: 'active' }}>
+            <Settings /> Settings
+          </Link>
+        </nav>
       </aside>
 
       <header className="app-header">
