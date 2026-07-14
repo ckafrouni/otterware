@@ -9,6 +9,7 @@ import {
 import { tanstackStartCookies } from 'better-auth/tanstack-start'
 import { waitUntil } from 'cloudflare:workers'
 import { authorizeNewUser, normalizeEmail } from './auth-policy'
+import { isPreviewHost } from './host-policy'
 import { sendPasswordResetEmail } from './email'
 import type { Env } from './types'
 import {
@@ -39,7 +40,13 @@ export function createAuth(env: Env) {
     basePath: '/api/auth',
     database: env.DB,
     secret: env.BETTER_AUTH_SECRET,
-    trustedOrigins: [env.APP_URL],
+    trustedOrigins: (request) => {
+      // PR preview deployments serve the app on the worker's own
+      // *.workers.dev version URL; trust that same-origin host only.
+      if (!request) return [env.APP_URL]
+      const { hostname, origin } = new URL(request.url)
+      return isPreviewHost(hostname) ? [env.APP_URL, origin] : [env.APP_URL]
+    },
     session: {
       cookieCache: {
         enabled: true,
