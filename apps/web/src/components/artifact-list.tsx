@@ -183,13 +183,9 @@ export function ArtifactListPage({
   return (
     <AuthGate fallback={<ArtifactHomeLoadingState view={view} />}>
       <div className="app-shell">
-        <AppHeader />
-        <main className="artifact-home">
-          <section
-            className="artifact-commandbar"
-            aria-label="Artifact controls"
-          >
-            <div className="artifact-toolbar">
+        <AppHeader
+          actions={
+            <div className="artifact-toolbar" aria-label="Artifact controls">
               <label className="artifact-search-field">
                 <Search className="artifact-search-icon" size={16} />
                 <Input
@@ -312,8 +308,9 @@ export function ArtifactListPage({
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-          </section>
-
+          }
+        />
+        <main className="artifact-home">
           {error && (
             <div className="empty-panel error-panel">
               <strong>Could not load artifacts</strong>
@@ -539,9 +536,7 @@ function ArtifactHomeLoadingState({ view }: { view: 'grid' | 'list' }) {
       </aside>
       <header className="app-header" aria-hidden="true">
         <div className="skeleton-block home-loading-heading" />
-      </header>
-      <main className="artifact-home">
-        <section className="artifact-commandbar" aria-hidden="true">
+        <div className="app-header-actions">
           <div className="artifact-toolbar">
             <div className="skeleton-block home-loading-search" />
             <div className="skeleton-block home-loading-filter" />
@@ -550,7 +545,9 @@ function ArtifactHomeLoadingState({ view }: { view: 'grid' | 'list' }) {
             <div className="skeleton-block home-loading-count" />
             <div className="skeleton-block home-loading-publish" />
           </div>
-        </section>
+        </div>
+      </header>
+      <main className="artifact-home">
         <section
           className={view === 'grid' ? 'artifact-grid' : 'artifact-list-view'}
           aria-hidden="true"

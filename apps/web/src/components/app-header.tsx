@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { ThemeMenu } from '@/components/theme-menu'
 
-export function AppHeader() {
+export function AppHeader({ actions }: { actions?: React.ReactNode }) {
   const session = authClient.useSession()
   const { activeOrganization, organizations, selectOrganization } =
     useOrganizations()
@@ -158,6 +158,7 @@ export function AppHeader() {
 
       <header className="app-header">
         <strong>{pageTitle}</strong>
+        {actions && <div className="app-header-actions">{actions}</div>}
         <div className="mobile-account-menu">
           <DropdownMenu>
             <DropdownMenuTrigger
