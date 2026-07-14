@@ -552,62 +552,6 @@ export function ArtifactListPage({
               )}
             </section>
           </div>
-          {!loading && !error && !noTeam && visibleArtifacts.length > 0 && (
-            <footer className="artifact-list-footer">
-              <span>
-                {visibleArtifacts.length}{' '}
-                {visibleArtifacts.length === 1 ? 'artifact' : 'artifacts'}
-              </span>
-              {totalPages > 1 && (
-                <Pagination className="artifact-pagination">
-                  <PaginationContent>
-                    <PaginationItem>
-                      <PaginationPrevious
-                        aria-disabled={currentPage === 1}
-                        className={
-                          currentPage === 1 ? 'pagination-disabled' : undefined
-                        }
-                        onClick={() => {
-                          if (currentPage > 1) goToPage(currentPage - 1)
-                        }}
-                      />
-                    </PaginationItem>
-                    {paginationItems(currentPage, totalPages).map(
-                      (item, index) =>
-                        item === 'ellipsis' ? (
-                          <PaginationItem key={`ellipsis-${index}`}>
-                            <PaginationEllipsis />
-                          </PaginationItem>
-                        ) : (
-                          <PaginationItem key={item}>
-                            <PaginationLink
-                              isActive={item === currentPage}
-                              onClick={() => goToPage(item)}
-                            >
-                              {item}
-                            </PaginationLink>
-                          </PaginationItem>
-                        ),
-                    )}
-                    <PaginationItem>
-                      <PaginationNext
-                        aria-disabled={currentPage === totalPages}
-                        className={
-                          currentPage === totalPages
-                            ? 'pagination-disabled'
-                            : undefined
-                        }
-                        onClick={() => {
-                          if (currentPage < totalPages)
-                            goToPage(currentPage + 1)
-                        }}
-                      />
-                    </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
-              )}
-            </footer>
-          )}
           <DeleteArtifactDialog
             artifact={deletingArtifact}
             {...(activeOrganization
@@ -624,6 +568,61 @@ export function ArtifactListPage({
             }}
           />
         </main>
+        {!loading && !error && !noTeam && visibleArtifacts.length > 0 && (
+          <footer className="artifact-list-footer">
+            <span>
+              {visibleArtifacts.length}{' '}
+              {visibleArtifacts.length === 1 ? 'artifact' : 'artifacts'}
+            </span>
+            {totalPages > 1 && (
+              <Pagination className="artifact-pagination">
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      aria-disabled={currentPage === 1}
+                      className={
+                        currentPage === 1 ? 'pagination-disabled' : undefined
+                      }
+                      onClick={() => {
+                        if (currentPage > 1) goToPage(currentPage - 1)
+                      }}
+                    />
+                  </PaginationItem>
+                  {paginationItems(currentPage, totalPages).map(
+                    (item, index) =>
+                      item === 'ellipsis' ? (
+                        <PaginationItem key={`ellipsis-${index}`}>
+                          <PaginationEllipsis />
+                        </PaginationItem>
+                      ) : (
+                        <PaginationItem key={item}>
+                          <PaginationLink
+                            isActive={item === currentPage}
+                            onClick={() => goToPage(item)}
+                          >
+                            {item}
+                          </PaginationLink>
+                        </PaginationItem>
+                      ),
+                  )}
+                  <PaginationItem>
+                    <PaginationNext
+                      aria-disabled={currentPage === totalPages}
+                      className={
+                        currentPage === totalPages
+                          ? 'pagination-disabled'
+                          : undefined
+                      }
+                      onClick={() => {
+                        if (currentPage < totalPages) goToPage(currentPage + 1)
+                      }}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            )}
+          </footer>
+        )}
       </div>
     </AuthGate>
   )

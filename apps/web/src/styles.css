@@ -416,8 +416,7 @@ a {
   gap: 16px;
   padding: 0 24px;
   border-bottom: 1px solid var(--line);
-  background: color-mix(in srgb, var(--bg) 92%, transparent);
-  backdrop-filter: blur(12px);
+  background: var(--surface-soft);
   font-size: 13px;
 }
 
@@ -766,15 +765,20 @@ a {
   padding: 24px;
 }
 
+/* Mirrors the header bar at the bottom of the artifacts frame, but keeps
+   the page background instead of the sidebar tone. */
 .artifact-list-footer {
   flex: 0 0 auto;
+  min-height: 48px;
+  margin-left: var(--sidebar-width);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px 0;
+  padding: 6px 24px;
   border-top: 1px solid var(--line);
+  background: var(--bg);
   color: var(--ink-muted);
   font-size: 12px;
 }
@@ -1494,6 +1498,10 @@ p.security-note {
 
   .artifact-scroll {
     padding: 16px 0;
+  }
+
+  .artifact-list-footer {
+    padding-inline: 14px;
   }
 
   .artifact-toolbar {
