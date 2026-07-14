@@ -28,10 +28,18 @@ import { artifactBootstrapQuery } from '#/lib/artifact-query'
 import { readSessionCache, writeSessionCache } from '#/lib/session-cache'
 import { useCurrentActor } from '@/hooks/use-current-actor'
 import { useOrganizations } from '@/hooks/use-organizations'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -57,6 +65,28 @@ export interface ArtifactListSearch {
   sort?: 'updated' | 'az' | 'za' | undefined
   status?: 'active' | 'archived' | undefined
   view?: 'grid' | 'list' | undefined
+  page?: number | undefined
+}
+
+const PAGE_SIZE = 12
+
+function paginationItems(
+  current: number,
+  total: number,
+): Array<number | 'ellipsis'> {
+  if (total <= 7) return Array.from({ length: total }, (_, index) => index + 1)
+  const anchors = [...new Set([1, current - 1, current, current + 1, total])]
+    .filter((page) => page >= 1 && page <= total)
+    .sort((left, right) => left - right)
+  const items: Array<number | 'ellipsis'> = []
+  let previous = 0
+  for (const page of anchors) {
+    if (page - previous === 2) items.push(previous + 1)
+    else if (page - previous > 2) items.push('ellipsis')
+    items.push(page)
+    previous = page
+  }
+  return items
 }
 
 export function ArtifactListPage({
@@ -155,6 +185,17 @@ export function ArtifactListPage({
     })
   }, [artifacts, query, sort, status])
 
+  const totalPages = Math.max(1, Math.ceil(visibleArtifacts.length / PAGE_SIZE))
+  const currentPage = Math.min(search.page ?? 1, totalPages)
+  const pagedArtifacts = visibleArtifacts.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE,
+  )
+
+  function goToPage(page: number) {
+    onSearchChange({ page: page <= 1 ? undefined : page })
+  }
+
   async function changeArchivedState(artifact: Artifact) {
     setChangingId(artifact.id)
     setActionError(null)
@@ -194,7 +235,7 @@ export function ArtifactListPage({
                   value={query}
                   onChange={(event) =>
                     onSearchChange(
-                      { q: event.target.value || undefined },
+                      { q: event.target.value || undefined, page: undefined },
                       { replace: true },
                     )
                   }
@@ -205,6 +246,7 @@ export function ArtifactListPage({
                 onValueChange={(value) =>
                   onSearchChange({
                     status: value === 'archived' ? 'archived' : undefined,
+                    page: undefined,
                   })
                 }
               >
@@ -226,6 +268,7 @@ export function ArtifactListPage({
                 onValueChange={(value) =>
                   onSearchChange({
                     sort: value === 'az' || value === 'za' ? value : undefined,
+                    page: undefined,
                   })
                 }
               >
@@ -260,10 +303,6 @@ export function ArtifactListPage({
                   <Grid2X2 size={16} />
                 </ToggleGroupItem>
               </ToggleGroup>
-              <Badge variant="outline">
-                {visibleArtifacts.length}{' '}
-                {visibleArtifacts.length === 1 ? 'artifact' : 'artifacts'}
-              </Badge>
               <DropdownMenu>
                 <DropdownMenuTrigger
                   render={
@@ -363,7 +402,7 @@ export function ArtifactListPage({
             {loading ? (
               <ArtifactCardSkeletons view={view} />
             ) : (
-              visibleArtifacts.map((artifact) => (
+              pagedArtifacts.map((artifact) => (
                 <Link
                   key={artifact.id}
                   to="/$organizationSlug/a/$slug"
@@ -503,6 +542,62 @@ export function ArtifactListPage({
               ))
             )}
           </section>
+          {!loading && !error && !noTeam && visibleArtifacts.length > 0 && (
+            <footer className="artifact-list-footer">
+              <span>
+                {visibleArtifacts.length}{' '}
+                {visibleArtifacts.length === 1 ? 'artifact' : 'artifacts'}
+              </span>
+              {totalPages > 1 && (
+                <Pagination className="artifact-pagination">
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        aria-disabled={currentPage === 1}
+                        className={
+                          currentPage === 1 ? 'pagination-disabled' : undefined
+                        }
+                        onClick={() => {
+                          if (currentPage > 1) goToPage(currentPage - 1)
+                        }}
+                      />
+                    </PaginationItem>
+                    {paginationItems(currentPage, totalPages).map(
+                      (item, index) =>
+                        item === 'ellipsis' ? (
+                          <PaginationItem key={`ellipsis-${index}`}>
+                            <PaginationEllipsis />
+                          </PaginationItem>
+                        ) : (
+                          <PaginationItem key={item}>
+                            <PaginationLink
+                              isActive={item === currentPage}
+                              onClick={() => goToPage(item)}
+                            >
+                              {item}
+                            </PaginationLink>
+                          </PaginationItem>
+                        ),
+                    )}
+                    <PaginationItem>
+                      <PaginationNext
+                        aria-disabled={currentPage === totalPages}
+                        className={
+                          currentPage === totalPages
+                            ? 'pagination-disabled'
+                            : undefined
+                        }
+                        onClick={() => {
+                          if (currentPage < totalPages)
+                            goToPage(currentPage + 1)
+                        }}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              )}
+            </footer>
+          )}
           <DeleteArtifactDialog
             artifact={deletingArtifact}
             {...(activeOrganization
@@ -542,7 +637,6 @@ function ArtifactHomeLoadingState({ view }: { view: 'grid' | 'list' }) {
             <div className="skeleton-block home-loading-filter" />
             <div className="skeleton-block home-loading-sort" />
             <div className="skeleton-block home-loading-layout" />
-            <div className="skeleton-block home-loading-count" />
             <div className="skeleton-block home-loading-publish" />
           </div>
         </div>

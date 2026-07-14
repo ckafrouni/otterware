@@ -10,6 +10,7 @@ export const artifactListSearchSchema = z.object({
   sort: z.enum(['updated', 'az', 'za']).optional().catch(undefined),
   status: z.enum(['active', 'archived']).optional().catch(undefined),
   view: z.enum(['grid', 'list']).optional().catch(undefined),
+  page: z.number().int().min(1).optional().catch(undefined),
 })
 
 export const Route = createFileRoute('/artifacts')({
