@@ -135,9 +135,6 @@ export function AppHeader({ actions }: { actions?: React.ReactNode }) {
           <Link to="/artifacts" activeProps={{ className: 'active' }}>
             <FileBox /> Artifacts
           </Link>
-          <Link to="/settings" activeProps={{ className: 'active' }}>
-            <Settings /> Settings
-          </Link>
         </nav>
       </aside>
 

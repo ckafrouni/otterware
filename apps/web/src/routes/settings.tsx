@@ -1,8 +1,15 @@
 import { useEffect, useState } from 'react'
-import { createFileRoute } from '@tanstack/react-router'
-import { Building2, Copy, KeyRound, Pencil, Plus, UserPlus } from 'lucide-react'
+import { createFileRoute, Link } from '@tanstack/react-router'
+import {
+  ArrowLeft,
+  Building2,
+  Copy,
+  KeyRound,
+  Pencil,
+  Plus,
+  UserPlus,
+} from 'lucide-react'
 import { authClient } from '#/lib/auth-client'
-import { AppHeader } from '#/components/app-header'
 import { AuthGate } from '#/components/auth-gate'
 import { useCurrentActor } from '@/hooks/use-current-actor'
 import { Button } from '@/components/ui/button'
@@ -148,235 +155,241 @@ export function SettingsPage() {
   return (
     <AuthGate>
       <div className="app-shell">
-        <AppHeader />
+        <aside className="app-sidebar">
+          <Link to="/artifacts" className="settings-back">
+            <ArrowLeft /> Back to app
+          </Link>
+          <nav className="sidebar-nav" aria-label="Settings sections">
+            <span className="nav-label">Workspace</span>
+            <a href="#team">
+              <Building2 /> Team
+            </a>
+            <a href="#collaborators">
+              <UserPlus /> Collaborators
+            </a>
+            <a href="#agent-access">
+              <KeyRound /> Agent access
+            </a>
+          </nav>
+        </aside>
+        <header className="app-header settings-topbar">
+          <Link to="/artifacts" className="settings-back">
+            <ArrowLeft /> Back to app
+          </Link>
+        </header>
         <main className="settings-page">
-          <div className="settings-layout">
-            <nav className="settings-nav" aria-label="Settings sections">
-              <a href="#team">
-                <Building2 size={15} /> Team
-              </a>
-              <a href="#collaborators">
-                <UserPlus size={15} /> Collaborators
-              </a>
-              <a href="#agent-access">
-                <KeyRound size={15} /> Agent access
-              </a>
-            </nav>
+          <h1>Settings</h1>
+          <div className="settings-content">
+            {message && (
+              <div
+                className={
+                  message.kind === 'error' ? 'notice notice-error' : 'notice'
+                }
+                role={message.kind === 'error' ? 'alert' : 'status'}
+              >
+                {message.text}
+              </div>
+            )}
 
-            <div className="settings-content">
-              {message && (
-                <div
-                  className={
-                    message.kind === 'error' ? 'notice notice-error' : 'notice'
-                  }
-                  role={message.kind === 'error' ? 'alert' : 'status'}
-                >
-                  {message.text}
+            <Card id="team" className="settings-panel">
+              <div className="settings-panel-heading">
+                <div>
+                  <h2>Team</h2>
+                  <p>Choose and configure your active workspace.</p>
                 </div>
-              )}
-
-              <Card id="team" className="settings-panel">
-                <div className="settings-panel-heading">
-                  <div>
-                    <h2>Team</h2>
-                    <p>Choose and configure your active workspace.</p>
-                  </div>
-                </div>
-                <div className="settings-panel-body">
-                  <div className="settings-field">
-                    <label htmlFor="active-team">Active team</label>
-                    <Select
-                      value={activeOrganizationId}
-                      onValueChange={(value) =>
-                        value && void selectOrganization(value)
-                      }
-                    >
-                      <SelectTrigger id="active-team" className="w-full">
-                        <SelectValue placeholder="Select a team">
-                          {activeOrganization?.name}
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent alignItemWithTrigger={false}>
-                        {organizations.map((organization) => (
-                          <SelectItem
-                            key={organization.id}
-                            value={organization.id}
-                          >
-                            {organization.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {canManageOrganization && activeOrganization && (
-                    <form
-                      className="settings-field"
-                      onSubmit={renameOrganization}
-                    >
-                      <label htmlFor="team-name">Team name</label>
-                      <div className="settings-control-row">
-                        <Input
-                          id="team-name"
-                          required
-                          maxLength={80}
-                          value={teamName}
-                          onChange={(event) => setTeamName(event.target.value)}
-                        />
-                        <Button
-                          variant="outline"
-                          type="submit"
-                          disabled={
-                            !teamName.trim() ||
-                            teamName.trim() === activeOrganization.name
-                          }
-                        >
-                          <Pencil size={14} /> Save
-                        </Button>
-                      </div>
-                    </form>
-                  )}
-
-                  <form
-                    className="settings-field settings-field-separated"
-                    onSubmit={createOrganization}
+              </div>
+              <div className="settings-panel-body">
+                <div className="settings-field">
+                  <label htmlFor="active-team">Active team</label>
+                  <Select
+                    value={activeOrganizationId}
+                    onValueChange={(value) =>
+                      value && void selectOrganization(value)
+                    }
                   >
-                    <label htmlFor="new-organization">
-                      Create another team
-                    </label>
+                    <SelectTrigger id="active-team" className="w-full">
+                      <SelectValue placeholder="Select a team">
+                        {activeOrganization?.name}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent alignItemWithTrigger={false}>
+                      {organizations.map((organization) => (
+                        <SelectItem
+                          key={organization.id}
+                          value={organization.id}
+                        >
+                          {organization.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {canManageOrganization && activeOrganization && (
+                  <form
+                    className="settings-field"
+                    onSubmit={renameOrganization}
+                  >
+                    <label htmlFor="team-name">Team name</label>
                     <div className="settings-control-row">
                       <Input
-                        id="new-organization"
+                        id="team-name"
                         required
-                        placeholder="Team name"
-                        value={orgName}
-                        onChange={(event) => setOrgName(event.target.value)}
+                        maxLength={80}
+                        value={teamName}
+                        onChange={(event) => setTeamName(event.target.value)}
                       />
-                      <Button variant="outline" type="submit">
-                        <Plus size={14} /> Create
+                      <Button
+                        variant="outline"
+                        type="submit"
+                        disabled={
+                          !teamName.trim() ||
+                          teamName.trim() === activeOrganization.name
+                        }
+                      >
+                        <Pencil size={14} /> Save
                       </Button>
                     </div>
                   </form>
-                </div>
-              </Card>
+                )}
 
-              <Card id="collaborators" className="settings-panel">
-                <div className="settings-panel-heading">
-                  <div>
-                    <h2>Collaborators</h2>
-                    <p>Invite someone to the active team.</p>
+                <form
+                  className="settings-field settings-field-separated"
+                  onSubmit={createOrganization}
+                >
+                  <label htmlFor="new-organization">Create another team</label>
+                  <div className="settings-control-row">
+                    <Input
+                      id="new-organization"
+                      required
+                      placeholder="Team name"
+                      value={orgName}
+                      onChange={(event) => setOrgName(event.target.value)}
+                    />
+                    <Button variant="outline" type="submit">
+                      <Plus size={14} /> Create
+                    </Button>
                   </div>
+                </form>
+              </div>
+            </Card>
+
+            <Card id="collaborators" className="settings-panel">
+              <div className="settings-panel-heading">
+                <div>
+                  <h2>Collaborators</h2>
+                  <p>Invite someone to the active team.</p>
                 </div>
-                <div className="settings-panel-body">
-                  <form className="invite-form" onSubmit={invite}>
-                    <div className="settings-field">
-                      <label htmlFor="invite-email">Email address</label>
-                      <Input
-                        id="invite-email"
-                        required
-                        type="email"
-                        placeholder="colleague@example.com"
-                        value={inviteEmail}
-                        onChange={(event) => setInviteEmail(event.target.value)}
-                      />
-                    </div>
-                    <div className="settings-field invite-role-field">
-                      <label htmlFor="invite-role">Role</label>
-                      <Select
-                        value={inviteRole}
-                        onValueChange={(value) =>
-                          setInviteRole(value ?? 'viewer')
-                        }
-                      >
-                        <SelectTrigger id="invite-role" className="w-full">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent alignItemWithTrigger={false}>
-                          <SelectItem value="viewer">Viewer</SelectItem>
-                          <SelectItem value="editor">Editor</SelectItem>
-                          <SelectItem value="admin">Admin</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+              </div>
+              <div className="settings-panel-body">
+                <form className="invite-form" onSubmit={invite}>
+                  <div className="settings-field">
+                    <label htmlFor="invite-email">Email address</label>
+                    <Input
+                      id="invite-email"
+                      required
+                      type="email"
+                      placeholder="colleague@example.com"
+                      value={inviteEmail}
+                      onChange={(event) => setInviteEmail(event.target.value)}
+                    />
+                  </div>
+                  <div className="settings-field invite-role-field">
+                    <label htmlFor="invite-role">Role</label>
+                    <Select
+                      value={inviteRole}
+                      onValueChange={(value) =>
+                        setInviteRole(value ?? 'viewer')
+                      }
+                    >
+                      <SelectTrigger id="invite-role" className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent alignItemWithTrigger={false}>
+                        <SelectItem value="viewer">Viewer</SelectItem>
+                        <SelectItem value="editor">Editor</SelectItem>
+                        <SelectItem value="admin">Admin</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button
+                    variant="outline"
+                    type="submit"
+                    disabled={!activeOrganizationId}
+                  >
+                    Send invite
+                  </Button>
+                </form>
+                {inviteLink && (
+                  <div className="secret-output">
+                    <code>{inviteLink}</code>
+                    <Button
+                      variant="ghost"
+                      size="icon-xs"
+                      type="button"
+                      onClick={() =>
+                        void navigator.clipboard.writeText(inviteLink)
+                      }
+                    >
+                      <Copy size={14} />
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </Card>
+
+            <Card id="agent-access" className="settings-panel">
+              <div className="settings-panel-heading">
+                <div>
+                  <h2>Agent access</h2>
+                  <p>Create organization-scoped credentials for agents.</p>
+                </div>
+              </div>
+              <div className="settings-panel-body">
+                <form className="settings-field" onSubmit={createKey}>
+                  <label htmlFor="key-name">Key name</label>
+                  <div className="settings-control-row">
+                    <Input
+                      id="key-name"
+                      required
+                      value={keyName}
+                      onChange={(event) => setKeyName(event.target.value)}
+                    />
                     <Button
                       variant="outline"
                       type="submit"
                       disabled={!activeOrganizationId}
                     >
-                      Send invite
+                      Create key
                     </Button>
-                  </form>
-                  {inviteLink && (
+                  </div>
+                  <p className="settings-help">
+                    Keys can access shared organization artifacts, never private
+                    artifacts.
+                  </p>
+                </form>
+                {createdKey && (
+                  <div>
+                    <p className="security-note">
+                      Copy this key now. It will not be shown again.
+                    </p>
                     <div className="secret-output">
-                      <code>{inviteLink}</code>
+                      <code>{createdKey}</code>
                       <Button
                         variant="ghost"
                         size="icon-xs"
                         type="button"
                         onClick={() =>
-                          void navigator.clipboard.writeText(inviteLink)
+                          void navigator.clipboard.writeText(createdKey)
                         }
                       >
                         <Copy size={14} />
                       </Button>
                     </div>
-                  )}
-                </div>
-              </Card>
-
-              <Card id="agent-access" className="settings-panel">
-                <div className="settings-panel-heading">
-                  <div>
-                    <h2>Agent access</h2>
-                    <p>Create organization-scoped credentials for agents.</p>
                   </div>
-                </div>
-                <div className="settings-panel-body">
-                  <form className="settings-field" onSubmit={createKey}>
-                    <label htmlFor="key-name">Key name</label>
-                    <div className="settings-control-row">
-                      <Input
-                        id="key-name"
-                        required
-                        value={keyName}
-                        onChange={(event) => setKeyName(event.target.value)}
-                      />
-                      <Button
-                        variant="outline"
-                        type="submit"
-                        disabled={!activeOrganizationId}
-                      >
-                        Create key
-                      </Button>
-                    </div>
-                    <p className="settings-help">
-                      Keys can access shared organization artifacts, never
-                      private artifacts.
-                    </p>
-                  </form>
-                  {createdKey && (
-                    <div>
-                      <p className="security-note">
-                        Copy this key now. It will not be shown again.
-                      </p>
-                      <div className="secret-output">
-                        <code>{createdKey}</code>
-                        <Button
-                          variant="ghost"
-                          size="icon-xs"
-                          type="button"
-                          onClick={() =>
-                            void navigator.clipboard.writeText(createdKey)
-                          }
-                        >
-                          <Copy size={14} />
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </Card>
-            </div>
+                )}
+              </div>
+            </Card>
           </div>
         </main>
       </div>

@@ -1253,46 +1253,57 @@ p.security-note {
 }
 
 /* Settings ----------------------------------------------------------------- */
-.settings-layout {
-  display: grid;
-  grid-template-columns: 150px minmax(0, 720px);
-  gap: 36px;
-  align-items: start;
-}
-
-.settings-nav {
-  position: sticky;
-  top: 80px;
-  display: grid;
-  gap: 3px;
-}
-
-.settings-nav a {
-  min-height: 36px;
+.settings-back {
+  height: 34px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding: 0 10px;
   border-radius: 6px;
-  color: var(--ink-soft);
-  text-decoration: none;
+  color: var(--ink);
   font-size: 14px;
+  font-weight: 550;
+  text-decoration: none;
 }
 
-.settings-nav a:hover,
-.settings-nav a:focus-visible {
-  background: var(--surface-soft);
-  color: var(--ink);
+.settings-back svg {
+  width: 16px;
+  height: 16px;
+}
+
+.settings-back:hover {
+  background: color-mix(in srgb, var(--ink) 6%, transparent);
+}
+
+.sidebar-nav .nav-label {
+  margin: 8px 0 2px;
+  padding: 0 10px;
+  color: var(--ink-muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.settings-topbar {
+  display: none;
+}
+
+.settings-page h1 {
+  margin: 0 0 20px;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
 }
 
 .settings-content {
   min-width: 0;
+  max-width: 720px;
   display: grid;
   gap: 24px;
 }
 
 .settings-panel {
-  scroll-margin-top: 80px;
+  scroll-margin-top: 24px;
   overflow: hidden;
   gap: 0;
   padding: 0;
@@ -1591,25 +1602,17 @@ p.security-note {
     border-left: 0;
   }
 
-  .settings-layout {
-    display: block;
-  }
-
-  .settings-nav {
-    position: static;
+  .settings-topbar {
     display: flex;
-    gap: 4px;
-    margin-bottom: 14px;
-    padding-bottom: 8px;
-    overflow-x: auto;
-    scrollbar-width: none;
   }
 
-  .settings-nav a {
-    flex: 0 0 auto;
-    min-height: 34px;
-    padding: 7px 9px;
-    white-space: nowrap;
+  .settings-topbar .settings-back {
+    margin: 0;
+    padding: 0 6px;
+  }
+
+  .settings-panel {
+    scroll-margin-top: 64px;
   }
 
   .settings-content {

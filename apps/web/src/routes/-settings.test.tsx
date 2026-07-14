@@ -7,9 +7,18 @@ import { SettingsPage } from './settings'
 
 vi.mock('@tanstack/react-router', () => ({
   createFileRoute: () => () => ({}),
+  Link: ({
+    to,
+    children,
+    ...props
+  }: React.PropsWithChildren<
+    { to: string } & React.AnchorHTMLAttributes<HTMLAnchorElement>
+  >) => (
+    <a href={to} {...props}>
+      {children}
+    </a>
+  ),
 }))
-
-vi.mock('#/components/app-header', () => ({ AppHeader: () => null }))
 vi.mock('#/components/auth-gate', () => ({
   AuthGate: ({ children }: { children: React.ReactNode }) => children,
 }))
