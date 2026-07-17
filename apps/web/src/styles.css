@@ -179,10 +179,20 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Desktop-app scrolling: no rubber-band bounce or scroll chaining anywhere —
-   applies to the viewport, every inner scroll region, and scrollable menus.
-   Also suppresses horizontal swipe-back navigation, as a native app would. */
-* {
+/* Desktop-app scrolling: no rubber-band bounce or chaining on the viewport
+   and the real scroll regions. Deliberately NOT applied universally:
+   overflow-hidden elements (cards, frames) count as scroll containers, and
+   overscroll-behavior on them swallows wheel events instead of letting them
+   reach the actual scroller. */
+html,
+body,
+.artifact-scroll,
+.settings-scroll,
+.viewer-main,
+.settings-nav,
+.secret-output code,
+[data-slot='dropdown-menu-content'],
+[data-slot='select-content'] {
   overscroll-behavior: none;
 }
 
