@@ -177,6 +177,12 @@ body {
   min-width: 320px;
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
+}
+
+/* Desktop-app scrolling: no rubber-band bounce or scroll chaining anywhere —
+   applies to the viewport, every inner scroll region, and scrollable menus.
+   Also suppresses horizontal swipe-back navigation, as a native app would. */
+* {
   overscroll-behavior: none;
 }
 
@@ -523,7 +529,6 @@ a {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
-  overscroll-behavior: contain;
   scrollbar-width: thin;
   scrollbar-color: var(--line-strong) transparent;
 }
