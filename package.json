@@ -11,6 +11,7 @@
     "build": "pnpm -r --if-present build",
     "check": "pnpm -r --if-present check",
     "dev": "pnpm --filter @otterware/web dev",
+    "dev:serve": "pnpm --filter @otterware/web dev:serve",
     "dev:cli": "pnpm --dir apps/cli dev",
     "deploy": "pnpm --filter @otterware/web deploy",
     "db:migrate:local": "pnpm --dir apps/web db:migrate:local",

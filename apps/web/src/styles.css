@@ -177,6 +177,16 @@ body {
   min-width: 320px;
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
+
+/* App chrome behaves like a native shell, not selectable document text. */
+.app-sidebar,
+.app-header,
+.artifact-list-footer,
+.viewer-header,
+.artifact-card {
+  user-select: none;
 }
 button,
 a {
@@ -483,32 +493,47 @@ a {
   padding: 24px 0 72px 24px;
 }
 
-/* The artifacts page is a viewport-fixed frame: header on top, scrollable
-   card area, pagination footer pinned at the bottom. */
-.artifact-shell {
+/* Desktop-app frame: every screen is viewport-fixed; only the content
+   region scrolls, never the page. */
+.app-frame {
   height: 100dvh;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
-.artifact-shell .app-header {
+.app-frame .app-header {
   flex: 0 0 auto;
 }
 
-.artifact-shell > main.artifact-home {
+.app-frame > main {
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
+}
+
+.app-frame > main.artifact-home {
   padding: 0 0 0 24px;
 }
 
-.artifact-scroll {
+.artifact-scroll,
+.settings-scroll {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+.artifact-scroll {
   padding: 24px 2px 24px 0;
+}
+
+.settings-scroll {
+  padding: 24px 2px 48px 0;
 }
 
 .artifact-toolbar {
@@ -1257,6 +1282,10 @@ p.security-note {
   display: none;
 }
 
+.app-frame > main.settings-page {
+  padding: 24px 0 0 24px;
+}
+
 .settings-page h1 {
   margin: 0 0 20px;
   font-size: 20px;
@@ -1444,7 +1473,7 @@ p.security-note {
     padding: 16px 12px 28px;
   }
 
-  .artifact-shell > main.artifact-home {
+  .app-frame > main.artifact-home {
     padding: 0 12px;
   }
 
@@ -1562,6 +1591,14 @@ p.security-note {
 
   .settings-topbar {
     display: flex;
+  }
+
+  .app-frame > main.settings-page {
+    padding: 16px 0 0 12px;
+  }
+
+  .settings-scroll {
+    padding: 0 12px 28px 0;
   }
 
   .settings-topbar .settings-back {
