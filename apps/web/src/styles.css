@@ -530,8 +530,13 @@ a {
   flex-direction: column;
 }
 
-.app-frame > main.artifact-home {
-  padding: 0 0 0 24px;
+/* The scroll region spans the full frame so the scrollbar sits at the
+   window edge; the content inside is width-constrained instead. */
+.app-frame > main.artifact-home,
+.app-frame > main.settings-page {
+  width: auto;
+  max-width: none;
+  padding: 0;
 }
 
 .artifact-scroll,
@@ -544,11 +549,16 @@ a {
 }
 
 .artifact-scroll {
-  padding: 24px 2px 24px 0;
+  padding: 24px;
 }
 
 .settings-scroll {
-  padding: 24px 2px 48px 0;
+  padding: 24px 24px 48px;
+}
+
+.artifact-scroll > *,
+.settings-scroll > * {
+  max-width: 1120px;
 }
 
 .artifact-toolbar {
@@ -1297,10 +1307,6 @@ p.security-note {
   display: none;
 }
 
-.app-frame > main.settings-page {
-  padding: 24px 0 0 24px;
-}
-
 .settings-page h1 {
   margin: 0 0 20px;
   font-size: 20px;
@@ -1488,12 +1494,8 @@ p.security-note {
     padding: 16px 12px 28px;
   }
 
-  .app-frame > main.artifact-home {
-    padding: 0 12px;
-  }
-
   .artifact-scroll {
-    padding: 16px 0;
+    padding: 16px 12px;
   }
 
   .artifact-list-footer {
@@ -1608,12 +1610,8 @@ p.security-note {
     display: flex;
   }
 
-  .app-frame > main.settings-page {
-    padding: 16px 0 0 12px;
-  }
-
   .settings-scroll {
-    padding: 0 12px 28px 0;
+    padding: 16px 12px 28px;
   }
 
   .settings-topbar .settings-back {
