@@ -223,7 +223,7 @@ export function ArtifactListPage({
 
   return (
     <AuthGate fallback={<ArtifactHomeLoadingState view={view} />}>
-      <div className="app-shell artifact-shell">
+      <div className="app-shell app-frame">
         <AppHeader
           actions={
             <div className="artifact-toolbar" aria-label="Artifact controls">
@@ -630,7 +630,7 @@ export function ArtifactListPage({
 
 function ArtifactHomeLoadingState({ view }: { view: 'grid' | 'list' }) {
   return (
-    <div className="app-shell artifact-shell" role="status">
+    <div className="app-shell app-frame" role="status">
       <AppHeader />
       <main className="artifact-home">
         <div className="artifact-scroll">

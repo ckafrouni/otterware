@@ -178,6 +178,32 @@ body {
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
 }
+
+/* Desktop-app scrolling: no rubber-band bounce or chaining on the viewport
+   and the real scroll regions. Deliberately NOT applied universally:
+   overflow-hidden elements (cards, frames) count as scroll containers, and
+   overscroll-behavior on them swallows wheel events instead of letting them
+   reach the actual scroller. */
+html,
+body,
+.artifact-scroll,
+.settings-scroll,
+.viewer-main,
+.settings-nav,
+.secret-output code,
+[data-slot='dropdown-menu-content'],
+[data-slot='select-content'] {
+  overscroll-behavior: none;
+}
+
+/* App chrome behaves like a native shell, not selectable document text. */
+.app-sidebar,
+.app-header,
+.artifact-list-footer,
+.viewer-header,
+.artifact-card {
+  user-select: none;
+}
 button,
 a {
   -webkit-tap-highlight-color: transparent;
@@ -483,32 +509,56 @@ a {
   padding: 24px 0 72px 24px;
 }
 
-/* The artifacts page is a viewport-fixed frame: header on top, scrollable
-   card area, pagination footer pinned at the bottom. */
-.artifact-shell {
+/* Desktop-app frame: every screen is viewport-fixed; only the content
+   region scrolls, never the page. */
+.app-frame {
   height: 100dvh;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
-.artifact-shell .app-header {
+.app-frame .app-header {
   flex: 0 0 auto;
 }
 
-.artifact-shell > main.artifact-home {
+.app-frame > main {
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
-  padding: 0 0 0 24px;
 }
 
-.artifact-scroll {
+/* The scroll region spans the full frame so the scrollbar sits at the
+   window edge; the content inside is width-constrained instead. */
+.app-frame > main.artifact-home,
+.app-frame > main.settings-page {
+  width: auto;
+  max-width: none;
+  padding: 0;
+}
+
+.artifact-scroll,
+.settings-scroll {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
-  padding: 24px 2px 24px 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+.artifact-scroll {
+  padding: 24px;
+}
+
+.settings-scroll {
+  padding: 24px 24px 48px;
+}
+
+.artifact-scroll > *,
+.settings-scroll > * {
+  max-width: 1120px;
 }
 
 .artifact-toolbar {
@@ -1444,12 +1494,8 @@ p.security-note {
     padding: 16px 12px 28px;
   }
 
-  .artifact-shell > main.artifact-home {
-    padding: 0 12px;
-  }
-
   .artifact-scroll {
-    padding: 16px 0;
+    padding: 16px 12px;
   }
 
   .artifact-list-footer {
@@ -1562,6 +1608,10 @@ p.security-note {
 
   .settings-topbar {
     display: flex;
+  }
+
+  .settings-scroll {
+    padding: 16px 12px 28px;
   }
 
   .settings-topbar .settings-back {
