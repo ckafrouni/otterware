@@ -56,6 +56,43 @@ describe('production host isolation', () => {
     ).toBe(false)
   })
 
+  it('serves application routes on the worker preview host', () => {
+    expect(
+      isAllowedHostPath(
+        new Request('https://abcd1234-otterware.chris.workers.dev/login'),
+        env,
+      ),
+    ).toBe(true)
+    expect(
+      isAllowedHostPath(
+        new Request('https://otterware.chris.workers.dev/login'),
+        env,
+      ),
+    ).toBe(true)
+    expect(
+      isAllowedHostPath(
+        new Request(
+          'https://abcd1234-otterware.chris.workers.dev/raw/session/grant',
+        ),
+        env,
+      ),
+    ).toBe(false)
+    expect(
+      isAllowedHostPath(
+        new Request('https://other-worker.chris.workers.dev/login'),
+        env,
+      ),
+    ).toBe(false)
+    expect(
+      isApplicationAsset(
+        new Request(
+          'https://abcd1234-otterware.chris.workers.dev/assets/app.js',
+        ),
+        env,
+      ),
+    ).toBe(true)
+  })
+
   it('serves static application assets only on the app host', () => {
     expect(
       isApplicationAsset(
