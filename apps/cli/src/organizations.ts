@@ -5,7 +5,7 @@ import { getProfile, updateProfile } from './config'
 import type { GlobalOptions } from './output'
 import { printJson, success, table } from './output'
 
-interface Organization {
+export interface Organization {
   id: string
   name: string
   slug: string

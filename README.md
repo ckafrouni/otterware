@@ -80,7 +80,7 @@ npx skills@latest add ckafrouni/otterware \
   --yes
 ```
 
-From a local clone, use `npx skills@latest add . --skill otterware-artifacts`. The skill teaches agents to use private versus organization scope correctly, inspect before mutating, publish curated output directories, protect credentials, and push immutable versions with concurrency checks.
+From a local clone, use `npx skills@latest add . --skill otterware-artifacts`. The skill teaches agents to inspect before mutating, publish curated output directories, protect credentials, and push immutable versions with concurrency checks.
 
 Authenticate a human-controlled machine with the browser device flow:
 
@@ -98,7 +98,7 @@ export OTTERWARE_TOKEN='otw_...'
 otterware artifacts list
 ```
 
-Device login represents a user and can access that user's private artifacts. Organization API keys can only access organization artifacts.
+Device login represents a user and can access artifacts in all of their organizations. Organization API keys can only access artifacts in their organization.
 
 ## Publish the CLI
 
@@ -127,7 +127,6 @@ otterware artifacts create ./dist \
   --slug product-demo \
   --title "Product demo" \
   --description "Interactive prototype" \
-  --visibility private \
   --label "Initial version"
 
 # Publish version 2, failing if another actor already published a version
@@ -142,7 +141,7 @@ otterware artifacts files product-demo --version 2
 otterware artifacts read product-demo index.html --version 2
 otterware artifacts pull product-demo ./download --version 2
 otterware artifacts promote product-demo --version 1
-otterware artifacts update product-demo --visibility organization
+otterware artifacts move product-demo destination-team
 otterware artifacts archive product-demo
 otterware artifacts restore product-demo
 ```

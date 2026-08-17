@@ -48,6 +48,7 @@ export function createAuth(env: Env) {
       return isPreviewHost(hostname) ? [env.APP_URL, origin] : [env.APP_URL]
     },
     session: {
+      expiresIn: 60 * 60 * 24 * 90,
       cookieCache: {
         enabled: true,
         maxAge: 60,

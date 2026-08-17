@@ -11,7 +11,6 @@ import {
   uploadSessionResponseSchema,
   type Artifact,
   type ArtifactFile,
-  type ArtifactVisibility,
   type CompleteUploadResponse,
 } from '@otterware/contracts'
 import type { Command } from 'commander'
@@ -19,6 +18,10 @@ import open from 'open'
 import pc from 'picocolors'
 import { ApiClient } from './client'
 import { getProfile } from './config'
+import {
+  resolveOrganizationReference,
+  type Organization,
+} from './organizations'
 import {
   discoverFiles,
   resolveEntryPath,
@@ -28,10 +31,8 @@ import type { GlobalOptions } from './output'
 import { note, printJson, success, table } from './output'
 
 interface ArtifactListOptions {
-  all?: boolean
   archived?: boolean
   limit?: string
-  visibility?: ArtifactVisibility
 }
 
 interface CreateOptions {
@@ -40,7 +41,6 @@ interface CreateOptions {
   label?: string
   slug: string
   title: string
-  visibility?: ArtifactVisibility
 }
 
 interface PushOptions {
@@ -61,7 +61,6 @@ interface UpdateOptions {
   description?: string
   slug?: string
   title?: string
-  visibility?: ArtifactVisibility
 }
 
 function globals(command: Command): GlobalOptions {
@@ -177,7 +176,7 @@ function displayArtifact(artifact: Artifact): void {
   process.stdout.write(`${pc.bold(artifact.title)}\n`)
   process.stdout.write(`${artifact.id} · ${artifact.slug}\n`)
   process.stdout.write(
-    `${artifact.visibility} · ${artifact.versionCount} version${artifact.versionCount === 1 ? '' : 's'}\n`,
+    `${artifact.versionCount} version${artifact.versionCount === 1 ? '' : 's'}\n`,
   )
   if (artifact.description) process.stdout.write(`${artifact.description}\n`)
   process.stdout.write(`${artifact.url}\n`)
@@ -192,15 +191,12 @@ export function registerArtifactCommands(program: Command): void {
   artifacts
     .command('list')
     .alias('ls')
-    .description('List visible artifacts')
-    .option('--all', 'Include private and organization artifacts')
+    .description('List artifacts')
     .option('--archived', 'Include archived artifacts')
     .option('--limit <number>', 'Maximum results', '50')
-    .option('--visibility <visibility>', 'private or organization')
     .action(async (options: ArtifactListOptions, command: Command) => {
       const query = new URLSearchParams({ limit: options.limit ?? '50' })
       if (options.archived) query.set('archived', 'true')
-      if (options.visibility) query.set('visibility', options.visibility)
       const result = artifactListResponseSchema.parse(
         await (await clientFor(command)).get(`/api/v1/artifacts?${query}`),
       )
@@ -211,7 +207,6 @@ export function registerArtifactCommands(program: Command): void {
             id: artifact.id,
             slug: artifact.slug,
             title: artifact.title,
-            visibility: artifact.visibility,
             status: artifact.archivedAt ? 'archived' : 'active',
             version: artifact.currentVersion?.number ?? '-',
             updated: artifact.updatedAt,
@@ -238,7 +233,6 @@ export function registerArtifactCommands(program: Command): void {
     .requiredOption('--slug <slug>', 'URL slug')
     .requiredOption('--title <title>', 'Artifact title')
     .option('--description <description>', 'Artifact description', '')
-    .option('--visibility <visibility>', 'private or organization', 'private')
     .option('--entry <path>', 'Entry file inside the artifact')
     .option('--label <label>', 'Version label', 'Initial version')
     .action(async (path: string, options: CreateOptions, command: Command) => {
@@ -249,7 +243,6 @@ export function registerArtifactCommands(program: Command): void {
         slug: options.slug,
         title: options.title,
         description: options.description,
-        visibility: options.visibility,
         entryPath,
         label: options.label,
       })
@@ -327,7 +320,6 @@ export function registerArtifactCommands(program: Command): void {
     .option('--slug <slug>')
     .option('--title <title>')
     .option('--description <description>')
-    .option('--visibility <visibility>', 'private or organization')
     .action(async (id: string, options: UpdateOptions, command: Command) => {
       const update = Object.fromEntries(
         Object.entries(options).filter(([, value]) => value !== undefined),
@@ -339,6 +331,43 @@ export function registerArtifactCommands(program: Command): void {
       )
       if (globals(command).json) printJson(result)
       else success(`Updated ${pc.bold(result.data.title)}.`)
+    })
+
+  artifacts
+    .command('move')
+    .argument('<artifact>', 'Artifact ID or slug')
+    .argument(
+      '<organization>',
+      'Destination organization ID, slug, or unique name',
+    )
+    .description('Move an artifact to another organization')
+    .action(async (id: string, organizationRef: string, command: Command) => {
+      const { profile } = await getProfile(globals(command).profile)
+      if (!profile.accessToken || profile.apiKey) {
+        throw new Error(
+          'Moving artifacts requires a user login, not an API key.',
+        )
+      }
+      const client = new ApiClient(profile)
+      const organizations = await client.get<Organization[]>(
+        '/api/auth/organization/list',
+      )
+      const destination = resolveOrganizationReference(
+        organizations,
+        organizationRef,
+      )
+      const result = artifactResponseSchema.parse(
+        await client.post(`/api/v1/artifacts/${id}/move`, {
+          organizationId: destination.id,
+        }),
+      )
+      if (globals(command).json) printJson(result)
+      else {
+        success(
+          `Moved ${pc.bold(result.data.title)} to ${pc.bold(destination.name)}.`,
+        )
+        process.stdout.write(`${result.data.url}\n`)
+      }
     })
 
   artifacts

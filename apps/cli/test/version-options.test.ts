@@ -15,7 +15,7 @@ describe('version options', () => {
     const result = run(flag)
 
     expect(result.status).toBe(0)
-    expect(result.stdout.trim()).toBe('0.1.3')
+    expect(result.stdout.trim()).toBe('0.1.4')
   })
 
   it('leaves artifact version selectors to the subcommand', () => {
@@ -33,6 +33,6 @@ describe('version options', () => {
       'Usage: otterware artifacts files [options] <artifact>',
     )
     expect(result.stdout).toContain('--version <number>')
-    expect(result.stdout.trim()).not.toBe('0.1.3')
+    expect(result.stdout.trim()).not.toBe('0.1.4')
   })
 })
