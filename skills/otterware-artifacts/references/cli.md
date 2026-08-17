@@ -44,8 +44,6 @@ Organization creation and workspace selection are state-changing operations. Do 
 
 ```bash
 otterware --json artifacts list
-otterware --json artifacts list --visibility private
-otterware --json artifacts list --visibility organization
 otterware --json artifacts list --archived
 otterware --json artifacts show <artifact-id-or-slug>
 otterware --json artifacts versions <artifact>
@@ -56,26 +54,24 @@ otterware --json artifacts files <artifact> --version <number>
 
 ## Creating and publishing
 
-Create a private artifact and version 1:
+Create an artifact and version 1 in the active organization:
 
 ```bash
 otterware --json artifacts create ./dist \
   --slug product-demo \
   --title "Product demo" \
   --description "Interactive prototype" \
-  --visibility private \
   --entry index.html \
   --label "Initial version"
 ```
 
-Create an organization artifact only after selecting the organization:
+Select the intended organization before creating an artifact:
 
 ```bash
 otterware organizations use <organization>
 otterware --json artifacts create ./dist \
   --slug shared-demo \
-  --title "Shared demo" \
-  --visibility organization
+  --title "Shared demo"
 ```
 
 Push a concurrency-protected version:
@@ -101,13 +97,13 @@ Other static files remain available through the sandboxed raw preview and CLI re
 ```bash
 otterware --json artifacts update <artifact> --title "New title"
 otterware --json artifacts update <artifact> --description "New description"
-otterware --json artifacts update <artifact> --visibility organization
+otterware --json artifacts move <artifact> <destination-organization>
 otterware --json artifacts promote <artifact> --version <number>
 otterware --json artifacts archive <artifact>
 otterware --json artifacts restore <artifact>
 ```
 
-`update` does not create a content version. `promote` changes which immutable version is current.
+`update` does not create a content version. `move` preserves every immutable version and requires a user login with owner or admin access in both organizations. `promote` changes which immutable version is current.
 
 ## Reading and downloading
 
@@ -140,7 +136,8 @@ otterware artifacts open <artifact>
 ## Failure handling
 
 - Authentication failure: run `auth status`; ask the user to log in or supply a scoped key through the environment.
-- Permission failure: confirm private versus organization scope, membership, active organization, and API-key permissions. Do not seek broader infrastructure credentials.
+- Permission failure: confirm organization membership, active organization, role, and API-key permissions. Moving requires a user login and cannot use an API key. Do not seek broader infrastructure credentials.
+- Move conflict: check for the same slug in the destination and for pending uploads on the source artifact.
 - Version conflict: inspect the latest version and stop for reconciliation.
 - Missing entry: pass an existing relative path with `--entry`.
 - Symbolic-link rejection: materialize the intended files into a clean output directory; do not bypass the check.

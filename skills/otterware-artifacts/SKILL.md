@@ -1,6 +1,6 @@
 ---
 name: otterware-artifacts
-description: Manage Otterware artifacts with the otterware CLI. Use when an agent needs to authenticate with Otterware, select a personal or organization workspace, create or publish HTML, Markdown, CSV, TSV, Excel, image, or other static content, inspect or retrieve artifact files, manage immutable versions, update metadata, open previews, or archive and restore artifacts.
+description: Manage Otterware artifacts with the otterware CLI. Use when an agent needs to authenticate with Otterware, select an organization, create or publish HTML, Markdown, CSV, TSV, Excel, image, or other static content, inspect or retrieve artifact files, manage immutable versions, update metadata, move artifacts between teams, open previews, or archive and restore artifacts.
 ---
 
 # Otterware Artifacts
@@ -39,13 +39,12 @@ Use the installed `otterware` CLI as the only boundary for artifact operations. 
 
    Do not approve a device request on the user's behalf. For unattended agents, prefer a scoped organization API key supplied through `OTTERWARE_TOKEN`. Never print, commit, log, or place credentials in a prompt.
 
-## Choose access scope
+## Choose the team
 
-- Default new artifacts to `private` unless the user explicitly requests collaboration.
-- Use `organization` only after identifying the intended organization.
 - Inspect available organizations with `otterware --json organizations list`.
 - Treat `otterware organizations use <id>` as a persistent configuration change. Use it only when the intended workspace is clear.
-- A device-login token represents a user and may access that user's private artifacts. Organization API keys are restricted to organization artifacts.
+- Every artifact is visible to members of its organization; there is no private visibility mode.
+- A device-login token represents a user and may access artifacts in that user's organizations. Organization API keys are restricted to their organization.
 - Use `--profile <name>` for separate accounts or deployments. Put global options before the command for clarity.
 
 ## Inspect before changing
@@ -68,7 +67,6 @@ Use `create` only for a new artifact. It creates both the artifact and immutable
 otterware --json artifacts create <output-directory> \
   --slug <slug> \
   --title <title> \
-  --visibility private \
   --label "Initial version"
 ```
 
@@ -78,7 +76,6 @@ The source may also be a single document. Publish `.md`, `.csv`, `.tsv`, and `.x
 otterware --json artifacts create ./report.xlsx \
   --slug quarterly-report \
   --title "Quarterly report" \
-  --visibility organization \
   --label "Initial workbook"
 ```
 
@@ -98,14 +95,21 @@ Publish a curated build/output directory, not a repository root. Before upload, 
 
 - `create`: create metadata and version 1 for a new artifact.
 - `push`: upload content as a new immutable version.
-- `update`: change title, description, slug, or visibility without publishing files.
+- `update`: change title, description, or slug without publishing files.
+- `move`: move an artifact and all immutable versions to another organization.
 - `promote`: make an existing version current without rewriting it.
 - `archive` / `restore`: change whether the artifact is active.
 
-Require clear user intent before changing visibility, promoting an older version, or archiving an artifact. Do not simulate version edits: published versions and their files are immutable.
+Before moving, inspect both organizations and confirm the intended destination. Moving requires a user device login with owner or admin access in both organizations; organization API keys cannot move artifacts. A move fails when the destination already has the artifact slug or an upload is pending:
+
+```bash
+otterware --json artifacts move <artifact> <destination-organization>
+```
+
+Require clear user intent before moving an artifact, promoting an older version, or archiving an artifact. Do not simulate version edits: published versions and their files are immutable.
 
 ## Return useful results
 
-Use root `--json` for automation and parse fields rather than terminal prose. After a mutation, report the artifact ID or slug, resulting version, visibility, and preview URL. Do not expose authentication material in the report.
+Use root `--json` for automation and parse fields rather than terminal prose. After a mutation, report the artifact ID or slug, organization, resulting version, and preview URL. Do not expose authentication material in the report.
 
 Read [references/cli.md](references/cli.md) when exact command flags, environment overrides, or retrieval examples are needed.
