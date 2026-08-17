@@ -15,8 +15,6 @@ import {
   Search,
   Terminal,
   Trash2,
-  Users,
-  UserRound,
 } from 'lucide-react'
 import {
   artifactListResponseSchema,
@@ -317,7 +315,7 @@ export function ArtifactListPage({
                   <DropdownMenuItem
                     onClick={() =>
                       void navigator.clipboard.writeText(
-                        'otterware artifacts create ./dist --slug <slug> --title "<title>" --visibility private --label "Initial version"',
+                        'otterware artifacts create ./dist --slug <slug> --title "<title>" --label "Initial version"',
                       )
                     }
                   >
@@ -443,16 +441,6 @@ export function ArtifactListPage({
                     >
                       <ArtifactCardPreview artifact={artifact} />
                       <div className="artifact-card-body">
-                        <div className="visibility-label">
-                          {artifact.visibility === 'private' ? (
-                            <UserRound size={13} />
-                          ) : (
-                            <Users size={13} />
-                          )}
-                          {artifact.visibility === 'private'
-                            ? 'Private'
-                            : 'Organization'}
-                        </div>
                         <h2>{artifact.title}</h2>
                         <p>
                           {artifact.description || 'No description provided.'}

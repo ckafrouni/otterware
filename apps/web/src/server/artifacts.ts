@@ -7,6 +7,7 @@ import {
   createArtifactInputSchema,
   createUploadInputSchema,
   updateArtifactInputSchema,
+  moveArtifactInputSchema,
   uploadSessionResponseSchema,
   type Artifact,
   type ArtifactFile,
@@ -34,7 +35,6 @@ interface ArtifactRow {
   slug: string
   title: string
   description: string
-  visibility: 'private' | 'organization'
   state: 'draft' | 'published'
   current_version_id: string | null
   version_count: number
@@ -114,9 +114,7 @@ function uploadManifest(upload: UploadRow): InternalUploadFile[] {
 
 function canRead(row: ArtifactRow, actor: AuthenticatedActor): boolean {
   if (row.organization_id !== actor.organizationId) return false
-  if (!canReadWithKey(actor)) return false
-  if (row.visibility === 'organization') return true
-  return actor.type === 'user' && row.owner_user_id === actor.userId
+  return canReadWithKey(actor)
 }
 
 function canModify(row: ArtifactRow, actor: AuthenticatedActor): boolean {
@@ -188,7 +186,6 @@ function mapArtifactRecord(
     slug: row.slug,
     title: row.title,
     description: row.description,
-    visibility: row.visibility,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     archivedAt: row.archived_at,
@@ -270,6 +267,7 @@ async function audit(
   action: string,
   resourceId: string,
   metadata: unknown = {},
+  organizationId = actor.organizationId,
 ): Promise<void> {
   await env.DB.prepare(
     `INSERT INTO audit_event
@@ -278,7 +276,7 @@ async function audit(
   )
     .bind(
       crypto.randomUUID(),
-      actor.organizationId,
+      organizationId,
       actor.type,
       actor.id,
       actor.name,
@@ -288,6 +286,111 @@ async function audit(
       new Date().toISOString(),
     )
     .run()
+}
+
+export async function moveArtifact(
+  request: Request,
+  env: Env,
+  actor: AuthenticatedActor,
+  reference: string,
+): Promise<Response> {
+  if (
+    actor.type !== 'user' ||
+    !actor.roles.some((role) => ['owner', 'admin'].includes(role))
+  ) {
+    throw new HttpError(
+      403,
+      'forbidden',
+      'Only organization owners and admins can move artifacts.',
+    )
+  }
+  const artifact = await artifactRow(env, actor, reference, {
+    requireModify: true,
+  })
+  const input = moveArtifactInputSchema.parse(await parseJson(request))
+  if (input.organizationId === actor.organizationId) {
+    throw new HttpError(
+      400,
+      'same_organization',
+      'The artifact is already in that organization.',
+    )
+  }
+  const destination = await env.DB.prepare(
+    `SELECT m.role, o.slug
+       FROM member m
+       JOIN organization o ON o.id = m.organizationId
+      WHERE m.userId = ? AND m.organizationId = ?`,
+  )
+    .bind(actor.userId, input.organizationId)
+    .first<{ role: string; slug: string }>()
+  if (
+    !destination ||
+    !destination.role
+      .split(',')
+      .some((role) => ['owner', 'admin'].includes(role.trim()))
+  ) {
+    throw new HttpError(
+      403,
+      'destination_forbidden',
+      'You must be an owner or admin of the destination organization.',
+    )
+  }
+  const collision = await env.DB.prepare(
+    'SELECT id FROM artifact WHERE organization_id = ? AND slug = ? LIMIT 1',
+  )
+    .bind(input.organizationId, artifact.slug)
+    .first<{ id: string }>()
+  if (collision) {
+    throw new HttpError(
+      409,
+      'slug_exists',
+      'That artifact slug already exists in the destination organization.',
+    )
+  }
+  const pending = await env.DB.prepare(
+    "SELECT id FROM artifact_upload WHERE artifact_id = ? AND state = 'pending' LIMIT 1",
+  )
+    .bind(artifact.id)
+    .first<{ id: string }>()
+  if (pending) {
+    throw new HttpError(
+      409,
+      'upload_in_progress',
+      'Complete or abandon the pending upload before moving this artifact.',
+    )
+  }
+  const now = new Date().toISOString()
+  const metadata = JSON.stringify({
+    fromOrganizationId: actor.organizationId,
+    toOrganizationId: input.organizationId,
+  })
+  await env.DB.batch([
+    env.DB.prepare(
+      'UPDATE artifact SET organization_id = ?, owner_user_id = NULL, updated_at = ? WHERE id = ? AND organization_id = ?',
+    ).bind(input.organizationId, now, artifact.id, actor.organizationId),
+    ...[actor.organizationId, input.organizationId].map((organizationId) =>
+      env.DB.prepare(
+        `INSERT INTO audit_event
+          (id, organization_id, actor_type, actor_id, actor_name, action, resource_type, resource_id, metadata_json, created_at)
+         VALUES (?, ?, ?, ?, ?, 'artifact.moved', 'artifact', ?, ?, ?)`,
+      ).bind(
+        crypto.randomUUID(),
+        organizationId,
+        actor.type,
+        actor.id,
+        actor.name,
+        artifact.id,
+        metadata,
+        now,
+      ),
+    ),
+  ])
+  const destinationActor: AuthenticatedActor = {
+    ...actor,
+    organizationId: input.organizationId,
+    roles: destination.role.split(',').map((role) => role.trim()),
+  }
+  return showArtifact(env, destinationActor, artifact.id)
 }
 
 export async function listArtifacts(
@@ -301,20 +404,11 @@ export async function listArtifacts(
     100,
   )
   const archived = url.searchParams.get('archived')
-  const visibility = url.searchParams.get('visibility')
   const cursor = url.searchParams.get('cursor')
-  const conditions = [
-    'a.organization_id = ?',
-    "a.state = 'published'",
-    "(a.visibility = 'organization' OR a.owner_user_id = ?)",
-  ]
-  const bindings: unknown[] = [actor.organizationId, actor.userId ?? '']
+  const conditions = ['a.organization_id = ?', "a.state = 'published'"]
+  const bindings: unknown[] = [actor.organizationId]
   if (archived === 'only') conditions.push('a.archived_at IS NOT NULL')
   else if (archived !== 'true') conditions.push('a.archived_at IS NULL')
-  if (visibility === 'private' || visibility === 'organization') {
-    conditions.push('a.visibility = ?')
-    bindings.push(visibility)
-  }
   if (cursor) {
     conditions.push('a.updated_at < ?')
     bindings.push(cursor)
@@ -389,20 +483,13 @@ export async function createArtifact(
 ): Promise<Response> {
   assertCanWrite(actor, 'create')
   const input = createArtifactInputSchema.parse(await parseJson(request))
-  if (actor.type === 'api_key' && input.visibility === 'private') {
-    throw new HttpError(
-      400,
-      'private_requires_user',
-      'Organization API keys cannot create private artifacts.',
-    )
-  }
   const id = crypto.randomUUID()
   const now = new Date().toISOString()
   try {
     await env.DB.prepare(
       `INSERT INTO artifact
-        (id, organization_id, owner_user_id, created_by_actor_type, created_by_actor_id, slug, title, description, visibility, state, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?, ?)`,
+        (id, organization_id, owner_user_id, created_by_actor_type, created_by_actor_id, slug, title, description, state, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?, ?)`,
     )
       .bind(
         id,
@@ -413,7 +500,6 @@ export async function createArtifact(
         input.slug,
         input.title,
         input.description,
-        input.visibility,
         now,
         now,
       )
@@ -450,23 +536,11 @@ export async function updateArtifact(
   assertCanWrite(actor, 'update')
   const row = await artifactRow(env, actor, reference, { requireModify: true })
   const input = updateArtifactInputSchema.parse(await parseJson(request))
-  if (actor.type === 'api_key' && input.visibility === 'private') {
-    throw new HttpError(
-      400,
-      'private_requires_user',
-      'Organization API keys cannot make artifacts private.',
-    )
-  }
   const fields: string[] = []
   const values: unknown[] = []
   for (const [key, value] of Object.entries(input)) {
     const column =
-      key === 'description' ||
-      key === 'visibility' ||
-      key === 'slug' ||
-      key === 'title'
-        ? key
-        : null
+      key === 'description' || key === 'slug' || key === 'title' ? key : null
     if (column) {
       fields.push(`${column} = ?`)
       values.push(value)

@@ -11,8 +11,7 @@ Publish a website directory or a single Markdown, CSV, TSV, or Excel workbook fi
 ```bash
 otterware artifacts create ./report.xlsx \
   --slug quarterly-report \
-  --title "Quarterly report" \
-  --visibility organization
+  --title "Quarterly report"
 ```
 
 See the repository README for authentication, organizations, artifact commands, and self-hosting instructions.

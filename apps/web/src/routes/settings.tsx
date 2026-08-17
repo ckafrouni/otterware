@@ -367,8 +367,7 @@ export function SettingsPage() {
                       </Button>
                     </div>
                     <p className="settings-help">
-                      Keys can access shared organization artifacts, never
-                      private artifacts.
+                      Keys can access artifacts in this organization.
                     </p>
                   </form>
                   {createdKey && (

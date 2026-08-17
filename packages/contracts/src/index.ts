@@ -1,8 +1,5 @@
 import { z } from 'zod'
 
-export const artifactVisibilitySchema = z.enum(['private', 'organization'])
-export type ArtifactVisibility = z.infer<typeof artifactVisibilitySchema>
-
 export const actorSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -38,7 +35,6 @@ export const artifactSchema = z.object({
   slug: z.string(),
   title: z.string(),
   description: z.string(),
-  visibility: artifactVisibilitySchema,
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
   archivedAt: z.string().datetime().nullable(),
@@ -81,7 +77,6 @@ export const createArtifactInputSchema = z.object({
   slug: z.string().min(1).max(80).regex(slugPattern),
   title: z.string().min(1).max(200),
   description: z.string().max(2_000).default(''),
-  visibility: artifactVisibilitySchema.default('private'),
   entryPath: z.string().min(1).default('index.html'),
   label: z.string().min(1).max(300).default('Initial version'),
 })
@@ -92,10 +87,14 @@ export const updateArtifactInputSchema = z
     slug: z.string().min(1).max(80).regex(slugPattern).optional(),
     title: z.string().min(1).max(200).optional(),
     description: z.string().max(2_000).optional(),
-    visibility: artifactVisibilitySchema.optional(),
   })
   .refine((input) => Object.keys(input).length > 0, 'No updates supplied')
 export type UpdateArtifactInput = z.infer<typeof updateArtifactInputSchema>
+
+export const moveArtifactInputSchema = z.object({
+  organizationId: z.string().min(1),
+})
+export type MoveArtifactInput = z.infer<typeof moveArtifactInputSchema>
 
 export const createUploadInputSchema = z.object({
   label: z.string().min(1).max(300),

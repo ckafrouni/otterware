@@ -8,7 +8,6 @@ describe('artifact inputs', () => {
       title: 'Hello world',
     })
 
-    expect(value.visibility).toBe('private')
     expect(value.entryPath).toBe('index.html')
   })
 

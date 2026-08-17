@@ -16,5 +16,10 @@ export function useCurrentActor(organizationId?: string, enabled = true) {
   })
   const roles = query.data?.data.roles ?? []
 
-  return { isOwner: roles.includes('owner'), roles, loading: query.isPending }
+  return {
+    canManage: roles.some((role) => ['owner', 'admin'].includes(role)),
+    isOwner: roles.includes('owner'),
+    roles,
+    loading: query.isPending,
+  }
 }

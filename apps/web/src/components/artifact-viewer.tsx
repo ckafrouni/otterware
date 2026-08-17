@@ -9,6 +9,7 @@ import {
   Download,
   Home,
   MoreHorizontal,
+  MoveRight,
   Pencil,
   RotateCcw,
   Trash2,
@@ -61,7 +62,7 @@ export function ArtifactViewer({
   const [editorActionsContainer, setEditorActionsContainer] =
     useState<HTMLDivElement | null>(null)
   const { organizations } = useOrganizations()
-  const { isOwner } = useCurrentActor(organizationId)
+  const { canManage, isOwner } = useCurrentActor(organizationId)
   const queryClient = useQueryClient()
   const bootstrapQuery = useQuery(
     artifactBootstrapQuery(organizationId, slug, version),
@@ -148,6 +149,47 @@ export function ArtifactViewer({
     }
   }
 
+  async function moveArtifact() {
+    if (!artifact) return
+    const destinations = organizations.filter(
+      (organization) => organization.id !== organizationId,
+    )
+    const reference = window.prompt(
+      `Move to which team? Enter one of: ${destinations.map((item) => item.name).join(', ')}`,
+    )
+    if (!reference) return
+    const normalized = reference.trim().toLowerCase()
+    const destination = destinations.find(
+      (item) =>
+        item.id === reference ||
+        item.slug.toLowerCase() === normalized ||
+        item.name.toLowerCase() === normalized,
+    )
+    if (!destination) {
+      setActionError('Destination team not found.')
+      return
+    }
+    setActionError(null)
+    try {
+      const result = artifactResponseSchema.parse(
+        await api<unknown>(
+          `/api/v1/artifacts/${encodeURIComponent(artifact.id)}/move`,
+          {
+            method: 'POST',
+            organizationId,
+            body: JSON.stringify({ organizationId: destination.id }),
+          },
+        ),
+      )
+      removeSessionCachePrefix(`otterware:artifact:${organizationId}:`)
+      removeSessionCachePrefix(`otterware:artifacts:${organizationId}:`)
+      removeSessionCachePrefix(`otterware:artifacts:${destination.id}:`)
+      location.assign(`/${destination.slug}/a/${result.data.slug}/`)
+    } catch (reason) {
+      setActionError(reason instanceof Error ? reason.message : String(reason))
+    }
+  }
+
   if (
     !error &&
     (!artifact || !selected || !previewUrl || !previewContentType)
@@ -219,12 +261,6 @@ export function ArtifactViewer({
           ) : (
             <strong>Otterware Artifact</strong>
           )}
-          {artifact && (
-            <span className="viewer-visibility">
-              <span aria-hidden="true">·</span>
-              {artifact.visibility === 'private' ? 'Private' : 'Shared'}
-            </span>
-          )}
           {selected && versions.length > 1 && (
             <Badge variant="outline">v{selected.number}</Badge>
           )}
@@ -254,6 +290,12 @@ export function ArtifactViewer({
                 align="end"
                 className="artifact-actions-menu"
               >
+                {canManage && organizations.length > 1 && (
+                  <DropdownMenuItem onClick={() => void moveArtifact()}>
+                    <MoveRight size={14} />
+                    Move to another team
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem
                   variant={artifact.archivedAt ? 'default' : 'destructive'}
                   onClick={() => void changeArchivedState()}
