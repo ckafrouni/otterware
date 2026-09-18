@@ -820,12 +820,6 @@ function ArtifactInsights({
           ))}
         </div>
       )}
-      <div className="insight-section">
-        <h4>Publish from the terminal</h4>
-        <code className="insight-code">
-          otterware artifacts create ./dist --title "..."
-        </code>
-      </div>
     </aside>
   )
 }

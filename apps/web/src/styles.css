@@ -777,19 +777,6 @@ a {
   color: var(--ink-muted);
 }
 
-.insight-code {
-  display: block;
-  margin: 0 4px;
-  padding: 8px 10px;
-  font-size: 12px;
-  line-height: 1.45;
-  white-space: pre-wrap;
-  word-break: break-word;
-  border-radius: 6px;
-  background: color-mix(in srgb, var(--ink) 5%, transparent);
-  color: var(--ink-soft);
-}
-
 .artifact-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
