@@ -556,7 +556,6 @@ a {
   padding: 24px 24px 48px;
 }
 
-.artifact-scroll > *,
 .settings-scroll > * {
   max-width: 1120px;
 }
@@ -601,9 +600,119 @@ a {
   width: 184px;
 }
 
+.artifact-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 272px;
+  gap: 24px;
+  align-items: start;
+  align-content: start;
+}
+
+.artifact-main {
+  min-width: 0;
+}
+
+.artifact-insights {
+  position: sticky;
+  top: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.insight-card {
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.insight-card h3 {
+  margin: 0 0 10px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.insight-stats {
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.insight-stats div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.insight-stats dt {
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.insight-stats dd {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.insight-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.insight-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.insight-list a {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.insight-list a:hover {
+  text-decoration: underline;
+}
+
+.insight-list span {
+  flex: 0 0 auto;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-muted);
+}
+
+.insight-hint code {
+  display: block;
+  padding: 8px 10px;
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink-soft);
+}
+
 .artifact-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 14px;
 }
 
@@ -1444,9 +1553,13 @@ p.security-note {
 }
 
 /* Responsive --------------------------------------------------------------- */
-@media (max-width: 980px) {
-  .artifact-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+@media (max-width: 1100px) {
+  .artifact-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .artifact-insights {
+    display: none;
   }
 }
 
