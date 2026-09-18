@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { authClient } from '#/lib/auth-client'
+import { useHydrated } from '#/lib/session-cache'
 
 export function AuthGate({
   children,
@@ -9,6 +10,9 @@ export function AuthGate({
   fallback?: React.ReactNode
 }) {
   const session = authClient.useSession()
+  // The client restores the session synchronously from its cache, so the
+  // hydration render must keep showing the server's fallback to match.
+  const hydrated = useHydrated()
 
   useEffect(() => {
     if (!session.isPending && !session.data) {
@@ -17,7 +21,7 @@ export function AuthGate({
     }
   }, [session.data, session.isPending])
 
-  if (session.isPending || !session.data) {
+  if (!hydrated || session.isPending || !session.data) {
     if (fallback) return fallback
     return (
       <main className="centered-state">

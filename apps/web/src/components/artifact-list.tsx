@@ -1,21 +1,22 @@
-import { useMemo, useState } from 'react'
-import { Link } from '@tanstack/react-router'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   Archive,
   ArrowDownAZ,
+  CircleDot,
   Copy,
   Download,
-  ExternalLink,
   FileBox,
   Grid2X2,
   List as ListIcon,
   MoreHorizontal,
-  Plus,
+  PanelRightClose,
+  PanelRightOpen,
   RotateCcw,
   Search,
-  Terminal,
   Trash2,
+  Upload,
 } from 'lucide-react'
 import {
   artifactListResponseSchema,
@@ -43,7 +44,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
@@ -57,7 +57,65 @@ import {
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { AppHeader } from './app-header'
 import { AuthGate } from './auth-gate'
+import { UPLOAD_ARTIFACT_EVENT } from './command-palette'
 import { DeleteArtifactDialog } from './delete-artifact-dialog'
+import { UploadArtifactDialog } from './upload-artifact-dialog'
+
+const INSIGHTS_OPEN_KEY = 'otterware:insights-open'
+const INSIGHTS_WIDTH_KEY = 'otterware:insights-width'
+const INSIGHTS_MIN_WIDTH = 220
+const INSIGHTS_MAX_WIDTH = 520
+const INSIGHTS_DEFAULT_WIDTH = 280
+
+function readStored<T>(key: string, fallback: T): T {
+  if (typeof window === 'undefined') return fallback
+  try {
+    const raw = window.localStorage.getItem(key)
+    return raw === null ? fallback : (JSON.parse(raw) as T)
+  } catch {
+    return fallback
+  }
+}
+
+function useInsightsPanel() {
+  const [open, setOpen] = useState(true)
+  const [width, setWidth] = useState(INSIGHTS_DEFAULT_WIDTH)
+  useEffect(() => {
+    setOpen(readStored(INSIGHTS_OPEN_KEY, true))
+    setWidth(readStored(INSIGHTS_WIDTH_KEY, INSIGHTS_DEFAULT_WIDTH))
+  }, [])
+  const toggle = useCallback(() => {
+    setOpen((current) => {
+      window.localStorage.setItem(INSIGHTS_OPEN_KEY, JSON.stringify(!current))
+      return !current
+    })
+  }, [])
+  const startResize = useCallback(
+    (event: React.PointerEvent<HTMLElement>) => {
+      event.preventDefault()
+      const startX = event.clientX
+      let current = width
+      const onMove = (move: PointerEvent) => {
+        current = Math.min(
+          INSIGHTS_MAX_WIDTH,
+          Math.max(INSIGHTS_MIN_WIDTH, width + (startX - move.clientX)),
+        )
+        setWidth(current)
+      }
+      const onUp = () => {
+        window.localStorage.setItem(INSIGHTS_WIDTH_KEY, JSON.stringify(current))
+        document.body.classList.remove('is-resizing')
+        window.removeEventListener('pointermove', onMove)
+        window.removeEventListener('pointerup', onUp)
+      }
+      document.body.classList.add('is-resizing')
+      window.addEventListener('pointermove', onMove)
+      window.addEventListener('pointerup', onUp)
+    },
+    [width],
+  )
+  return { open, width, toggle, startResize }
+}
 
 export interface ArtifactListSearch {
   q?: string | undefined
@@ -103,7 +161,16 @@ export function ArtifactListPage({
   const [deletingArtifact, setDeletingArtifact] = useState<Artifact | null>(
     null,
   )
+  const [uploadOpen, setUploadOpen] = useState(false)
+  const insights = useInsightsPanel()
+  const navigate = useNavigate()
   const { activeOrganization, loaded, organizations } = useOrganizations()
+
+  useEffect(() => {
+    const onUpload = () => setUploadOpen(true)
+    window.addEventListener(UPLOAD_ARTIFACT_EVENT, onUpload)
+    return () => window.removeEventListener(UPLOAD_ARTIFACT_EVENT, onUpload)
+  }, [])
   const { isOwner } = useCurrentActor(
     activeOrganization?.id,
     Boolean(activeOrganization),
@@ -240,49 +307,14 @@ export function ArtifactListPage({
                   }
                 />
               </label>
-              <DropdownMenu>
-                <DropdownMenuTrigger
-                  render={
-                    <Button type="button" aria-label="Publish artifact" />
-                  }
-                >
-                  <Plus size={15} /> Publish
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="publish-menu">
-                  <DropdownMenuLabel>Publish with the CLI</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() =>
-                      void navigator.clipboard.writeText(
-                        'otterware artifacts create ./dist --slug <slug> --title "<title>" --label "Initial version"',
-                      )
-                    }
-                  >
-                    <Terminal size={14} /> Copy publish command
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() =>
-                      void navigator.clipboard.writeText(
-                        'npm install --global otterware@latest',
-                      )
-                    }
-                  >
-                    <Copy size={14} /> Copy install command
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    render={
-                      <a
-                        href="https://github.com/ckafrouni/otterware#artifact-commands"
-                        target="_blank"
-                        rel="noreferrer"
-                      />
-                    }
-                  >
-                    <ExternalLink size={14} /> CLI documentation
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <Button
+                type="button"
+                aria-label="Upload artifact"
+                disabled={!activeOrganization}
+                onClick={() => setUploadOpen(true)}
+              >
+                <Upload size={15} /> Upload
+              </Button>
             </div>
           }
         />
@@ -298,7 +330,7 @@ export function ArtifactListPage({
                     onSearchChange({ status: undefined, page: undefined })
                   }
                 >
-                  <Grid2X2 /> Active
+                  <CircleDot /> Active
                 </button>
                 <button
                   type="button"
@@ -352,6 +384,23 @@ export function ArtifactListPage({
                     <Grid2X2 size={16} />
                   </ToggleGroupItem>
                 </ToggleGroup>
+                <button
+                  type="button"
+                  className="insights-toggle"
+                  aria-label={
+                    insights.open
+                      ? 'Hide overview panel'
+                      : 'Show overview panel'
+                  }
+                  aria-pressed={insights.open}
+                  onClick={insights.toggle}
+                >
+                  {insights.open ? (
+                    <PanelRightClose size={16} />
+                  ) : (
+                    <PanelRightOpen size={16} />
+                  )}
+                </button>
               </div>
               <div className="artifact-scroll">
                 {error && (
@@ -615,17 +664,36 @@ export function ArtifactListPage({
                 </footer>
               )}
             </div>
-            {!noTeam && !error && (
+            {!noTeam && !error && insights.open && (
               <ArtifactInsights
                 artifacts={artifacts}
                 visible={visibleArtifacts}
                 status={status}
                 loading={loading}
-                organizationName={activeOrganization?.name ?? 'Workspace'}
                 organizationSlug={activeOrganization?.slug ?? 'team'}
+                width={insights.width}
+                onResizeStart={insights.startResize}
               />
             )}
           </div>
+          <UploadArtifactDialog
+            open={uploadOpen}
+            organizationId={activeOrganization?.id}
+            onOpenChange={setUploadOpen}
+            onUploaded={(uploaded) => {
+              setArtifacts((current) => [
+                uploaded,
+                ...current.filter((artifact) => artifact.id !== uploaded.id),
+              ])
+              void navigate({
+                to: '/$organizationSlug/a/$slug',
+                params: {
+                  organizationSlug: activeOrganization?.slug ?? 'team',
+                  slug: uploaded.slug,
+                },
+              })
+            }}
+          />
           <DeleteArtifactDialog
             artifact={deletingArtifact}
             {...(activeOrganization
@@ -697,14 +765,16 @@ function ArtifactCardSkeletons({ view }: { view: 'grid' | 'list' }) {
 }
 
 function ArtifactCardPreview({ artifact }: { artifact: Artifact }) {
+  const [failed, setFailed] = useState(false)
   return (
     <div className="artifact-preview" aria-hidden="true">
-      {artifact.thumbnailUrl ? (
+      {artifact.thumbnailUrl && !failed ? (
         <img
           src={artifact.thumbnailUrl}
           alt=""
           loading="lazy"
           decoding="async"
+          onError={() => setFailed(true)}
         />
       ) : (
         <div className="preview-placeholder">
@@ -742,15 +812,17 @@ function ArtifactInsights({
   visible,
   status,
   loading,
-  organizationName,
   organizationSlug,
+  width,
+  onResizeStart,
 }: {
   artifacts: Artifact[]
   visible: Artifact[]
   status: 'active' | 'archived'
   loading: boolean
-  organizationName: string
   organizationSlug: string
+  width: number
+  onResizeStart: (event: React.PointerEvent<HTMLElement>) => void
 }) {
   const inStatus = artifacts.filter((artifact) =>
     status === 'archived' ? artifact.archivedAt !== null : !artifact.archivedAt,
@@ -771,18 +843,25 @@ function ArtifactInsights({
     (artifact) => new Date(artifact.updatedAt).getTime() >= week,
   ).length
 
-  if (loading) return <aside className="artifact-insights" aria-hidden="true" />
+  const style = { width, flexBasis: width }
+  if (loading)
+    return (
+      <aside className="artifact-insights" style={style} aria-hidden="true" />
+    )
 
   return (
-    <aside className="artifact-insights" aria-label="Workspace overview">
-      <div className="insight-section insight-header">
-        <h3>{organizationName}</h3>
-        <p>
-          {status === 'archived'
-            ? 'Archived artifacts in this workspace.'
-            : 'Active artifacts in this workspace.'}
-        </p>
-      </div>
+    <aside
+      className="artifact-insights"
+      style={style}
+      aria-label="Workspace overview"
+    >
+      <div
+        className="insights-resize-handle"
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="Resize overview panel"
+        onPointerDown={onResizeStart}
+      />
       <div className="insight-section">
         <div className="insight-row">
           <span>Artifacts</span>

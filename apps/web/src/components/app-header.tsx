@@ -1,20 +1,17 @@
-import { useCallback, useEffect } from 'react'
-import { Link, useLocation, useNavigate } from '@tanstack/react-router'
+import { Link, useLocation } from '@tanstack/react-router'
 import {
   Box,
   Check,
   ChevronRight,
+  ChevronsUpDown,
   FileBox,
-  Laptop,
   LogOut,
-  Moon,
   Search,
   Settings,
-  Sun,
   Users,
 } from 'lucide-react'
-import { useTheme } from 'next-themes'
 import { authClient } from '#/lib/auth-client'
+import { useHydrated } from '#/lib/session-cache'
 import { useOrganizations } from '@/hooks/use-organizations'
 import { Button } from '@/components/ui/button'
 import {
@@ -27,50 +24,54 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { ThemeMenu } from '@/components/theme-menu'
+import { openCommandPalette } from '@/components/command-palette'
 
-const themes = [
-  { value: 'light', label: 'Light', icon: Sun },
-  { value: 'dark', label: 'Dark', icon: Moon },
-  { value: 'system', label: 'System', icon: Laptop },
-] as const
+function signOut() {
+  void authClient.signOut({
+    fetchOptions: { onSuccess: () => location.assign('/login') },
+  })
+}
 
 export function AppHeader({ actions }: { actions?: React.ReactNode }) {
   const session = authClient.useSession()
   const { activeOrganization, organizations, selectOrganization } =
     useOrganizations()
-  const { theme, setTheme } = useTheme()
-  const navigate = useNavigate()
+  // Teams come from sessionStorage before the network answers, which the
+  // server cannot see; hold them back until hydration is done.
+  const hydrated = useHydrated()
+  const user = hydrated ? session.data?.user : undefined
+  const teamName = hydrated ? activeOrganization?.name : undefined
   const pathname = useLocation({ select: (location) => location.pathname })
   const pageTitle = pathname.startsWith('/settings') ? 'Settings' : 'Artifacts'
+  const initials = user?.name?.slice(0, 2).toUpperCase() ?? 'OT'
 
-  const focusSearch = useCallback(() => {
-    const input = document.querySelector<HTMLInputElement>(
-      '.artifact-search-field input',
-    )
-    if (input) input.focus()
-    else void navigate({ to: '/artifacts' })
-  }, [navigate])
-
-  useEffect(() => {
-    function onKeyDown(event: KeyboardEvent) {
-      if (
-        event.defaultPrevented ||
-        event.metaKey ||
-        event.ctrlKey ||
-        event.altKey
-      )
-        return
-      const target = event.target as HTMLElement | null
-      if (target?.closest('input, textarea, select, [contenteditable="true"]'))
-        return
-      if (event.key === 'f' || event.key === '/') {
-        event.preventDefault()
-        focusSearch()
-      }
-    }
-    document.addEventListener('keydown', onKeyDown)
-    return () => document.removeEventListener('keydown', onKeyDown)
-  }, [focusSearch])
+  const accountMenu = (
+    <>
+      <DropdownMenuGroup>
+        <DropdownMenuLabel className="user-menu-identity">
+          <strong>{user?.name}</strong>
+          <small>{user?.email}</small>
+        </DropdownMenuLabel>
+      </DropdownMenuGroup>
+      <DropdownMenuSeparator />
+      <DropdownMenuGroup>
+        <DropdownMenuItem render={<Link to="/artifacts" />}>
+          <FileBox /> Artifacts
+        </DropdownMenuItem>
+        <DropdownMenuItem render={<Link to="/settings" />}>
+          <Settings /> Settings
+        </DropdownMenuItem>
+      </DropdownMenuGroup>
+      <DropdownMenuSeparator />
+      <ThemeMenu />
+      <DropdownMenuSeparator />
+      <DropdownMenuGroup>
+        <DropdownMenuItem onClick={signOut}>
+          <LogOut /> Sign out
+        </DropdownMenuItem>
+      </DropdownMenuGroup>
+    </>
+  )
 
   return (
     <>
@@ -82,9 +83,19 @@ export function AppHeader({ actions }: { actions?: React.ReactNode }) {
           <strong>Otterware</strong>
         </div>
 
+        <button
+          className="sidebar-search"
+          type="button"
+          onClick={openCommandPalette}
+        >
+          <Search />
+          <span>Search</span>
+          <kbd>⌘K</kbd>
+        </button>
+
         <nav className="sidebar-nav sidebar-teams" aria-label="Teams">
           <span className="nav-label">Teams</span>
-          {organizations.map((organization) => {
+          {(hydrated ? organizations : []).map((organization) => {
             const active = organization.id === activeOrganization?.id
             return (
               <button
@@ -102,61 +113,28 @@ export function AppHeader({ actions }: { actions?: React.ReactNode }) {
           })}
         </nav>
 
-        <button className="sidebar-search" type="button" onClick={focusSearch}>
-          <Search />
-          <span>Find</span>
-          <kbd>F</kbd>
-        </button>
-
-        <nav className="sidebar-nav" aria-label="Workspace navigation">
-          <Link to="/artifacts" activeProps={{ className: 'active' }}>
-            <FileBox /> Artifacts
-          </Link>
-        </nav>
-
         <div className="sidebar-footer">
-          <div className="sidebar-theme" role="group" aria-label="Theme">
-            {themes.map(({ value, label, icon: Icon }) => (
-              <button
-                key={value}
-                type="button"
-                aria-label={`${label} theme`}
-                aria-pressed={(theme ?? 'system') === value}
-                onClick={() => setTheme(value)}
-              >
-                <Icon />
-              </button>
-            ))}
-          </div>
-          <nav className="sidebar-nav" aria-label="Account">
-            <Link to="/settings" activeProps={{ className: 'active' }}>
-              <Settings /> Settings
-            </Link>
-          </nav>
-          <div className="sidebar-account">
-            <span className="avatar">
-              {session.data?.user.name?.slice(0, 2).toUpperCase() ?? 'OT'}
-            </span>
-            <span className="sidebar-account-copy">
-              <strong>{session.data?.user.name}</strong>
-              <small>{session.data?.user.email}</small>
-            </span>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              type="button"
-              aria-label="Sign out"
-              onClick={() =>
-                authClient.signOut({
-                  fetchOptions: {
-                    onSuccess: () => location.assign('/login'),
-                  },
-                })
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <button
+                  type="button"
+                  className="sidebar-account"
+                  aria-label="Open account menu"
+                />
               }
             >
-              <LogOut />
-            </Button>
-          </div>
+              <span className="avatar">{initials}</span>
+              <span className="sidebar-account-copy">
+                <strong>{user?.name}</strong>
+                <small>{user?.email}</small>
+              </span>
+              <ChevronsUpDown className="sidebar-account-chevron" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" side="top" className="user-menu">
+              {accountMenu}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </aside>
 
@@ -164,7 +142,7 @@ export function AppHeader({ actions }: { actions?: React.ReactNode }) {
         <nav className="app-breadcrumb" aria-label="Breadcrumb">
           <span>
             <Users />
-            {activeOrganization?.name ?? 'Team'}
+            {teamName ?? 'Team'}
           </span>
           <ChevronRight />
           <strong>{pageTitle}</strong>
@@ -181,38 +159,10 @@ export function AppHeader({ actions }: { actions?: React.ReactNode }) {
                 />
               }
             >
-              <span className="avatar">
-                {session.data?.user.name?.slice(0, 2).toUpperCase() ?? 'OT'}
-              </span>
+              <span className="avatar">{initials}</span>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="user-menu">
-              <DropdownMenuGroup>
-                <DropdownMenuLabel className="user-menu-identity">
-                  <strong>{session.data?.user.name}</strong>
-                  <small>{session.data?.user.email}</small>
-                </DropdownMenuLabel>
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem render={<Link to="/artifacts" />}>
-                <FileBox /> Artifacts
-              </DropdownMenuItem>
-              <DropdownMenuItem render={<Link to="/settings" />}>
-                <Settings /> Settings
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <ThemeMenu />
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() =>
-                  authClient.signOut({
-                    fetchOptions: {
-                      onSuccess: () => location.assign('/login'),
-                    },
-                  })
-                }
-              >
-                <LogOut /> Sign out
-              </DropdownMenuItem>
+              {accountMenu}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
