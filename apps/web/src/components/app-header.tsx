@@ -3,13 +3,16 @@ import { Link, useLocation, useNavigate } from '@tanstack/react-router'
 import {
   Box,
   Check,
-  ChevronsUpDown,
   FileBox,
+  Laptop,
   LogOut,
+  Moon,
   Search,
   Settings,
+  Sun,
   Users,
 } from 'lucide-react'
+import { useTheme } from 'next-themes'
 import { authClient } from '#/lib/auth-client'
 import { useOrganizations } from '@/hooks/use-organizations'
 import { Button } from '@/components/ui/button'
@@ -24,10 +27,17 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { ThemeMenu } from '@/components/theme-menu'
 
+const themes = [
+  { value: 'light', label: 'Light', icon: Sun },
+  { value: 'dark', label: 'Dark', icon: Moon },
+  { value: 'system', label: 'System', icon: Laptop },
+] as const
+
 export function AppHeader({ actions }: { actions?: React.ReactNode }) {
   const session = authClient.useSession()
   const { activeOrganization, organizations, selectOrganization } =
     useOrganizations()
+  const { theme, setTheme } = useTheme()
   const navigate = useNavigate()
   const pathname = useLocation({ select: (location) => location.pathname })
   const pageTitle = pathname.startsWith('/settings') ? 'Settings' : 'Artifacts'
@@ -64,66 +74,32 @@ export function AppHeader({ actions }: { actions?: React.ReactNode }) {
   return (
     <>
       <aside className="app-sidebar">
-        <div className="sidebar-workspace">
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={
-                <Button variant="ghost" className="sidebar-team-trigger" />
-              }
-            >
-              <span className="brand-mark">
-                <Box />
-              </span>
-              <span className="sidebar-workspace-copy">
-                <strong>{activeOrganization?.name ?? 'Select team'}</strong>
-                <small>Otterware</small>
-              </span>
-              <ChevronsUpDown />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="team-switcher-menu">
-              <DropdownMenuGroup>
-                <DropdownMenuLabel className="user-menu-identity">
-                  <strong>{session.data?.user.name}</strong>
-                  <small>{session.data?.user.email}</small>
-                </DropdownMenuLabel>
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DropdownMenuLabel>Teams</DropdownMenuLabel>
-                {organizations.map((organization) => (
-                  <DropdownMenuItem
-                    key={organization.id}
-                    onClick={() => void selectOrganization(organization.id)}
-                  >
-                    <Users />
-                    <span>{organization.name}</span>
-                    {organization.id === activeOrganization?.id && (
-                      <Check className="menu-item-check" />
-                    )}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem render={<Link to="/settings" />}>
-                <Settings /> Settings
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <ThemeMenu />
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() =>
-                  authClient.signOut({
-                    fetchOptions: {
-                      onSuccess: () => location.assign('/login'),
-                    },
-                  })
-                }
-              >
-                <LogOut /> Sign out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+        <div className="sidebar-brand">
+          <span className="brand-mark">
+            <Box />
+          </span>
+          <strong>Otterware</strong>
         </div>
+
+        <nav className="sidebar-nav sidebar-teams" aria-label="Teams">
+          <span className="nav-label">Teams</span>
+          {organizations.map((organization) => {
+            const active = organization.id === activeOrganization?.id
+            return (
+              <button
+                key={organization.id}
+                type="button"
+                className={active ? 'active' : undefined}
+                aria-current={active ? 'true' : undefined}
+                onClick={() => void selectOrganization(organization.id)}
+              >
+                <Users />
+                <span>{organization.name}</span>
+                {active && <Check className="sidebar-check" />}
+              </button>
+            )
+          })}
+        </nav>
 
         <button className="sidebar-search" type="button" onClick={focusSearch}>
           <Search />
@@ -136,6 +112,51 @@ export function AppHeader({ actions }: { actions?: React.ReactNode }) {
             <FileBox /> Artifacts
           </Link>
         </nav>
+
+        <div className="sidebar-footer">
+          <div className="sidebar-theme" role="group" aria-label="Theme">
+            {themes.map(({ value, label, icon: Icon }) => (
+              <button
+                key={value}
+                type="button"
+                aria-label={`${label} theme`}
+                aria-pressed={(theme ?? 'system') === value}
+                onClick={() => setTheme(value)}
+              >
+                <Icon />
+              </button>
+            ))}
+          </div>
+          <nav className="sidebar-nav" aria-label="Account">
+            <Link to="/settings" activeProps={{ className: 'active' }}>
+              <Settings /> Settings
+            </Link>
+          </nav>
+          <div className="sidebar-account">
+            <span className="avatar">
+              {session.data?.user.name?.slice(0, 2).toUpperCase() ?? 'OT'}
+            </span>
+            <span className="sidebar-account-copy">
+              <strong>{session.data?.user.name}</strong>
+              <small>{session.data?.user.email}</small>
+            </span>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              type="button"
+              aria-label="Sign out"
+              onClick={() =>
+                authClient.signOut({
+                  fetchOptions: {
+                    onSuccess: () => location.assign('/login'),
+                  },
+                })
+              }
+            >
+              <LogOut />
+            </Button>
+          </div>
+        </div>
       </aside>
 
       <header className="app-header">
