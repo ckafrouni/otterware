@@ -11,12 +11,9 @@ import {
   Copy,
   Download,
   Eye,
-  FileBox,
   Grid2X2,
   List as ListIcon,
   MoreHorizontal,
-  PanelRightClose,
-  PanelRightOpen,
   RotateCcw,
   Search,
   Share2,
@@ -71,67 +68,12 @@ import { AppHeader } from './app-header'
 import { AuthGate } from './auth-gate'
 import { UPLOAD_ARTIFACT_EVENT } from './command-palette'
 import { DeleteArtifactDialog } from './delete-artifact-dialog'
-import { FinderColumnView } from './finder-column-view'
+import { FinderFileList } from './finder-file-list'
+import { FinderInspectorPane } from './finder-inspector-pane'
 import { QuickLookDialog } from './quick-look-dialog'
 import { ShareArtifactDialog } from './share-artifact-dialog'
 import { ShareSpaceDialog } from './share-space-dialog'
 import { UploadArtifactDialog } from './upload-artifact-dialog'
-
-const INSIGHTS_OPEN_KEY = 'otterware:insights-open'
-const INSIGHTS_WIDTH_KEY = 'otterware:insights-width'
-const INSIGHTS_MIN_WIDTH = 220
-const INSIGHTS_MAX_WIDTH = 520
-const INSIGHTS_DEFAULT_WIDTH = 280
-
-function readStored<T>(key: string, fallback: T): T {
-  if (typeof window === 'undefined') return fallback
-  try {
-    const raw = window.localStorage.getItem(key)
-    return raw === null ? fallback : (JSON.parse(raw) as T)
-  } catch {
-    return fallback
-  }
-}
-
-function useInsightsPanel() {
-  const [open, setOpen] = useState(true)
-  const [width, setWidth] = useState(INSIGHTS_DEFAULT_WIDTH)
-  useEffect(() => {
-    setOpen(readStored(INSIGHTS_OPEN_KEY, true))
-    setWidth(readStored(INSIGHTS_WIDTH_KEY, INSIGHTS_DEFAULT_WIDTH))
-  }, [])
-  const toggle = useCallback(() => {
-    setOpen((current) => {
-      window.localStorage.setItem(INSIGHTS_OPEN_KEY, JSON.stringify(!current))
-      return !current
-    })
-  }, [])
-  const startResize = useCallback(
-    (event: React.PointerEvent<HTMLElement>) => {
-      event.preventDefault()
-      const startX = event.clientX
-      let current = width
-      const onMove = (move: PointerEvent) => {
-        current = Math.min(
-          INSIGHTS_MAX_WIDTH,
-          Math.max(INSIGHTS_MIN_WIDTH, width + (startX - move.clientX)),
-        )
-        setWidth(current)
-      }
-      const onUp = () => {
-        window.localStorage.setItem(INSIGHTS_WIDTH_KEY, JSON.stringify(current))
-        document.body.classList.remove('is-resizing')
-        window.removeEventListener('pointermove', onMove)
-        window.removeEventListener('pointerup', onUp)
-      }
-      document.body.classList.add('is-resizing')
-      window.addEventListener('pointermove', onMove)
-      window.addEventListener('pointerup', onUp)
-    },
-    [width],
-  )
-  return { open, width, toggle, startResize }
-}
 
 export interface ArtifactListSearch {
   q?: string | undefined
@@ -188,7 +130,6 @@ export function ArtifactListPage({
   const [shareSpaceOpen, setShareSpaceOpen] = useState(false)
   const [shareArtifact, setShareArtifact] = useState<Artifact | null>(null)
   const [shareArtifactOpen, setShareArtifactOpen] = useState(false)
-  const insights = useInsightsPanel()
   const navigate = useNavigate()
   const { activeOrganization, loaded, organizations } = useOrganizations()
 
@@ -204,7 +145,7 @@ export function ArtifactListPage({
   const queryClient = useQueryClient()
   const query = search.q ?? ''
   const sort = search.sort ?? 'updated'
-  const view = search.view ?? 'list'
+  const view = search.view ?? 'columns'
   const status = search.status ?? 'active'
 
   const artifactsQueryKey = [
@@ -317,6 +258,17 @@ export function ArtifactListPage({
       if (prev) setQuickLookArtifact(prev)
     }
   }, [quickLookIndex, visibleArtifacts])
+
+  const activeArtifact = useMemo(() => {
+    if (selectedArtifactId) {
+      return (
+        visibleArtifacts.find((item) => item.id === selectedArtifactId) ??
+        visibleArtifacts[0] ??
+        null
+      )
+    }
+    return visibleArtifacts[0] ?? null
+  }, [selectedArtifactId, visibleArtifacts])
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -507,23 +459,6 @@ export function ArtifactListPage({
                     <Grid2X2 size={15} />
                   </ToggleGroupItem>
                 </ToggleGroup>
-                <button
-                  type="button"
-                  className="insights-toggle"
-                  aria-label={
-                    insights.open
-                      ? 'Hide overview panel'
-                      : 'Show overview panel'
-                  }
-                  aria-pressed={insights.open}
-                  onClick={insights.toggle}
-                >
-                  {insights.open ? (
-                    <PanelRightClose size={16} />
-                  ) : (
-                    <PanelRightOpen size={16} />
-                  )}
-                </button>
               </div>
               <div className="artifact-scroll">
                 {error && (
@@ -573,22 +508,54 @@ export function ArtifactListPage({
                   )}
 
                 {view === 'columns' && !loading && !error && !noTeam ? (
-                  <FinderColumnView
-                    artifacts={visibleArtifacts}
-                    organizationSlug={activeOrganization?.slug ?? 'space'}
-                    selectedArtifactId={selectedArtifactId}
-                    onSelectArtifact={(artifact) =>
-                      setSelectedArtifactId(artifact.id)
-                    }
-                    onQuickLook={(artifact) => {
-                      setQuickLookArtifact(artifact)
-                      setQuickLookOpen(true)
-                    }}
-                    onShare={(artifact) => {
-                      setShareArtifact(artifact)
-                      setShareArtifactOpen(true)
-                    }}
-                  />
+                  <div className="finder-3panel-workspace">
+                    <FinderFileList
+                      artifacts={visibleArtifacts}
+                      selectedArtifactId={activeArtifact?.id ?? null}
+                      onSelectArtifact={(artifact) =>
+                        setSelectedArtifactId(artifact.id)
+                      }
+                      onOpenArtifact={(artifact) => {
+                        void navigate({
+                          to: '/$organizationSlug/a/$slug',
+                          params: {
+                            organizationSlug:
+                              activeOrganization?.slug ?? 'space',
+                            slug: artifact.slug,
+                          },
+                        })
+                      }}
+                      onQuickLook={(artifact) => {
+                        setQuickLookArtifact(artifact)
+                        setQuickLookOpen(true)
+                      }}
+                      status={status}
+                      onStatusChange={(newStatus) =>
+                        onSearchChange({
+                          status:
+                            newStatus === 'active' ? undefined : newStatus,
+                          page: undefined,
+                        })
+                      }
+                    />
+                    <FinderInspectorPane
+                      artifact={activeArtifact}
+                      organizationSlug={activeOrganization?.slug ?? 'space'}
+                      onQuickLook={(artifact) => {
+                        setQuickLookArtifact(artifact)
+                        setQuickLookOpen(true)
+                      }}
+                      onShare={(artifact) => {
+                        setShareArtifact(artifact)
+                        setShareArtifactOpen(true)
+                      }}
+                      onChangeArchived={(artifact) =>
+                        void changeArchivedState(artifact)
+                      }
+                      onDelete={(artifact) => setDeletingArtifact(artifact)}
+                      isOwner={isOwner}
+                    />
+                  </div>
                 ) : (
                   <section
                     className={
@@ -906,17 +873,6 @@ export function ArtifactListPage({
                 </footer>
               )}
             </div>
-            {!noTeam && !error && insights.open && (
-              <ArtifactInsights
-                artifacts={artifacts}
-                visible={visibleArtifacts}
-                status={status}
-                loading={loading}
-                organizationSlug={activeOrganization?.slug ?? 'space'}
-                width={insights.width}
-                onResizeStart={insights.startResize}
-              />
-            )}
           </div>
           <QuickLookDialog
             open={quickLookOpen}
@@ -1066,128 +1022,4 @@ const shortDate = new Intl.DateTimeFormat('en', {
 
 function formatShortDate(value: string): string {
   return shortDate.format(new Date(value))
-}
-
-function relativeTime(value: string): string {
-  const diff = Date.now() - new Date(value).getTime()
-  const minutes = Math.round(diff / 60_000)
-  if (minutes < 1) return 'just now'
-  if (minutes < 60) return `${minutes}m ago`
-  const hours = Math.round(minutes / 60)
-  if (hours < 24) return `${hours}h ago`
-  const days = Math.round(hours / 24)
-  if (days < 30) return `${days}d ago`
-  const months = Math.round(days / 30)
-  if (months < 12) return `${months}mo ago`
-  return `${Math.round(months / 12)}y ago`
-}
-function ArtifactInsights({
-  artifacts,
-  visible,
-  status,
-  loading,
-  organizationSlug,
-  width,
-  onResizeStart,
-}: {
-  artifacts: Artifact[]
-  visible: Artifact[]
-  status: 'active' | 'archived'
-  loading: boolean
-  organizationSlug: string
-  width: number
-  onResizeStart: (event: React.PointerEvent<HTMLElement>) => void
-}) {
-  const inStatus = artifacts.filter((artifact) =>
-    status === 'archived' ? artifact.archivedAt !== null : !artifact.archivedAt,
-  )
-  const versions = inStatus.reduce(
-    (total, artifact) => total + artifact.versionCount,
-    0,
-  )
-  const recent = [...inStatus]
-    .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))
-    .slice(0, 5)
-  const revised = [...inStatus]
-    .filter((artifact) => artifact.versionCount > 1)
-    .sort((left, right) => right.versionCount - left.versionCount)
-    .slice(0, 3)
-  const week = Date.now() - 7 * 24 * 60 * 60 * 1000
-  const updatedThisWeek = inStatus.filter(
-    (artifact) => new Date(artifact.updatedAt).getTime() >= week,
-  ).length
-
-  const style = { width, flexBasis: width }
-  if (loading)
-    return (
-      <aside className="artifact-insights" style={style} aria-hidden="true" />
-    )
-
-  return (
-    <aside
-      className="artifact-insights"
-      style={style}
-      aria-label="Workspace overview"
-    >
-      <div
-        className="insights-resize-handle"
-        role="separator"
-        aria-orientation="vertical"
-        aria-label="Resize overview panel"
-        onPointerDown={onResizeStart}
-      />
-      <div className="insight-section">
-        <div className="insight-row">
-          <span>Artifacts</span>
-          <strong>
-            {visible.length === inStatus.length
-              ? inStatus.length
-              : `${visible.length} of ${inStatus.length}`}
-          </strong>
-        </div>
-        <div className="insight-row">
-          <span>Versions</span>
-          <strong>{versions}</strong>
-        </div>
-        <div className="insight-row">
-          <span>Updated this week</span>
-          <strong>{updatedThisWeek}</strong>
-        </div>
-      </div>
-      {recent.length > 0 && (
-        <div className="insight-section">
-          <h4>Recently updated</h4>
-          {recent.map((artifact) => (
-            <Link
-              key={artifact.id}
-              className="insight-link"
-              to="/$organizationSlug/a/$slug"
-              params={{ organizationSlug, slug: artifact.slug }}
-            >
-              <FileBox />
-              <span>{artifact.title}</span>
-              <small>{relativeTime(artifact.updatedAt)}</small>
-            </Link>
-          ))}
-        </div>
-      )}
-      {revised.length > 0 && (
-        <div className="insight-section">
-          <h4>Most revised</h4>
-          {revised.map((artifact) => (
-            <Link
-              key={artifact.id}
-              className="insight-link"
-              to="/$organizationSlug/a/$slug"
-              params={{ organizationSlug, slug: artifact.slug }}
-            >
-              <FileBox />
-              <span>{artifact.title}</span>
-              <small>v{artifact.versionCount}</small>
-            </Link>
-          ))}
-        </div>
-      )}
-    </aside>
-  )
 }

@@ -2,8 +2,10 @@ import { Link, useLocation } from '@tanstack/react-router'
 import {
   Box,
   Check,
+  ChevronLeft,
   ChevronRight,
   ChevronsUpDown,
+  Clock,
   FileBox,
   Layers,
   LogOut,
@@ -11,6 +13,7 @@ import {
   Search,
   Settings,
   User,
+  Users,
 } from 'lucide-react'
 import { authClient } from '#/lib/auth-client'
 import { useHydrated } from '#/lib/session-cache'
@@ -77,7 +80,13 @@ export function AppHeader({ actions }: { actions?: React.ReactNode }) {
 
   return (
     <>
-      <aside className="app-sidebar">
+      <aside className="app-sidebar finder-sidebar">
+        <div className="finder-traffic-lights" aria-hidden="true">
+          <span className="traffic-dot traffic-red" />
+          <span className="traffic-dot traffic-yellow" />
+          <span className="traffic-dot traffic-green" />
+        </div>
+
         <div className="sidebar-brand">
           <span className="brand-mark">
             <Box />
@@ -94,6 +103,18 @@ export function AppHeader({ actions }: { actions?: React.ReactNode }) {
           <span>Search</span>
           <kbd>⌘K</kbd>
         </button>
+
+        <nav className="sidebar-nav sidebar-favorites" aria-label="Favorites">
+          <span className="nav-label">Favorites</span>
+          <Link to="/artifacts" className="finder-sidebar-link active">
+            <Clock size={15} />
+            <span>Recents</span>
+          </Link>
+          <Link to="/artifacts" className="finder-sidebar-link">
+            <Users size={15} />
+            <span>Shared</span>
+          </Link>
+        </nav>
 
         <nav
           className="sidebar-nav sidebar-spaces sidebar-teams"
@@ -135,6 +156,18 @@ export function AppHeader({ actions }: { actions?: React.ReactNode }) {
           })}
         </nav>
 
+        <nav className="sidebar-nav sidebar-tags-nav" aria-label="Tags">
+          <span className="nav-label">Tags</span>
+          <div className="finder-tags-pill-row">
+            <span className="tag-circle tag-red" title="Red" />
+            <span className="tag-circle tag-orange" title="Orange" />
+            <span className="tag-circle tag-yellow" title="Yellow" />
+            <span className="tag-circle tag-green" title="Green" />
+            <span className="tag-circle tag-blue" title="Blue" />
+            <span className="tag-circle tag-purple" title="Purple" />
+          </div>
+        </nav>
+
         <div className="sidebar-footer">
           <DropdownMenu>
             <DropdownMenuTrigger
@@ -160,15 +193,37 @@ export function AppHeader({ actions }: { actions?: React.ReactNode }) {
         </div>
       </aside>
 
-      <header className="app-header">
-        <nav className="app-breadcrumb" aria-label="Breadcrumb">
-          <span>
-            <Layers size={14} />
-            {teamName ?? 'Space'}
-          </span>
-          <ChevronRight size={13} />
-          <strong>{pageTitle}</strong>
-        </nav>
+      <header className="app-header finder-titlebar">
+        <div className="finder-titlebar-left">
+          <div className="finder-nav-arrows">
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              className="finder-arrow-btn"
+              disabled
+              aria-label="Back"
+            >
+              <ChevronLeft size={14} />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              className="finder-arrow-btn"
+              disabled
+              aria-label="Forward"
+            >
+              <ChevronRight size={14} />
+            </Button>
+          </div>
+          <nav className="app-breadcrumb" aria-label="Breadcrumb">
+            <span>
+              <Layers size={14} />
+              {teamName ?? 'Space'}
+            </span>
+            <ChevronRight size={13} />
+            <strong>{pageTitle}</strong>
+          </nav>
+        </div>
         {actions && <div className="app-header-actions">{actions}</div>}
         <div className="mobile-account-menu">
           <DropdownMenu>
