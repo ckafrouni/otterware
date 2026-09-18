@@ -2067,14 +2067,17 @@ body.is-resizing * {
 
 /* Command palette (cmdk) --------------------------------------------------- */
 .command-palette {
-  top: 18vh;
+  /* Linear-style: anchored in the top third, horizontally centered. The
+     base dialog centers with the `translate` property, so override that
+     rather than stacking a transform on top. */
+  top: 20vh;
+  translate: -50% 0;
   max-width: 560px;
   padding: 0;
   gap: 0;
   overflow: hidden;
   border: 1px solid var(--line);
   background: var(--surface);
-  transform: translateX(-50%);
 }
 
 .command-input {
