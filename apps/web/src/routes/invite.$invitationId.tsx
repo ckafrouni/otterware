@@ -29,7 +29,7 @@ function InvitePage() {
       <main className="centered-state">
         <ThemeToggle className="auth-theme-toggle" />
         <Card className="auth-card invitation-card">
-          <p className="eyebrow">Team invitation</p>
+          <p className="eyebrow">Space invitation</p>
           <h1>Joining Otterware</h1>
           <p>{status}</p>
         </Card>

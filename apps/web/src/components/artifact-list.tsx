@@ -4,9 +4,13 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   Archive,
   ArrowDownAZ,
+  Bot,
+  ChevronRight,
   CircleDot,
+  Columns3,
   Copy,
   Download,
+  Eye,
   FileBox,
   Grid2X2,
   List as ListIcon,
@@ -15,8 +19,11 @@ import {
   PanelRightOpen,
   RotateCcw,
   Search,
+  Share2,
   Trash2,
   Upload,
+  User,
+  Users,
 } from 'lucide-react'
 import {
   artifactListResponseSchema,
@@ -24,6 +31,11 @@ import {
   type Artifact,
 } from '@otterware/contracts'
 import { api, formatDate } from '#/lib/api'
+import {
+  formatBytes,
+  getArtifactFormat,
+  isAgentActor,
+} from '#/lib/artifact-helpers'
 import { artifactBootstrapQuery } from '#/lib/artifact-query'
 import { readSessionCache, writeSessionCache } from '#/lib/session-cache'
 import { useCurrentActor } from '@/hooks/use-current-actor'
@@ -59,6 +71,10 @@ import { AppHeader } from './app-header'
 import { AuthGate } from './auth-gate'
 import { UPLOAD_ARTIFACT_EVENT } from './command-palette'
 import { DeleteArtifactDialog } from './delete-artifact-dialog'
+import { FinderColumnView } from './finder-column-view'
+import { QuickLookDialog } from './quick-look-dialog'
+import { ShareArtifactDialog } from './share-artifact-dialog'
+import { ShareSpaceDialog } from './share-space-dialog'
 import { UploadArtifactDialog } from './upload-artifact-dialog'
 
 const INSIGHTS_OPEN_KEY = 'otterware:insights-open'
@@ -121,7 +137,7 @@ export interface ArtifactListSearch {
   q?: string | undefined
   sort?: 'updated' | 'az' | 'za' | undefined
   status?: 'active' | 'archived' | undefined
-  view?: 'grid' | 'list' | undefined
+  view?: 'columns' | 'grid' | 'list' | undefined
   page?: number | undefined
 }
 
@@ -162,6 +178,16 @@ export function ArtifactListPage({
     null,
   )
   const [uploadOpen, setUploadOpen] = useState(false)
+  const [selectedArtifactId, setSelectedArtifactId] = useState<string | null>(
+    null,
+  )
+  const [quickLookArtifact, setQuickLookArtifact] = useState<Artifact | null>(
+    null,
+  )
+  const [quickLookOpen, setQuickLookOpen] = useState(false)
+  const [shareSpaceOpen, setShareSpaceOpen] = useState(false)
+  const [shareArtifact, setShareArtifact] = useState<Artifact | null>(null)
+  const [shareArtifactOpen, setShareArtifactOpen] = useState(false)
   const insights = useInsightsPanel()
   const navigate = useNavigate()
   const { activeOrganization, loaded, organizations } = useOrganizations()
@@ -258,6 +284,69 @@ export function ArtifactListPage({
     currentPage * PAGE_SIZE,
   )
 
+  const totalBytes = useMemo(() => {
+    return visibleArtifacts.reduce(
+      (sum, item) => sum + (item.currentVersion?.byteSize ?? 0),
+      0,
+    )
+  }, [visibleArtifacts])
+
+  const agentCount = useMemo(() => {
+    return visibleArtifacts.filter((item) =>
+      isAgentActor(item.currentVersion?.createdBy),
+    ).length
+  }, [visibleArtifacts])
+
+  const quickLookIndex = useMemo(() => {
+    if (!quickLookArtifact) return -1
+    return visibleArtifacts.findIndex(
+      (item) => item.id === quickLookArtifact.id,
+    )
+  }, [quickLookArtifact, visibleArtifacts])
+
+  const handleNextQuickLook = useCallback(() => {
+    if (quickLookIndex >= 0 && quickLookIndex < visibleArtifacts.length - 1) {
+      const next = visibleArtifacts[quickLookIndex + 1]
+      if (next) setQuickLookArtifact(next)
+    }
+  }, [quickLookIndex, visibleArtifacts])
+
+  const handlePrevQuickLook = useCallback(() => {
+    if (quickLookIndex > 0) {
+      const prev = visibleArtifacts[quickLookIndex - 1]
+      if (prev) setQuickLookArtifact(prev)
+    }
+  }, [quickLookIndex, visibleArtifacts])
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      const target = event.target as HTMLElement | null
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.isContentEditable)
+      ) {
+        return
+      }
+
+      if (event.key === ' ' || event.key === 'Spacebar') {
+        event.preventDefault()
+        const targetArtifact =
+          (selectedArtifactId
+            ? visibleArtifacts.find((a) => a.id === selectedArtifactId)
+            : null) ?? visibleArtifacts[0]
+        if (targetArtifact) {
+          setQuickLookArtifact(targetArtifact)
+          setQuickLookOpen((prev) => !prev)
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [selectedArtifactId, visibleArtifacts])
+
   function goToPage(page: number) {
     onSearchChange({ page: page <= 1 ? undefined : page })
   }
@@ -313,6 +402,15 @@ export function ArtifactListPage({
                   }
                 />
               </label>
+              <Button
+                type="button"
+                variant="outline"
+                aria-label="Share space"
+                disabled={!activeOrganization}
+                onClick={() => setShareSpaceOpen(true)}
+              >
+                <Users size={15} /> Collaborate
+              </Button>
               <Button
                 type="button"
                 aria-label="Upload artifact"
@@ -373,9 +471,13 @@ export function ArtifactListPage({
                   value={[view]}
                   onValueChange={(values) => {
                     const next = values[0]
-                    if (next === 'grid' || next === 'list') {
+                    if (
+                      next === 'columns' ||
+                      next === 'grid' ||
+                      next === 'list'
+                    ) {
                       onSearchChange({
-                        view: next === 'grid' ? 'grid' : undefined,
+                        view: next === 'list' ? undefined : next,
                       })
                     }
                   }}
@@ -383,11 +485,26 @@ export function ArtifactListPage({
                   spacing={0}
                   aria-label="Artifact layout"
                 >
-                  <ToggleGroupItem value="list" aria-label="List view">
-                    <ListIcon size={17} />
+                  <ToggleGroupItem
+                    value="columns"
+                    aria-label="Columns view"
+                    title="macOS Finder Miller Columns"
+                  >
+                    <Columns3 size={15} />
                   </ToggleGroupItem>
-                  <ToggleGroupItem value="grid" aria-label="Grid view">
-                    <Grid2X2 size={16} />
+                  <ToggleGroupItem
+                    value="list"
+                    aria-label="List view"
+                    title="Linear List View"
+                  >
+                    <ListIcon size={16} />
+                  </ToggleGroupItem>
+                  <ToggleGroupItem
+                    value="grid"
+                    aria-label="Grid view"
+                    title="Gallery Grid View"
+                  >
+                    <Grid2X2 size={15} />
                   </ToggleGroupItem>
                 </ToggleGroup>
                 <button
@@ -420,9 +537,9 @@ export function ArtifactListPage({
                 )}
                 {noTeam && !error && (
                   <div className="empty-panel">
-                    <h2>Create your first team</h2>
+                    <h2>Create your first space</h2>
                     <p>
-                      Artifacts live in a team workspace. Create one in{' '}
+                      Artifacts live in a space. Create one in{' '}
                       <Link to="/settings">Settings</Link> to get started.
                     </p>
                   </div>
@@ -454,219 +571,338 @@ export function ArtifactListPage({
                           : 'No active artifacts.'}
                     </div>
                   )}
-                <section
-                  className={
-                    view === 'grid' ? 'artifact-grid' : 'artifact-list-view'
-                  }
-                  aria-label="Artifacts"
-                >
-                  {loading ? (
-                    <ArtifactCardSkeletons view={view} />
-                  ) : (
-                    pagedArtifacts.map((artifact) => (
-                      <Link
-                        key={artifact.id}
-                        to="/$organizationSlug/a/$slug"
-                        params={{
-                          organizationSlug: activeOrganization?.slug ?? 'team',
-                          slug: artifact.slug,
-                        }}
-                        className="artifact-card-link"
-                        onFocus={() => {
-                          if (activeOrganization)
-                            void queryClient.prefetchQuery(
-                              artifactBootstrapQuery(
-                                activeOrganization.id,
-                                artifact.slug,
-                              ),
-                            )
-                        }}
-                        onMouseEnter={() => {
-                          if (activeOrganization)
-                            void queryClient.prefetchQuery(
-                              artifactBootstrapQuery(
-                                activeOrganization.id,
-                                artifact.slug,
-                              ),
-                            )
-                        }}
-                      >
-                        <Card
-                          size="sm"
-                          className={
-                            view === 'grid'
-                              ? 'artifact-card'
-                              : 'artifact-card artifact-row'
-                          }
-                        >
-                          <ArtifactCardPreview artifact={artifact} />
-                          <div className="artifact-card-body">
-                            <h2>{artifact.title}</h2>
-                            <p>
-                              {artifact.description ||
-                                'No description provided.'}
-                            </p>
-                          </div>
-                          <div className="artifact-card-meta">
-                            <span>
-                              <span className="version-chip">
-                                v{artifact.currentVersion?.number ?? 1}
-                              </span>
-                              {view === 'list'
-                                ? formatShortDate(artifact.updatedAt)
-                                : formatDate(artifact.updatedAt)}
-                            </span>
-                            <div className="artifact-card-actions">
-                              <Button
-                                variant="outline"
-                                size="icon-xs"
-                                type="button"
-                                aria-label="Copy artifact URL"
-                                onClick={(event) => {
-                                  event.preventDefault()
-                                  event.stopPropagation()
-                                  void navigator.clipboard.writeText(
-                                    artifact.url,
-                                  )
-                                }}
-                              >
-                                <Copy size={14} />
-                              </Button>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger
-                                  render={
-                                    <Button
-                                      variant="outline"
-                                      size="icon-xs"
-                                      type="button"
-                                      aria-label="Artifact actions"
-                                      disabled={changingId === artifact.id}
-                                      onClick={(event) => {
-                                        event.preventDefault()
-                                        event.stopPropagation()
-                                      }}
-                                    />
-                                  }
-                                >
-                                  <MoreHorizontal size={14} />
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent
-                                  align="end"
-                                  className="artifact-actions-menu"
-                                >
-                                  <DropdownMenuItem
-                                    render={
-                                      <a
-                                        href={`/api/v1/artifacts/${encodeURIComponent(artifact.id)}/download`}
-                                        download
-                                        onClick={(event) =>
-                                          event.stopPropagation()
-                                        }
-                                      />
-                                    }
+
+                {view === 'columns' && !loading && !error && !noTeam ? (
+                  <FinderColumnView
+                    artifacts={visibleArtifacts}
+                    organizationSlug={activeOrganization?.slug ?? 'space'}
+                    selectedArtifactId={selectedArtifactId}
+                    onSelectArtifact={(artifact) =>
+                      setSelectedArtifactId(artifact.id)
+                    }
+                    onQuickLook={(artifact) => {
+                      setQuickLookArtifact(artifact)
+                      setQuickLookOpen(true)
+                    }}
+                    onShare={(artifact) => {
+                      setShareArtifact(artifact)
+                      setShareArtifactOpen(true)
+                    }}
+                  />
+                ) : (
+                  <section
+                    className={
+                      view === 'grid' ? 'artifact-grid' : 'artifact-list-view'
+                    }
+                    aria-label="Artifacts"
+                  >
+                    {loading ? (
+                      <ArtifactCardSkeletons view={view} />
+                    ) : (
+                      pagedArtifacts.map((artifact) => {
+                        const format = getArtifactFormat(
+                          artifact.currentVersion?.entryPath,
+                        )
+                        const isAgent = isAgentActor(
+                          artifact.currentVersion?.createdBy,
+                        )
+                        const creatorName =
+                          artifact.currentVersion?.createdBy?.name ??
+                          (isAgent ? 'AI Agent' : 'Member')
+                        const isSelected = selectedArtifactId === artifact.id
+
+                        return (
+                          <Link
+                            key={artifact.id}
+                            to="/$organizationSlug/a/$slug"
+                            params={{
+                              organizationSlug:
+                                activeOrganization?.slug ?? 'space',
+                              slug: artifact.slug,
+                            }}
+                            className={`artifact-card-link ${isSelected ? 'is-selected' : ''}`}
+                            onClick={() => setSelectedArtifactId(artifact.id)}
+                            onFocus={() => {
+                              setSelectedArtifactId(artifact.id)
+                              if (activeOrganization)
+                                void queryClient.prefetchQuery(
+                                  artifactBootstrapQuery(
+                                    activeOrganization.id,
+                                    artifact.slug,
+                                  ),
+                                )
+                            }}
+                            onMouseEnter={() => {
+                              if (activeOrganization)
+                                void queryClient.prefetchQuery(
+                                  artifactBootstrapQuery(
+                                    activeOrganization.id,
+                                    artifact.slug,
+                                  ),
+                                )
+                            }}
+                          >
+                            <Card
+                              size="sm"
+                              className={
+                                view === 'grid'
+                                  ? 'artifact-card'
+                                  : 'artifact-card artifact-row'
+                              }
+                            >
+                              <ArtifactCardPreview artifact={artifact} />
+                              <div className="artifact-card-body">
+                                <h2>{artifact.title}</h2>
+                                <p>
+                                  {artifact.description ||
+                                    'No description provided.'}
+                                </p>
+                              </div>
+                              <div className="artifact-card-meta">
+                                <span className="flex items-center gap-1.5 flex-wrap">
+                                  <span className="version-chip">
+                                    v{artifact.currentVersion?.number ?? 1}
+                                  </span>
+                                  {isAgent ? (
+                                    <span
+                                      className="actor-badge actor-agent-compact"
+                                      title={`Created by AI Agent: ${creatorName}`}
+                                    >
+                                      <Bot size={11} />
+                                      <span>{creatorName}</span>
+                                    </span>
+                                  ) : (
+                                    <span
+                                      className="actor-badge actor-human-compact"
+                                      title={`Member: ${creatorName}`}
+                                    >
+                                      <User size={11} />
+                                      <span>{creatorName}</span>
+                                    </span>
+                                  )}
+                                  <span
+                                    className={`format-tag-compact ${format.pillClass}`}
                                   >
-                                    <Download size={14} /> Download
-                                  </DropdownMenuItem>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem
-                                    variant={
-                                      artifact.archivedAt
-                                        ? 'default'
-                                        : 'destructive'
-                                    }
-                                    onClick={() =>
-                                      void changeArchivedState(artifact)
-                                    }
+                                    {format.badge}
+                                  </span>
+                                  <span className="text-muted-foreground text-[11px]">
+                                    {view === 'list'
+                                      ? formatShortDate(artifact.updatedAt)
+                                      : formatDate(artifact.updatedAt)}
+                                  </span>
+                                </span>
+                                <div className="artifact-card-actions">
+                                  <Button
+                                    variant="outline"
+                                    size="icon-xs"
+                                    type="button"
+                                    aria-label="Quick Look"
+                                    title="Quick Look (Space)"
+                                    onClick={(event) => {
+                                      event.preventDefault()
+                                      event.stopPropagation()
+                                      setQuickLookArtifact(artifact)
+                                      setQuickLookOpen(true)
+                                    }}
                                   >
-                                    {artifact.archivedAt ? (
-                                      <RotateCcw size={14} />
-                                    ) : (
-                                      <Archive size={14} />
-                                    )}
-                                    {artifact.archivedAt
-                                      ? 'Restore'
-                                      : 'Archive'}
-                                  </DropdownMenuItem>
-                                  {artifact.archivedAt && isOwner && (
-                                    <>
-                                      <DropdownMenuSeparator />
+                                    <Eye size={13} />
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="icon-xs"
+                                    type="button"
+                                    aria-label="Share artifact"
+                                    title="Share artifact"
+                                    onClick={(event) => {
+                                      event.preventDefault()
+                                      event.stopPropagation()
+                                      setShareArtifact(artifact)
+                                      setShareArtifactOpen(true)
+                                    }}
+                                  >
+                                    <Share2 size={13} />
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="icon-xs"
+                                    type="button"
+                                    aria-label="Copy artifact URL"
+                                    title="Copy URL"
+                                    onClick={(event) => {
+                                      event.preventDefault()
+                                      event.stopPropagation()
+                                      void navigator.clipboard.writeText(
+                                        artifact.url,
+                                      )
+                                    }}
+                                  >
+                                    <Copy size={13} />
+                                  </Button>
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger
+                                      render={
+                                        <Button
+                                          variant="outline"
+                                          size="icon-xs"
+                                          type="button"
+                                          aria-label="Artifact actions"
+                                          disabled={changingId === artifact.id}
+                                          onClick={(event) => {
+                                            event.preventDefault()
+                                            event.stopPropagation()
+                                          }}
+                                        />
+                                      }
+                                    >
+                                      <MoreHorizontal size={14} />
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent
+                                      align="end"
+                                      className="artifact-actions-menu"
+                                    >
                                       <DropdownMenuItem
-                                        variant="destructive"
-                                        onClick={() =>
-                                          setDeletingArtifact(artifact)
+                                        render={
+                                          <a
+                                            href={`/api/v1/artifacts/${encodeURIComponent(artifact.id)}/download`}
+                                            download
+                                            onClick={(event) =>
+                                              event.stopPropagation()
+                                            }
+                                          />
                                         }
                                       >
-                                        <Trash2 size={14} />
-                                        Delete permanently
+                                        <Download size={14} /> Download
                                       </DropdownMenuItem>
-                                    </>
-                                  )}
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </div>
-                          </div>
-                        </Card>
-                      </Link>
-                    ))
-                  )}
-                </section>
+                                      <DropdownMenuSeparator />
+                                      <DropdownMenuItem
+                                        variant={
+                                          artifact.archivedAt
+                                            ? 'default'
+                                            : 'destructive'
+                                        }
+                                        onClick={() =>
+                                          void changeArchivedState(artifact)
+                                        }
+                                      >
+                                        {artifact.archivedAt ? (
+                                          <RotateCcw size={14} />
+                                        ) : (
+                                          <Archive size={14} />
+                                        )}
+                                        {artifact.archivedAt
+                                          ? 'Restore'
+                                          : 'Archive'}
+                                      </DropdownMenuItem>
+                                      {artifact.archivedAt && isOwner && (
+                                        <>
+                                          <DropdownMenuSeparator />
+                                          <DropdownMenuItem
+                                            variant="destructive"
+                                            onClick={() =>
+                                              setDeletingArtifact(artifact)
+                                            }
+                                          >
+                                            <Trash2 size={14} />
+                                            Delete permanently
+                                          </DropdownMenuItem>
+                                        </>
+                                      )}
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                </div>
+                              </div>
+                            </Card>
+                          </Link>
+                        )
+                      })
+                    )}
+                  </section>
+                )}
               </div>
               {!loading && !error && !noTeam && visibleArtifacts.length > 0 && (
-                <footer className="artifact-list-footer">
-                  <span>
-                    {visibleArtifacts.length}{' '}
-                    {visibleArtifacts.length === 1 ? 'artifact' : 'artifacts'}
-                  </span>
-                  {totalPages > 1 && (
-                    <Pagination className="artifact-pagination">
-                      <PaginationContent>
-                        <PaginationItem>
-                          <PaginationPrevious
-                            aria-disabled={currentPage === 1}
-                            className={
-                              currentPage === 1
-                                ? 'pagination-disabled'
-                                : undefined
-                            }
-                            onClick={() => {
-                              if (currentPage > 1) goToPage(currentPage - 1)
-                            }}
-                          />
-                        </PaginationItem>
-                        {paginationItems(currentPage, totalPages).map(
-                          (item, index) =>
-                            item === 'ellipsis' ? (
-                              <PaginationItem key={`ellipsis-${index}`}>
-                                <PaginationEllipsis />
-                              </PaginationItem>
-                            ) : (
-                              <PaginationItem key={item}>
-                                <PaginationLink
-                                  isActive={item === currentPage}
-                                  onClick={() => goToPage(item)}
-                                >
-                                  {item}
-                                </PaginationLink>
-                              </PaginationItem>
-                            ),
-                        )}
-                        <PaginationItem>
-                          <PaginationNext
-                            aria-disabled={currentPage === totalPages}
-                            className={
-                              currentPage === totalPages
-                                ? 'pagination-disabled'
-                                : undefined
-                            }
-                            onClick={() => {
-                              if (currentPage < totalPages)
-                                goToPage(currentPage + 1)
-                            }}
-                          />
-                        </PaginationItem>
-                      </PaginationContent>
-                    </Pagination>
-                  )}
+                <footer className="artifact-list-footer finder-status-bar">
+                  <div className="finder-status-left">
+                    <span className="finder-path-item font-medium">
+                      {activeOrganization?.name ?? 'Space'}
+                    </span>
+                    <ChevronRight size={11} className="finder-path-sep" />
+                    <span className="finder-path-item">
+                      {status === 'archived' ? 'Archived' : 'Active'}
+                    </span>
+                  </div>
+                  <div className="finder-status-center">
+                    <span>
+                      {visibleArtifacts.length}{' '}
+                      {visibleArtifacts.length === 1 ? 'artifact' : 'artifacts'}
+                    </span>
+                    <span className="dot-sep">·</span>
+                    <span>{formatBytes(totalBytes)}</span>
+                    {agentCount > 0 && (
+                      <>
+                        <span className="dot-sep">·</span>
+                        <span className="finder-ai-stat">
+                          <Bot size={11} className="inline mr-1" />
+                          {agentCount} AI generated
+                        </span>
+                      </>
+                    )}
+                  </div>
+                  <div className="finder-status-right">
+                    {totalPages > 1 ? (
+                      <Pagination className="artifact-pagination">
+                        <PaginationContent>
+                          <PaginationItem>
+                            <PaginationPrevious
+                              aria-disabled={currentPage === 1}
+                              className={
+                                currentPage === 1
+                                  ? 'pagination-disabled'
+                                  : undefined
+                              }
+                              onClick={() => {
+                                if (currentPage > 1) goToPage(currentPage - 1)
+                              }}
+                            />
+                          </PaginationItem>
+                          {paginationItems(currentPage, totalPages).map(
+                            (item, index) =>
+                              item === 'ellipsis' ? (
+                                <PaginationItem key={`ellipsis-${index}`}>
+                                  <PaginationEllipsis />
+                                </PaginationItem>
+                              ) : (
+                                <PaginationItem key={item}>
+                                  <PaginationLink
+                                    isActive={item === currentPage}
+                                    onClick={() => goToPage(item)}
+                                  >
+                                    {item}
+                                  </PaginationLink>
+                                </PaginationItem>
+                              ),
+                          )}
+                          <PaginationItem>
+                            <PaginationNext
+                              aria-disabled={currentPage === totalPages}
+                              className={
+                                currentPage === totalPages
+                                  ? 'pagination-disabled'
+                                  : undefined
+                              }
+                              onClick={() => {
+                                if (currentPage < totalPages)
+                                  goToPage(currentPage + 1)
+                              }}
+                            />
+                          </PaginationItem>
+                        </PaginationContent>
+                      </Pagination>
+                    ) : (
+                      <div className="finder-keyboard-hints">
+                        <kbd>Space</kbd> Quick Look · <kbd>⌘K</kbd> Search
+                      </div>
+                    )}
+                  </div>
                 </footer>
               )}
             </div>
@@ -676,12 +912,36 @@ export function ArtifactListPage({
                 visible={visibleArtifacts}
                 status={status}
                 loading={loading}
-                organizationSlug={activeOrganization?.slug ?? 'team'}
+                organizationSlug={activeOrganization?.slug ?? 'space'}
                 width={insights.width}
                 onResizeStart={insights.startResize}
               />
             )}
           </div>
+          <QuickLookDialog
+            open={quickLookOpen}
+            onOpenChange={setQuickLookOpen}
+            artifact={quickLookArtifact}
+            organizationSlug={activeOrganization?.slug ?? 'space'}
+            onNext={handleNextQuickLook}
+            onPrev={handlePrevQuickLook}
+            hasNext={
+              quickLookIndex >= 0 &&
+              quickLookIndex < visibleArtifacts.length - 1
+            }
+            hasPrev={quickLookIndex > 0}
+          />
+          <ShareSpaceDialog
+            open={shareSpaceOpen}
+            onOpenChange={setShareSpaceOpen}
+            spaceId={activeOrganization?.id}
+            spaceName={activeOrganization?.name}
+          />
+          <ShareArtifactDialog
+            open={shareArtifactOpen}
+            onOpenChange={setShareArtifactOpen}
+            artifact={shareArtifact}
+          />
           <UploadArtifactDialog
             open={uploadOpen}
             organizationId={activeOrganization?.id}
@@ -694,7 +954,7 @@ export function ArtifactListPage({
               void navigate({
                 to: '/$organizationSlug/a/$slug',
                 params: {
-                  organizationSlug: activeOrganization?.slug ?? 'team',
+                  organizationSlug: activeOrganization?.slug ?? 'space',
                   slug: uploaded.slug,
                 },
               })
@@ -721,7 +981,11 @@ export function ArtifactListPage({
   )
 }
 
-function ArtifactHomeLoadingState({ view }: { view: 'grid' | 'list' }) {
+function ArtifactHomeLoadingState({
+  view,
+}: {
+  view: 'grid' | 'list' | 'columns'
+}) {
   return (
     <div className="app-shell app-frame" role="status">
       <AppHeader />
@@ -747,7 +1011,11 @@ function ArtifactHomeLoadingState({ view }: { view: 'grid' | 'list' }) {
   )
 }
 
-function ArtifactCardSkeletons({ view }: { view: 'grid' | 'list' }) {
+function ArtifactCardSkeletons({
+  view,
+}: {
+  view: 'grid' | 'list' | 'columns'
+}) {
   return Array.from({ length: view === 'grid' ? 8 : 6 }, (_, index) => (
     <div
       className={

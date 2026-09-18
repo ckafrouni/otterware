@@ -155,7 +155,7 @@ export function ArtifactViewer({
       (organization) => organization.id !== organizationId,
     )
     const reference = window.prompt(
-      `Move to which team? Enter one of: ${destinations.map((item) => item.name).join(', ')}`,
+      `Move to which space? Enter one of: ${destinations.map((item) => item.name).join(', ')}`,
     )
     if (!reference) return
     const normalized = reference.trim().toLowerCase()
@@ -166,7 +166,7 @@ export function ArtifactViewer({
         item.name.toLowerCase() === normalized,
     )
     if (!destination) {
-      setActionError('Destination team not found.')
+      setActionError('Destination space not found.')
       return
     }
     setActionError(null)
@@ -210,8 +210,8 @@ export function ArtifactViewer({
             <Home size={15} />
           </Button>
           {artifact && (
-            <span className="viewer-team">
-              <strong>{artifactOrganization?.name ?? 'Team'}</strong>
+            <span className="viewer-space viewer-team">
+              <strong>{artifactOrganization?.name ?? 'Space'}</strong>
               <span aria-hidden="true">/</span>
             </span>
           )}
@@ -293,7 +293,7 @@ export function ArtifactViewer({
                 {canManage && organizations.length > 1 && (
                   <DropdownMenuItem onClick={() => void moveArtifact()}>
                     <MoveRight size={14} />
-                    Move to another team
+                    Move to another space
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem

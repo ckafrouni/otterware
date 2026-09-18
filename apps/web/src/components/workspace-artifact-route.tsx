@@ -22,7 +22,7 @@ export function WorkspaceArtifactRoute({
     <AuthGate fallback={<ArtifactLoadingState />}>
       {loaded && !requestedOrganization ? (
         <div className="viewer-message error-panel">
-          You do not have access to the “{organizationSlug}” team.
+          You do not have access to the “{organizationSlug}” space.
         </div>
       ) : requestedOrganization ? (
         <ArtifactViewer

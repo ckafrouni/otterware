@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useQueries } from '@tanstack/react-query'
 import { Command } from 'cmdk'
-import { FileBox, Search, Settings, Upload, Users } from 'lucide-react'
+import { FileBox, Layers, Search, Settings, Upload } from 'lucide-react'
 import { artifactListResponseSchema, type Artifact } from '@otterware/contracts'
 import { api } from '#/lib/api'
 import { authClient } from '#/lib/auth-client'
@@ -125,7 +125,7 @@ export function CommandPalette() {
               autoFocus
               value={value}
               onValueChange={setValue}
-              placeholder="Search artifacts across teams…"
+              placeholder="Search artifacts across spaces…"
             />
             <kbd>esc</kbd>
           </div>
@@ -182,7 +182,7 @@ export function CommandPalette() {
                 .map((organization) => (
                   <Command.Item
                     key={organization.id}
-                    value={`switch team ${organization.name}`}
+                    value={`switch space ${organization.name}`}
                     onSelect={() => {
                       setOpen(false)
                       void selectOrganization(organization.id).then(() =>
@@ -190,7 +190,7 @@ export function CommandPalette() {
                       )
                     }}
                   >
-                    <Users />
+                    <Layers size={14} />
                     <span className="command-item-title">
                       Switch to {organization.name}
                     </span>

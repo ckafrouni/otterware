@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import {
   ArrowLeft,
-  Building2,
   Copy,
   KeyRound,
+  Layers,
   Pencil,
   Plus,
   UserPlus,
@@ -107,11 +107,11 @@ export function SettingsPage() {
     if (result.error) {
       setMessage({
         kind: 'error',
-        text: result.error.message ?? 'Could not rename the team.',
+        text: result.error.message ?? 'Could not rename the space.',
       })
       return
     }
-    setMessage({ kind: 'success', text: 'Team renamed.' })
+    setMessage({ kind: 'success', text: 'Space renamed.' })
     await refreshOrganizations()
     window.dispatchEvent(new Event('otterware:organizations-changed'))
   }
@@ -161,8 +161,8 @@ export function SettingsPage() {
           </Link>
           <nav className="sidebar-nav" aria-label="Settings sections">
             <span className="nav-label">Workspace</span>
-            <a href="#team">
-              <Building2 /> Team
+            <a href="#space">
+              <Layers /> Spaces
             </a>
             <a href="#collaborators">
               <UserPlus /> Collaborators
@@ -192,16 +192,16 @@ export function SettingsPage() {
                 </div>
               )}
 
-              <Card id="team" className="settings-panel">
+              <Card id="space" className="settings-panel">
                 <div className="settings-panel-heading">
                   <div>
-                    <h2>Team</h2>
-                    <p>Choose and configure your active workspace.</p>
+                    <h2>Spaces</h2>
+                    <p>Choose and configure your active collaborative space.</p>
                   </div>
                 </div>
                 <div className="settings-panel-body">
                   <div className="settings-field">
-                    <label htmlFor="active-team">Active team</label>
+                    <label htmlFor="active-team">Active space</label>
                     <Select
                       value={activeOrganizationId}
                       onValueChange={(value) =>
@@ -209,7 +209,7 @@ export function SettingsPage() {
                       }
                     >
                       <SelectTrigger id="active-team" className="w-full">
-                        <SelectValue placeholder="Select a team">
+                        <SelectValue placeholder="Select a space">
                           {activeOrganization?.name}
                         </SelectValue>
                       </SelectTrigger>
@@ -231,7 +231,7 @@ export function SettingsPage() {
                       className="settings-field"
                       onSubmit={renameOrganization}
                     >
-                      <label htmlFor="team-name">Team name</label>
+                      <label htmlFor="team-name">Space name</label>
                       <div className="settings-control-row">
                         <Input
                           id="team-name"
@@ -259,13 +259,13 @@ export function SettingsPage() {
                     onSubmit={createOrganization}
                   >
                     <label htmlFor="new-organization">
-                      Create another team
+                      Create another space
                     </label>
                     <div className="settings-control-row">
                       <Input
                         id="new-organization"
                         required
-                        placeholder="Team name"
+                        placeholder="Space name"
                         value={orgName}
                         onChange={(event) => setOrgName(event.target.value)}
                       />
@@ -281,7 +281,7 @@ export function SettingsPage() {
                 <div className="settings-panel-heading">
                   <div>
                     <h2>Collaborators</h2>
-                    <p>Invite someone to the active team.</p>
+                    <p>Invite someone to the active space.</p>
                   </div>
                 </div>
                 <div className="settings-panel-body">
@@ -345,7 +345,9 @@ export function SettingsPage() {
                 <div className="settings-panel-heading">
                   <div>
                     <h2>Agent access</h2>
-                    <p>Create organization-scoped credentials for agents.</p>
+                    <p>
+                      Create space-scoped credentials for autonomous agents.
+                    </p>
                   </div>
                 </div>
                 <div className="settings-panel-body">

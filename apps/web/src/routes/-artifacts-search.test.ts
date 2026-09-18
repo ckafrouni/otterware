@@ -8,13 +8,13 @@ describe('artifact list URL state', () => {
         q: ' roadmap ',
         sort: 'az',
         status: 'archived',
-        view: 'list',
+        view: 'columns',
       }),
     ).toEqual({
       q: ' roadmap ',
       sort: 'az',
       status: 'archived',
-      view: 'list',
+      view: 'columns',
     })
   })
 

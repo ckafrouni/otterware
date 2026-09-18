@@ -52,7 +52,7 @@ describe('SettingsPage', () => {
     render(<SettingsPage />)
 
     const teamSelect = await screen.findByRole('combobox', {
-      name: 'Active team',
+      name: 'Active space',
     })
     await waitFor(() => expect(teamSelect.textContent).toContain('Zentio'))
     expect(teamSelect.textContent).not.toContain('org-zentio')

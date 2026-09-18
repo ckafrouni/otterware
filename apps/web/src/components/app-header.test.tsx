@@ -58,17 +58,17 @@ describe('AppHeader', () => {
     expect(container.querySelector('.header-context')).toBeNull()
   })
 
-  it('puts search above the teams and folds the account into one row', () => {
+  it('puts search above the spaces and folds the account into one row', () => {
     const { container } = render(<AppHeader />)
     const sidebar = container.querySelector('.app-sidebar')!
     const search = sidebar.querySelector('.sidebar-search')!
-    const teams = sidebar.querySelector('.sidebar-teams')!
+    const spaces = sidebar.querySelector('.sidebar-spaces')!
 
     expect(search.textContent).toContain('Search')
     expect(
-      search.compareDocumentPosition(teams) & Node.DOCUMENT_POSITION_FOLLOWING,
+      search.compareDocumentPosition(spaces) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy()
-    expect(teams.textContent).toContain('Teams')
+    expect(spaces.textContent).toContain('Spaces')
     expect(
       screen
         .getByRole('button', { name: /Otterware/ })

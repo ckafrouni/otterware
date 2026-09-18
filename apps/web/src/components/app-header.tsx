@@ -5,10 +5,12 @@ import {
   ChevronRight,
   ChevronsUpDown,
   FileBox,
+  Layers,
   LogOut,
+  Plus,
   Search,
   Settings,
-  Users,
+  User,
 } from 'lucide-react'
 import { authClient } from '#/lib/auth-client'
 import { useHydrated } from '#/lib/session-cache'
@@ -93,10 +95,27 @@ export function AppHeader({ actions }: { actions?: React.ReactNode }) {
           <kbd>⌘K</kbd>
         </button>
 
-        <nav className="sidebar-nav sidebar-teams" aria-label="Teams">
-          <span className="nav-label">Teams</span>
+        <nav
+          className="sidebar-nav sidebar-spaces sidebar-teams"
+          aria-label="Spaces"
+        >
+          <div className="sidebar-section-header">
+            <span className="nav-label">Spaces</span>
+            <Link
+              to="/settings"
+              hash="space"
+              className="sidebar-add-space"
+              aria-label="Create space"
+            >
+              <Plus size={13} />
+            </Link>
+          </div>
           {(hydrated ? organizations : []).map((organization) => {
             const active = organization.id === activeOrganization?.id
+            const isPersonal =
+              Boolean(user?.name) &&
+              organization.name.trim().toLowerCase() ===
+                user!.name.trim().toLowerCase()
             return (
               <button
                 key={organization.id}
@@ -105,8 +124,11 @@ export function AppHeader({ actions }: { actions?: React.ReactNode }) {
                 aria-current={active ? 'true' : undefined}
                 onClick={() => void selectOrganization(organization.id)}
               >
-                <Users />
-                <span>{organization.name}</span>
+                {isPersonal ? <User size={15} /> : <Layers size={15} />}
+                <span className="truncate">{organization.name}</span>
+                {isPersonal && (
+                  <span className="space-type-badge">Personal</span>
+                )}
                 {active && <Check className="sidebar-check" />}
               </button>
             )
@@ -141,10 +163,10 @@ export function AppHeader({ actions }: { actions?: React.ReactNode }) {
       <header className="app-header">
         <nav className="app-breadcrumb" aria-label="Breadcrumb">
           <span>
-            <Users />
-            {teamName ?? 'Team'}
+            <Layers size={14} />
+            {teamName ?? 'Space'}
           </span>
-          <ChevronRight />
+          <ChevronRight size={13} />
           <strong>{pageTitle}</strong>
         </nav>
         {actions && <div className="app-header-actions">{actions}</div>}
