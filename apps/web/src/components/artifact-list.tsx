@@ -66,7 +66,7 @@ export interface ArtifactListSearch {
   page?: number | undefined
 }
 
-const PAGE_SIZE = 12
+const PAGE_SIZE = 50
 
 function paginationItems(
   current: number,
