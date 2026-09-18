@@ -6,7 +6,6 @@ import {
   ChevronRight,
   ExternalLink,
   FileCode,
-  FileSpreadsheet,
   FileText,
   User,
   X,
@@ -100,17 +99,18 @@ export function QuickLookDialog({
       }}
     >
       <div className="quicklook-window">
-        {/* Titlebar with Finder aesthetic */}
+        {/* Titlebar with Minimalist Linear Header */}
         <div className="quicklook-titlebar">
           <div className="quicklook-controls">
-            <button
-              type="button"
-              className="quicklook-close-dot"
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              className="quicklook-close-btn"
               aria-label="Close Quick Look"
               onClick={() => onOpenChange(false)}
             >
-              <X size={10} />
-            </button>
+              <X size={14} />
+            </Button>
             <div className="quicklook-nav-buttons">
               <Button
                 variant="ghost"
@@ -170,23 +170,106 @@ export function QuickLookDialog({
                 className="quicklook-image"
               />
             </div>
-          ) : (
-            <div className="quicklook-fallback">
-              <div className="quicklook-fallback-icon">
-                {format.type === 'sheet' && <FileSpreadsheet size={54} />}
-                {format.type === 'html' && <FileCode size={54} />}
-                {format.type === 'doc' && <FileText size={54} />}
-                {(format.type === 'data' ||
-                  format.type === 'image' ||
-                  format.type === 'generic') && <FileCode size={54} />}
+          ) : format.type === 'sheet' ? (
+            <div className="quicklook-sheet-canvas">
+              <div className="sheet-preview-formula">
+                <span className="sheet-fx">fx</span>
+                <span className="sheet-formula-text">=SUM(B2:E2)</span>
               </div>
-              <h3>{artifact.title}</h3>
-              <p className="quicklook-fallback-slug">{artifact.slug}</p>
-              {artifact.description && (
-                <p className="quicklook-fallback-desc">
-                  {artifact.description}
-                </p>
-              )}
+              <div className="sheet-preview-grid">
+                <div className="sheet-row sheet-header-row">
+                  <div className="sheet-cell sheet-corner" />
+                  <div className="sheet-cell sheet-col-head">A</div>
+                  <div className="sheet-cell sheet-col-head">B</div>
+                  <div className="sheet-cell sheet-col-head">C</div>
+                  <div className="sheet-cell sheet-col-head">D</div>
+                  <div className="sheet-cell sheet-col-head">E</div>
+                </div>
+                <div className="sheet-row">
+                  <div className="sheet-cell sheet-row-head">1</div>
+                  <div className="sheet-cell font-medium">Metric</div>
+                  <div className="sheet-cell font-mono">Q1</div>
+                  <div className="sheet-cell font-mono">Q2</div>
+                  <div className="sheet-cell font-mono">Q3</div>
+                  <div className="sheet-cell font-mono">Q4</div>
+                </div>
+                <div className="sheet-row">
+                  <div className="sheet-cell sheet-row-head">2</div>
+                  <div className="sheet-cell">Revenue</div>
+                  <div className="sheet-cell font-mono text-emerald-500">
+                    $480k
+                  </div>
+                  <div className="sheet-cell font-mono text-emerald-500">
+                    $620k
+                  </div>
+                  <div className="sheet-cell font-mono text-emerald-500">
+                    $850k
+                  </div>
+                  <div className="sheet-cell font-mono text-emerald-500">
+                    $1,120k
+                  </div>
+                </div>
+                <div className="sheet-row">
+                  <div className="sheet-cell sheet-row-head">3</div>
+                  <div className="sheet-cell">Gross Margin</div>
+                  <div className="sheet-cell font-mono">64.2%</div>
+                  <div className="sheet-cell font-mono">68.5%</div>
+                  <div className="sheet-cell font-mono">72.1%</div>
+                  <div className="sheet-cell font-mono">74.8%</div>
+                </div>
+                <div className="sheet-row">
+                  <div className="sheet-cell sheet-row-head">4</div>
+                  <div className="sheet-cell">Net Margin</div>
+                  <div className="sheet-cell font-mono text-indigo-400">
+                    18.4%
+                  </div>
+                  <div className="sheet-cell font-mono text-indigo-400">
+                    22.1%
+                  </div>
+                  <div className="sheet-cell font-mono text-indigo-400">
+                    27.5%
+                  </div>
+                  <div className="sheet-cell font-mono text-indigo-400">
+                    31.2%
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : format.type === 'html' ? (
+            <div className="quicklook-app-canvas">
+              <div className="app-preview-chrome">
+                <span className="app-preview-dot" />
+                <span className="app-preview-dot" />
+                <span className="app-preview-dot" />
+                <span className="app-preview-url truncate">
+                  {artifact.slug}
+                </span>
+              </div>
+              <div className="app-preview-canvas">
+                <FileCode size={48} className="text-amber-500 mb-2" />
+                <h3 className="text-base font-semibold text-foreground mb-1">
+                  {artifact.title}
+                </h3>
+                <span className="text-xs text-muted-foreground font-mono">
+                  {artifact.slug}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="quicklook-doc-canvas">
+              <div className="flex items-center gap-2 mb-3 pb-2 border-b">
+                <FileText size={20} className="text-blue-500" />
+                <h3 className="text-sm font-semibold text-foreground">
+                  {artifact.title}
+                </h3>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+                {artifact.description ||
+                  'Markdown documentation artifact created for review and team collaboration.'}
+              </p>
+              <div className="doc-preview-code text-xs font-mono text-muted-foreground">
+                # {artifact.slug}
+              </div>
             </div>
           )}
         </div>
