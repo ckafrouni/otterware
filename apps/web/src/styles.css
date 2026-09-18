@@ -300,49 +300,30 @@ a {
 
 .sidebar-footer {
   margin-top: auto;
-  display: grid;
-  gap: 6px;
-  padding-top: 10px;
+  padding-top: 8px;
   border-top: 1px solid var(--line);
 }
 
-.sidebar-theme {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2px;
-  padding: 3px;
-  border: 1px solid var(--line);
-  border-radius: 7px;
-  background: var(--surface);
-}
-
-.sidebar-theme button {
-  height: 26px;
-  display: grid;
-  place-items: center;
-  border-radius: 5px;
-  color: var(--ink-muted);
-}
-
-.sidebar-theme button svg {
-  width: 14px;
-  height: 14px;
-}
-
-.sidebar-theme button:hover {
-  color: var(--ink);
-}
-
-.sidebar-theme button[aria-pressed='true'] {
-  background: color-mix(in srgb, var(--ink) 8%, transparent);
-  color: var(--ink);
-}
-
 .sidebar-account {
+  width: 100%;
   display: flex;
   align-items: center;
   gap: 9px;
-  padding: 4px 4px 0;
+  padding: 5px 6px;
+  border-radius: 6px;
+  text-align: left;
+}
+
+.sidebar-account:hover,
+.sidebar-account[aria-expanded='true'] {
+  background: color-mix(in srgb, var(--ink) 6%, transparent);
+}
+
+.sidebar-account-chevron {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  color: var(--ink-muted);
 }
 
 .sidebar-account-copy {
@@ -386,7 +367,7 @@ a {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 14px;
   padding: 0 8px;
   border: 1px solid var(--line);
   border-radius: 4px;
@@ -621,10 +602,6 @@ a {
   font-weight: 400;
 }
 
-.publish-menu {
-  width: 210px;
-}
-
 .artifact-actions-menu {
   min-width: 190px;
 }
@@ -835,6 +812,7 @@ a {
 }
 
 .artifact-insights {
+  position: relative;
   flex: 0 0 280px;
   min-height: 0;
   overflow-y: auto;
@@ -851,24 +829,6 @@ a {
 
 .insight-section:last-child {
   border-bottom: 0;
-}
-
-.insight-header {
-  padding: 18px 20px 16px;
-}
-
-.insight-header h3 {
-  margin: 0 0 4px;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--ink);
-}
-
-.insight-header p {
-  margin: 0;
-  font-size: 12px;
-  line-height: 1.45;
-  color: var(--ink-muted);
 }
 
 .insight-section h4 {
@@ -1087,6 +1047,24 @@ a {
   display: flex;
   align-items: center;
   gap: 5px;
+}
+
+/* In rows the actions are collapsed to zero width and slide open on hover so
+   the version and date sit flush right instead of leaving a dead gutter. */
+.artifact-row .artifact-card-actions {
+  width: 0;
+  margin-left: -12px;
+  overflow: hidden;
+  transition:
+    width 140ms ease,
+    margin-left 140ms ease,
+    opacity 120ms ease;
+}
+
+.artifact-row:hover .artifact-card-actions,
+.artifact-row:focus-within .artifact-card-actions {
+  width: 61px;
+  margin-left: 0;
 }
 
 /* List layout: flat issue-style rows. */
@@ -1971,6 +1949,12 @@ p.security-note {
     justify-content: space-between;
   }
 
+  .artifact-row .artifact-card-actions {
+    width: auto;
+    margin-left: 0;
+    opacity: 1;
+  }
+
   .settings-topbar {
     display: flex;
   }
@@ -2039,4 +2023,237 @@ p.security-note {
   .viewer-main {
     padding: 0 6px;
   }
+}
+
+/* Overview panel: collapse toggle and drag-to-resize ---------------------- */
+.insights-toggle {
+  width: 28px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  margin-left: 2px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  color: var(--ink-muted);
+}
+
+.insights-toggle:hover {
+  background: color-mix(in srgb, var(--ink) 5%, transparent);
+  color: var(--ink);
+}
+
+.insights-toggle[aria-pressed='true'] {
+  color: var(--ink);
+}
+
+.insights-resize-handle {
+  position: absolute;
+  inset: 0 auto 0 -3px;
+  z-index: 2;
+  width: 6px;
+  cursor: col-resize;
+}
+
+.insights-resize-handle:hover,
+body.is-resizing .insights-resize-handle {
+  background: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+body.is-resizing,
+body.is-resizing * {
+  cursor: col-resize !important;
+  user-select: none;
+}
+
+/* Command palette (cmdk) --------------------------------------------------- */
+.command-palette {
+  /* Linear-style: anchored in the top third, horizontally centered. The
+     base dialog centers with the `translate` property, so override that
+     rather than stacking a transform on top. */
+  top: 20vh;
+  translate: -50% 0;
+  max-width: 560px;
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.command-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink-muted);
+}
+
+.command-input input {
+  flex: 1;
+  height: 44px;
+  background: transparent;
+  color: var(--ink);
+  font-size: 14px;
+  outline: none;
+}
+
+.command-input input::placeholder {
+  color: var(--ink-muted);
+}
+
+.command-input kbd {
+  padding: 2px 5px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface-soft);
+  font:
+    11px/1 'Inter Variable',
+    sans-serif;
+}
+
+.command-palette [cmdk-list] {
+  max-height: min(420px, 55vh);
+  overflow-y: auto;
+  padding: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+.command-palette [cmdk-empty] {
+  padding: 28px 12px;
+  text-align: center;
+  color: var(--ink-muted);
+  font-size: 13px;
+}
+
+.command-palette [cmdk-group-heading] {
+  padding: 8px 8px 4px;
+  color: var(--ink-muted);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.command-palette [cmdk-item] {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 34px;
+  padding: 0 8px;
+  border-radius: 5px;
+  color: var(--ink);
+  font-size: 13px;
+  cursor: default;
+}
+
+.command-palette [cmdk-item] svg {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+  color: var(--ink-muted);
+}
+
+.command-palette [cmdk-item][data-selected='true'] {
+  background: color-mix(in srgb, var(--ink) 6%, transparent);
+}
+
+.command-item-title {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.command-palette [cmdk-item] small {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-muted);
+}
+
+/* Upload dialog ------------------------------------------------------------ */
+.upload-dialog {
+  max-width: 480px;
+  gap: 14px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.upload-dialog-header {
+  display: grid;
+  gap: 4px;
+}
+
+.upload-dropzone {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  padding: 22px 16px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 8px;
+  color: var(--ink-muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+.upload-dropzone p,
+.upload-dropzone strong {
+  margin: 0;
+}
+
+.upload-dropzone strong {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.upload-dropzone code {
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  font-size: 12px;
+}
+
+.upload-dropzone-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.upload-dropzone-reset {
+  color: var(--ink-soft);
+  font-size: 12px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.upload-dropzone-reset:hover {
+  color: var(--ink);
+}
+
+.upload-field {
+  display: grid;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
+.upload-error {
+  margin: 0;
+  color: var(--red);
+  font-size: 12px;
+}
+
+.upload-dialog-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.upload-status {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ink-muted);
+  font-size: 12px;
 }

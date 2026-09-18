@@ -58,27 +58,26 @@ describe('AppHeader', () => {
     expect(container.querySelector('.header-context')).toBeNull()
   })
 
-  it('unpacks teams, theme, settings and account into the sidebar', () => {
+  it('puts search above the teams and folds the account into one row', () => {
     const { container } = render(<AppHeader />)
     const sidebar = container.querySelector('.app-sidebar')!
+    const search = sidebar.querySelector('.sidebar-search')!
+    const teams = sidebar.querySelector('.sidebar-teams')!
 
-    expect(sidebar.querySelector('.sidebar-teams')?.textContent).toContain(
-      'Teams',
-    )
+    expect(search.textContent).toContain('Search')
+    expect(
+      search.compareDocumentPosition(teams) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+    expect(teams.textContent).toContain('Teams')
     expect(
       screen
         .getByRole('button', { name: /Otterware/ })
         .getAttribute('aria-current'),
     ).toBe('true')
-    expect(screen.getByRole('link', { name: 'Settings' })).not.toBeNull()
-    expect(
-      screen
-        .getByRole('button', { name: 'Dark theme' })
-        .getAttribute('aria-pressed'),
-    ).toBe('false')
     expect(sidebar.querySelector('.sidebar-account')?.textContent).toContain(
       'chris@example.com',
     )
-    expect(screen.getByRole('button', { name: 'Sign out' })).not.toBeNull()
+    expect(sidebar.querySelector('.sidebar-theme')).toBeNull()
+    expect(sidebar.querySelector('.sidebar-account')?.tagName).toBe('BUTTON')
   })
 })

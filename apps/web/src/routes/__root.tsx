@@ -6,6 +6,7 @@ import {
 import { QueryClientProvider, type QueryClient } from '@tanstack/react-query'
 import { Toaster } from '@/components/ui/sonner'
 import { ThemeProvider } from '@/components/theme-provider'
+import { CommandPalette } from '@/components/command-palette'
 
 import appCss from '../styles.css?url'
 
@@ -80,6 +81,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <body>
           <ThemeProvider>
             {children}
+            <CommandPalette />
             <Toaster position="bottom-right" richColors closeButton />
           </ThemeProvider>
           <Scripts />

@@ -1,3 +1,4 @@
+import { useSyncExternalStore } from 'react'
 interface SessionCacheEntry<T> {
   savedAt: number
   value: T
@@ -39,4 +40,17 @@ export function removeSessionCachePrefix(prefix: string): void {
     const key = sessionStorage.key(index)
     if (key?.startsWith(prefix)) sessionStorage.removeItem(key)
   }
+}
+
+const noop = () => () => {}
+
+/** False during server rendering and the hydration render, true afterwards.
+ *  Anything read from browser storage must wait for this so the first client
+ *  render matches the server HTML. */
+export function useHydrated(): boolean {
+  return useSyncExternalStore(
+    noop,
+    () => true,
+    () => false,
+  )
 }
