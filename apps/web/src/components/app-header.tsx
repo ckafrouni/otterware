@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from '@tanstack/react-router'
 import {
   Box,
   Check,
+  ChevronRight,
   FileBox,
   Laptop,
   LogOut,
@@ -160,7 +161,14 @@ export function AppHeader({ actions }: { actions?: React.ReactNode }) {
       </aside>
 
       <header className="app-header">
-        <strong>{pageTitle}</strong>
+        <nav className="app-breadcrumb" aria-label="Breadcrumb">
+          <span>
+            <Users />
+            {activeOrganization?.name ?? 'Team'}
+          </span>
+          <ChevronRight />
+          <strong>{pageTitle}</strong>
+        </nav>
         {actions && <div className="app-header-actions">{actions}</div>}
         <div className="mobile-account-menu">
           <DropdownMenu>
