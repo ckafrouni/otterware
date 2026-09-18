@@ -65,7 +65,6 @@ describe('FinderFileList', () => {
     const onSelect = vi.fn()
     const onOpen = vi.fn()
     const onQuickLook = vi.fn()
-    const onStatusChange = vi.fn()
 
     render(
       <FinderFileList

@@ -8,7 +8,6 @@ import {
   ExternalLink,
   Eye,
   FileCode,
-  FileSpreadsheet,
   FileText,
   RotateCcw,
   Share2,
@@ -122,9 +121,15 @@ export function FinderInspectorPane({
                 <div className="sheet-row">
                   <div className="sheet-cell sheet-row-head">2</div>
                   <div className="sheet-cell">Revenue</div>
-                  <div className="sheet-cell font-mono text-emerald-500">$480k</div>
-                  <div className="sheet-cell font-mono text-emerald-500">$620k</div>
-                  <div className="sheet-cell font-mono text-emerald-500">$850k</div>
+                  <div className="sheet-cell font-mono text-emerald-500">
+                    $480k
+                  </div>
+                  <div className="sheet-cell font-mono text-emerald-500">
+                    $620k
+                  </div>
+                  <div className="sheet-cell font-mono text-emerald-500">
+                    $850k
+                  </div>
                 </div>
                 <div className="sheet-row">
                   <div className="sheet-cell sheet-row-head">3</div>
@@ -146,7 +151,9 @@ export function FinderInspectorPane({
                 <span className="app-preview-dot" />
                 <span className="app-preview-dot" />
                 <span className="app-preview-dot" />
-                <span className="app-preview-url truncate">{artifact.slug}</span>
+                <span className="app-preview-url truncate">
+                  {artifact.slug}
+                </span>
               </div>
               <div className="app-preview-canvas">
                 <FileCode size={32} className="text-amber-500 mb-1" />

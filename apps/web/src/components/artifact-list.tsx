@@ -15,7 +15,6 @@ import {
   List as ListIcon,
   MoreHorizontal,
   RotateCcw,
-  Search,
   Share2,
   Trash2,
   Upload,
@@ -39,7 +38,6 @@ import { useCurrentActor } from '@/hooks/use-current-actor'
 import { useOrganizations } from '@/hooks/use-organizations'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 import {
   Pagination,
   PaginationContent,
@@ -365,8 +363,7 @@ export function ArtifactListPage({
                 value={sort}
                 onValueChange={(value) =>
                   onSearchChange({
-                    sort:
-                      value === 'az' || value === 'za' ? value : undefined,
+                    sort: value === 'az' || value === 'za' ? value : undefined,
                     page: undefined,
                   })
                 }
@@ -517,14 +514,6 @@ export function ArtifactListPage({
                         setQuickLookArtifact(artifact)
                         setQuickLookOpen(true)
                       }}
-                      status={status}
-                      onStatusChange={(newStatus) =>
-                        onSearchChange({
-                          status:
-                            newStatus === 'active' ? undefined : newStatus,
-                          page: undefined,
-                        })
-                      }
                     />
                     <FinderInspectorPane
                       artifact={activeArtifact}

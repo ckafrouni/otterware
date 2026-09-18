@@ -1,12 +1,5 @@
 import { useEffect, useRef } from 'react'
-import {
-  Archive,
-  Bot,
-  CircleDot,
-  FileCode,
-  FileSpreadsheet,
-  FileText,
-} from 'lucide-react'
+import { Bot, FileCode, FileSpreadsheet, FileText } from 'lucide-react'
 import type { Artifact } from '@otterware/contracts'
 import {
   getArtifactFormat,

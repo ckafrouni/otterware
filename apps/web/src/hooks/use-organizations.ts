@@ -27,13 +27,13 @@ export function useOrganizations() {
         : Array.isArray((result.data as any)?.data)
           ? (result.data as any).data
           : []
-      return writeSessionCache(
-        storageKey,
-        list as OrganizationSummary[],
-      )
+      return writeSessionCache(storageKey, list as OrganizationSummary[])
     },
     ...(safeStored
-      ? { initialData: safeStored.value, initialDataUpdatedAt: safeStored.savedAt }
+      ? {
+          initialData: safeStored.value,
+          initialDataUpdatedAt: safeStored.savedAt,
+        }
       : {}),
     queryKey,
     staleTime: 5 * 60_000,
@@ -41,7 +41,11 @@ export function useOrganizations() {
   const rawOrgs = organizationsQuery.data
   const organizations: OrganizationSummary[] = useMemo(() => {
     if (Array.isArray(rawOrgs)) return rawOrgs as OrganizationSummary[]
-    if (rawOrgs && typeof rawOrgs === 'object' && Array.isArray((rawOrgs as any).data)) {
+    if (
+      rawOrgs &&
+      typeof rawOrgs === 'object' &&
+      Array.isArray((rawOrgs as any).data)
+    ) {
       return (rawOrgs as any).data as OrganizationSummary[]
     }
     return []
