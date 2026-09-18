@@ -299,6 +299,12 @@ export function ArtifactListPage({
                   type="search"
                   placeholder="Search artifacts"
                   value={query}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Escape') {
+                      event.preventDefault()
+                      event.currentTarget.blur()
+                    }
+                  }}
                   onChange={(event) =>
                     onSearchChange(
                       { q: event.target.value || undefined, page: undefined },

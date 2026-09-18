@@ -300,8 +300,6 @@ a {
 
 .sidebar-footer {
   margin-top: auto;
-  padding-top: 8px;
-  border-top: 1px solid var(--line);
 }
 
 .sidebar-account {
