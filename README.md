@@ -204,22 +204,8 @@ Attach `app.otterware.dev` and `usercontent.otterware.dev` as Worker custom doma
 
 The seeded administrator signs in normally and creates the first organization from Settings. Later users must follow an organization invitation link and authenticate as the invited identity; arbitrary public signup is rejected by the server even if a client calls the authentication endpoint directly.
 
-For the legacy hostname, configure `artifacts.otterware.dev/a/*` and `/l` to redirect to the corresponding `app.otterware.dev` routes after migration. Remove Cloudflare Access from the new app only after Better Auth is verified.
-
 ## Production trust boundary
 
 Artifact agents receive only Otterware device tokens or scoped API keys. They must not have Cloudflare API tokens, R2 credentials, production deployment credentials, or unreviewed access to the protected deployment branch.
 
-Production deployment belongs in a protected CI environment. After cutover, rotate and remove the existing Cloudflare token from OpenClaw and Hermes.
-
-## Legacy migration
-
-Once the new deployment is available, authenticate the CLI, select the destination organization, and import the current static hub:
-
-```bash
-otterware auth login --url https://app.otterware.dev
-otterware organizations use <organization>
-pnpm migrate:legacy
-```
-
-The importer uses the CLI's stored device session or `OTTERWARE_TOKEN` override, creates each artifact from version 1, and pushes every later immutable version in order. It never edits the old deployment.
+Production deployment belongs in a protected CI environment.

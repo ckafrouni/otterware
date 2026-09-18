@@ -12,18 +12,15 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as LRouteImport } from './routes/l'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as DeviceRouteImport } from './routes/device'
 import { Route as ArtifactsRouteImport } from './routes/artifacts'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as InviteInvitationIdRouteImport } from './routes/invite.$invitationId'
-import { Route as ASlugRouteImport } from './routes/a.$slug'
 import { Route as RawThumbnailTokenRouteImport } from './routes/raw.thumbnail.$token'
 import { Route as RawSessionTokenRouteImport } from './routes/raw.session.$token'
 import { Route as ApiV1SplatRouteImport } from './routes/api.v1.$'
 import { Route as ApiAuthSplatRouteImport } from './routes/api.auth.$'
-import { Route as ASlugVersionRouteImport } from './routes/a.$slug_.$version'
 import { Route as OrganizationSlugASlugRouteImport } from './routes/$organizationSlug.a.$slug'
 import { Route as OrganizationSlugASlugVersionRouteImport } from './routes/$organizationSlug.a.$slug_.$version'
 import { Route as RawAArtifactIdVersionIdSplatRouteImport } from './routes/raw.a.$artifactId.$versionId.$'
@@ -41,11 +38,6 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LRoute = LRouteImport.update({
-  id: '/l',
-  path: '/l',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
@@ -73,11 +65,6 @@ const InviteInvitationIdRoute = InviteInvitationIdRouteImport.update({
   path: '/invite/$invitationId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ASlugRoute = ASlugRouteImport.update({
-  id: '/a/$slug',
-  path: '/a/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const RawThumbnailTokenRoute = RawThumbnailTokenRouteImport.update({
   id: '/raw/thumbnail/$token',
   path: '/raw/thumbnail/$token',
@@ -96,11 +83,6 @@ const ApiV1SplatRoute = ApiV1SplatRouteImport.update({
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ASlugVersionRoute = ASlugVersionRouteImport.update({
-  id: '/a/$slug_/$version',
-  path: '/a/$slug/$version',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OrganizationSlugASlugRoute = OrganizationSlugASlugRouteImport.update({
@@ -126,14 +108,11 @@ export interface FileRoutesByFullPath {
   '/artifacts': typeof ArtifactsRoute
   '/device': typeof DeviceRoute
   '/forgot-password': typeof ForgotPasswordRoute
-  '/l': typeof LRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/settings': typeof SettingsRoute
-  '/a/$slug': typeof ASlugRoute
   '/invite/$invitationId': typeof InviteInvitationIdRoute
   '/$organizationSlug/a/$slug': typeof OrganizationSlugASlugRoute
-  '/a/$slug/$version': typeof ASlugVersionRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/v1/$': typeof ApiV1SplatRoute
   '/raw/session/$token': typeof RawSessionTokenRoute
@@ -146,14 +125,11 @@ export interface FileRoutesByTo {
   '/artifacts': typeof ArtifactsRoute
   '/device': typeof DeviceRoute
   '/forgot-password': typeof ForgotPasswordRoute
-  '/l': typeof LRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/settings': typeof SettingsRoute
-  '/a/$slug': typeof ASlugRoute
   '/invite/$invitationId': typeof InviteInvitationIdRoute
   '/$organizationSlug/a/$slug': typeof OrganizationSlugASlugRoute
-  '/a/$slug/$version': typeof ASlugVersionRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/v1/$': typeof ApiV1SplatRoute
   '/raw/session/$token': typeof RawSessionTokenRoute
@@ -167,14 +143,11 @@ export interface FileRoutesById {
   '/artifacts': typeof ArtifactsRoute
   '/device': typeof DeviceRoute
   '/forgot-password': typeof ForgotPasswordRoute
-  '/l': typeof LRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/settings': typeof SettingsRoute
-  '/a/$slug': typeof ASlugRoute
   '/invite/$invitationId': typeof InviteInvitationIdRoute
   '/$organizationSlug/a/$slug': typeof OrganizationSlugASlugRoute
-  '/a/$slug_/$version': typeof ASlugVersionRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/v1/$': typeof ApiV1SplatRoute
   '/raw/session/$token': typeof RawSessionTokenRoute
@@ -189,14 +162,11 @@ export interface FileRouteTypes {
     | '/artifacts'
     | '/device'
     | '/forgot-password'
-    | '/l'
     | '/login'
     | '/reset-password'
     | '/settings'
-    | '/a/$slug'
     | '/invite/$invitationId'
     | '/$organizationSlug/a/$slug'
-    | '/a/$slug/$version'
     | '/api/auth/$'
     | '/api/v1/$'
     | '/raw/session/$token'
@@ -209,14 +179,11 @@ export interface FileRouteTypes {
     | '/artifacts'
     | '/device'
     | '/forgot-password'
-    | '/l'
     | '/login'
     | '/reset-password'
     | '/settings'
-    | '/a/$slug'
     | '/invite/$invitationId'
     | '/$organizationSlug/a/$slug'
-    | '/a/$slug/$version'
     | '/api/auth/$'
     | '/api/v1/$'
     | '/raw/session/$token'
@@ -229,14 +196,11 @@ export interface FileRouteTypes {
     | '/artifacts'
     | '/device'
     | '/forgot-password'
-    | '/l'
     | '/login'
     | '/reset-password'
     | '/settings'
-    | '/a/$slug'
     | '/invite/$invitationId'
     | '/$organizationSlug/a/$slug'
-    | '/a/$slug_/$version'
     | '/api/auth/$'
     | '/api/v1/$'
     | '/raw/session/$token'
@@ -250,14 +214,11 @@ export interface RootRouteChildren {
   ArtifactsRoute: typeof ArtifactsRoute
   DeviceRoute: typeof DeviceRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
-  LRoute: typeof LRoute
   LoginRoute: typeof LoginRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SettingsRoute: typeof SettingsRoute
-  ASlugRoute: typeof ASlugRoute
   InviteInvitationIdRoute: typeof InviteInvitationIdRoute
   OrganizationSlugASlugRoute: typeof OrganizationSlugASlugRoute
-  ASlugVersionRoute: typeof ASlugVersionRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiV1SplatRoute: typeof ApiV1SplatRoute
   RawSessionTokenRoute: typeof RawSessionTokenRoute
@@ -287,13 +248,6 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/l': {
-      id: '/l'
-      path: '/l'
-      fullPath: '/l'
-      preLoaderRoute: typeof LRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/forgot-password': {
@@ -331,13 +285,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InviteInvitationIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/a/$slug': {
-      id: '/a/$slug'
-      path: '/a/$slug'
-      fullPath: '/a/$slug'
-      preLoaderRoute: typeof ASlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/raw/thumbnail/$token': {
       id: '/raw/thumbnail/$token'
       path: '/raw/thumbnail/$token'
@@ -364,13 +311,6 @@ declare module '@tanstack/react-router' {
       path: '/api/auth/$'
       fullPath: '/api/auth/$'
       preLoaderRoute: typeof ApiAuthSplatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/a/$slug_/$version': {
-      id: '/a/$slug_/$version'
-      path: '/a/$slug/$version'
-      fullPath: '/a/$slug/$version'
-      preLoaderRoute: typeof ASlugVersionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/$organizationSlug/a/$slug': {
@@ -402,14 +342,11 @@ const rootRouteChildren: RootRouteChildren = {
   ArtifactsRoute: ArtifactsRoute,
   DeviceRoute: DeviceRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
-  LRoute: LRoute,
   LoginRoute: LoginRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SettingsRoute: SettingsRoute,
-  ASlugRoute: ASlugRoute,
   InviteInvitationIdRoute: InviteInvitationIdRoute,
   OrganizationSlugASlugRoute: OrganizationSlugASlugRoute,
-  ASlugVersionRoute: ASlugVersionRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiV1SplatRoute: ApiV1SplatRoute,
   RawSessionTokenRoute: RawSessionTokenRoute,
