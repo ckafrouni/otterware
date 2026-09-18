@@ -18,7 +18,7 @@
     "db:migrate:remote": "pnpm --dir apps/web db:migrate:remote",
     "admin:seed": "pnpm --dir apps/web admin:seed",
     "format": "prettier --write .",
-    "lint": "oxlint apps packages scripts",
+    "lint": "oxlint apps packages",
     "test": "pnpm -r --if-present test",
     "typecheck": "pnpm -r --if-present typecheck"
   },

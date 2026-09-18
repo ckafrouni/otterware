@@ -102,22 +102,33 @@ Device login represents a user and can access artifacts in all of their organiza
 
 ## Publish the CLI
 
-The CLI is published through npm trusted publishing; the repository does not store an npm token. When a change merged to `main` includes a new version in `apps/cli/package.json`, the `Publish CLI to npm` workflow verifies, builds, and publishes that version with provenance. If the version already exists on npm, the workflow exits successfully without publishing again.
+Releases are manual. Nothing publishes on merge. The CLI is published through
+npm trusted publishing; the repository does not store an npm token.
 
-Prepare a release by updating the CLI version and lockfile in a pull request:
+1. Bump the CLI version and lockfile in a pull request and merge it:
 
-```bash
-pnpm --dir apps/cli version patch --no-git-tag-version
-pnpm install --lockfile-only
-```
+   ```bash
+   pnpm --dir apps/cli version patch --no-git-tag-version
+   pnpm install --lockfile-only
+   ```
 
-After the pull request is merged, confirm the workflow succeeded and verify the registry version:
+2. Run the `Publish CLI to npm` workflow from the Actions tab, or:
 
-```bash
-npm view otterware version
-npm install --global otterware@latest
-otterware --version
-```
+   ```bash
+   gh workflow run publish-cli.yml --ref main
+   ```
+
+   The workflow verifies, builds, publishes with provenance, and creates the
+   `cli-v<version>` GitHub release. If the version already exists on npm it
+   exits without publishing.
+
+3. Verify the registry version:
+
+   ```bash
+   npm view otterware version
+   npm install --global otterware@latest
+   otterware --version
+   ```
 
 ## Artifact commands
 
@@ -193,12 +204,16 @@ The Google OAuth redirect URI is:
 https://app.otterware.dev/api/auth/callback/google
 ```
 
-Apply schema and deploy:
+Apply schema changes to the production database before merging a migration:
 
 ```bash
 pnpm db:migrate:remote
-pnpm deploy
 ```
+
+The web app deploys automatically: Cloudflare Workers Builds is connected to
+this repository and builds and deploys every push to `main` (it reports as the
+`Workers Builds: otterware` check on each commit). `pnpm deploy` remains for a
+manual deploy from an authenticated checkout.
 
 Attach `app.otterware.dev` and `usercontent.otterware.dev` as Worker custom domains. The raw-content handlers reject production requests that do not arrive on the configured content hostname.
 
@@ -208,4 +223,4 @@ The seeded administrator signs in normally and creates the first organization fr
 
 Artifact agents receive only Otterware device tokens or scoped API keys. They must not have Cloudflare API tokens, R2 credentials, production deployment credentials, or unreviewed access to the protected deployment branch.
 
-Production deployment belongs in a protected CI environment.
+Production deployment runs from Cloudflare Workers Builds on the protected `main` branch.
