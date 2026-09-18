@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { Bot, FileCode, FileSpreadsheet, FileText } from 'lucide-react'
+import { Bot, FileCode, FileSpreadsheet, FileText, User } from 'lucide-react'
 import type { Artifact } from '@otterware/contracts'
 import {
   getArtifactFormat,
@@ -110,48 +110,65 @@ export function FinderFileList({
                   }
                 }}
               >
-                <div className="finder-row-icon">
-                  {format.type === 'sheet' && (
-                    <FileSpreadsheet size={16} className="text-emerald-500" />
-                  )}
-                  {format.type === 'html' && (
-                    <FileCode size={16} className="text-amber-500" />
-                  )}
-                  {format.type === 'doc' && (
-                    <FileText size={16} className="text-blue-500" />
-                  )}
-                  {format.type !== 'sheet' &&
-                    format.type !== 'html' &&
-                    format.type !== 'doc' && (
-                      <FileCode size={16} className="text-muted-foreground" />
-                    )}
-                </div>
-
-                <div className="finder-row-primary">
-                  <span className="finder-row-title truncate">
-                    {artifact.title}
-                  </span>
-                  <span className="finder-row-slug font-mono truncate">
-                    {artifact.slug}
-                  </span>
-                </div>
-
-                <div className="finder-row-meta">
-                  {isAgent ? (
-                    <span
-                      className="finder-row-agent-pill"
-                      title={`Created by AI Agent: ${creatorName}`}
-                    >
-                      <Bot size={11} />
-                      <span>{creatorName}</span>
+                <div className="finder-row-inner">
+                  <div className="finder-row-top">
+                    <div className="finder-row-icon">
+                      {format.type === 'sheet' && (
+                        <FileSpreadsheet
+                          size={15}
+                          className="text-emerald-500"
+                        />
+                      )}
+                      {format.type === 'html' && (
+                        <FileCode size={15} className="text-amber-500" />
+                      )}
+                      {format.type === 'doc' && (
+                        <FileText size={15} className="text-blue-500" />
+                      )}
+                      {format.type !== 'sheet' &&
+                        format.type !== 'html' &&
+                        format.type !== 'doc' && (
+                          <FileCode
+                            size={15}
+                            className="text-muted-foreground"
+                          />
+                        )}
+                    </div>
+                    <span className="finder-row-title truncate">
+                      {artifact.title}
                     </span>
-                  ) : null}
-                  <span className="finder-row-version">
-                    v{artifact.currentVersion?.number ?? 1}
-                  </span>
-                  <span className="finder-row-date">
-                    {relativeTime(artifact.updatedAt)}
-                  </span>
+                    <span className="finder-row-date">
+                      {relativeTime(artifact.updatedAt)}
+                    </span>
+                  </div>
+
+                  <div className="finder-row-bottom">
+                    <span className="finder-row-slug font-mono truncate">
+                      {artifact.slug}
+                    </span>
+                    <div className="finder-row-badges">
+                      {isAgent ? (
+                        <span
+                          className="finder-row-agent-pill"
+                          title={`Created by AI Agent: ${creatorName}`}
+                        >
+                          <Bot size={11} />
+                          <span>{creatorName}</span>
+                        </span>
+                      ) : (
+                        <span
+                          className="finder-row-human-pill"
+                          title={`Member: ${creatorName}`}
+                        >
+                          <User size={11} />
+                          <span>{creatorName}</span>
+                        </span>
+                      )}
+                      <span className="finder-row-version">
+                        v{artifact.currentVersion?.number ?? 1}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
             )
