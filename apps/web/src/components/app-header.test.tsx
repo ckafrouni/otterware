@@ -51,9 +51,10 @@ describe('AppHeader', () => {
   it('keeps the page title centered without duplicating the team in the header', () => {
     const { container } = render(<AppHeader />)
 
-    expect(container.querySelector('.app-header > strong')?.textContent).toBe(
-      'Artifacts',
-    )
+    expect(
+      container.querySelector('.app-header .app-breadcrumb strong')
+        ?.textContent,
+    ).toBe('Artifacts')
     expect(container.querySelector('.header-context')).toBeNull()
   })
 

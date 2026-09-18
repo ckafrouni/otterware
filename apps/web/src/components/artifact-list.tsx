@@ -111,7 +111,7 @@ export function ArtifactListPage({
   const queryClient = useQueryClient()
   const query = search.q ?? ''
   const sort = search.sort ?? 'updated'
-  const view = search.view ?? 'grid'
+  const view = search.view ?? 'list'
   const status = search.status ?? 'active'
 
   const artifactsQueryKey = [
@@ -240,68 +240,6 @@ export function ArtifactListPage({
                   }
                 />
               </label>
-              <Select
-                value={status}
-                onValueChange={(value) =>
-                  onSearchChange({
-                    status: value === 'archived' ? 'archived' : undefined,
-                    page: undefined,
-                  })
-                }
-              >
-                <SelectTrigger className="artifact-status-trigger">
-                  {status === 'active' ? (
-                    <Grid2X2 size={15} />
-                  ) : (
-                    <Archive size={15} />
-                  )}
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent align="end">
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="archived">Archived</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select
-                value={sort}
-                onValueChange={(value) =>
-                  onSearchChange({
-                    sort: value === 'az' || value === 'za' ? value : undefined,
-                    page: undefined,
-                  })
-                }
-              >
-                <SelectTrigger className="artifact-sort-trigger">
-                  <ArrowDownAZ size={16} />
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent align="end">
-                  <SelectItem value="updated">Recently updated</SelectItem>
-                  <SelectItem value="az">Ascending (A–Z)</SelectItem>
-                  <SelectItem value="za">Descending (Z–A)</SelectItem>
-                </SelectContent>
-              </Select>
-              <ToggleGroup
-                value={[view]}
-                onValueChange={(values) => {
-                  const next = values[0]
-                  if (next === 'grid' || next === 'list') {
-                    onSearchChange({
-                      view: next === 'list' ? 'list' : undefined,
-                    })
-                  }
-                }}
-                variant="outline"
-                spacing={0}
-                aria-label="Artifact layout"
-              >
-                <ToggleGroupItem value="list" aria-label="List view">
-                  <ListIcon size={17} />
-                </ToggleGroupItem>
-                <ToggleGroupItem value="grid" aria-label="Grid view">
-                  <Grid2X2 size={16} />
-                </ToggleGroupItem>
-              </ToggleGroup>
               <DropdownMenu>
                 <DropdownMenuTrigger
                   render={
@@ -351,6 +289,70 @@ export function ArtifactListPage({
         <main className="artifact-home">
           <div className="artifact-body">
             <div className="artifact-main">
+              <div className="artifact-viewbar">
+                <button
+                  type="button"
+                  className="view-chip"
+                  aria-pressed={status === 'active'}
+                  onClick={() =>
+                    onSearchChange({ status: undefined, page: undefined })
+                  }
+                >
+                  <Grid2X2 /> Active
+                </button>
+                <button
+                  type="button"
+                  className="view-chip"
+                  aria-pressed={status === 'archived'}
+                  onClick={() =>
+                    onSearchChange({ status: 'archived', page: undefined })
+                  }
+                >
+                  <Archive /> Archived
+                </button>
+                <span className="artifact-viewbar-spacer" />
+                <Select
+                  value={sort}
+                  onValueChange={(value) =>
+                    onSearchChange({
+                      sort:
+                        value === 'az' || value === 'za' ? value : undefined,
+                      page: undefined,
+                    })
+                  }
+                >
+                  <SelectTrigger className="artifact-sort-trigger">
+                    <ArrowDownAZ size={16} />
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent align="end">
+                    <SelectItem value="updated">Recently updated</SelectItem>
+                    <SelectItem value="az">Ascending (A–Z)</SelectItem>
+                    <SelectItem value="za">Descending (Z–A)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <ToggleGroup
+                  value={[view]}
+                  onValueChange={(values) => {
+                    const next = values[0]
+                    if (next === 'grid' || next === 'list') {
+                      onSearchChange({
+                        view: next === 'grid' ? 'grid' : undefined,
+                      })
+                    }
+                  }}
+                  variant="outline"
+                  spacing={0}
+                  aria-label="Artifact layout"
+                >
+                  <ToggleGroupItem value="list" aria-label="List view">
+                    <ListIcon size={17} />
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="grid" aria-label="Grid view">
+                    <Grid2X2 size={16} />
+                  </ToggleGroupItem>
+                </ToggleGroup>
+              </div>
               <div className="artifact-scroll">
                 {error && (
                   <div className="empty-panel error-panel">
@@ -452,8 +454,12 @@ export function ArtifactListPage({
                           </div>
                           <div className="artifact-card-meta">
                             <span>
-                              v{artifact.currentVersion?.number ?? 1} ·{' '}
-                              {formatDate(artifact.updatedAt)}
+                              <span className="version-chip">
+                                v{artifact.currentVersion?.number ?? 1}
+                              </span>
+                              {view === 'list'
+                                ? formatShortDate(artifact.updatedAt)
+                                : formatDate(artifact.updatedAt)}
                             </span>
                             <div className="artifact-card-actions">
                               <Button
@@ -707,6 +713,15 @@ function ArtifactCardPreview({ artifact }: { artifact: Artifact }) {
       )}
     </div>
   )
+}
+
+const shortDate = new Intl.DateTimeFormat('en', {
+  month: 'short',
+  day: 'numeric',
+})
+
+function formatShortDate(value: string): string {
+  return shortDate.format(new Date(value))
 }
 
 function relativeTime(value: string): string {
