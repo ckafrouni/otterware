@@ -74,8 +74,6 @@ describe('FinderFileList', () => {
         onSelectArtifact={onSelect}
         onOpenArtifact={onOpen}
         onQuickLook={onQuickLook}
-        status="active"
-        onStatusChange={onStatusChange}
       />,
     )
 
@@ -95,8 +93,6 @@ describe('FinderFileList', () => {
         onSelectArtifact={onSelect}
         onOpenArtifact={onOpen}
         onQuickLook={vi.fn()}
-        status="active"
-        onStatusChange={vi.fn()}
       />,
     )
 

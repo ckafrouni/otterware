@@ -79,59 +79,114 @@ export function FinderInspectorPane({
       aria-label={`Preview: ${artifact.title}`}
     >
       <div className="finder-preview-scroll">
-        {/* Top 55%: Large Document Preview Box (macOS Finder style) */}
+        {/* High-Craft Linear Document Stage */}
         <div
           className="finder-doc-stage"
           onClick={() => onQuickLook(artifact)}
           title="Click or press Spacebar to Quick Look"
         >
-          <div className="finder-doc-sheet">
-            {artifact.thumbnailUrl ? (
+          {artifact.thumbnailUrl ? (
+            <div className="finder-doc-sheet">
               <img
                 src={artifact.thumbnailUrl}
                 alt={artifact.title}
                 className="finder-doc-image"
               />
-            ) : (
-              <div className="finder-doc-paper-fallback">
-                <div className="finder-doc-icon-hero">
-                  {format.type === 'sheet' && (
-                    <FileSpreadsheet size={64} className="text-emerald-500" />
-                  )}
-                  {format.type === 'html' && (
-                    <FileCode size={64} className="text-amber-500" />
-                  )}
-                  {format.type === 'doc' && (
-                    <FileText size={64} className="text-blue-500" />
-                  )}
-                  {format.type !== 'sheet' &&
-                    format.type !== 'html' &&
-                    format.type !== 'doc' && (
-                      <FileCode size={64} className="text-muted-foreground" />
-                    )}
+              <div className="finder-doc-hover-overlay">
+                <span className="finder-doc-quicklook-pill">
+                  <Eye size={13} /> Quick Look
+                </span>
+              </div>
+            </div>
+          ) : format.type === 'sheet' ? (
+            <div className="inspector-sheet-preview">
+              <div className="sheet-preview-formula">
+                <span className="sheet-fx">fx</span>
+                <span className="sheet-formula-text">=SUM(B2:D2)</span>
+              </div>
+              <div className="sheet-preview-grid">
+                <div className="sheet-row sheet-header-row">
+                  <div className="sheet-cell sheet-corner" />
+                  <div className="sheet-cell sheet-col-head">A</div>
+                  <div className="sheet-cell sheet-col-head">B</div>
+                  <div className="sheet-cell sheet-col-head">C</div>
+                  <div className="sheet-cell sheet-col-head">D</div>
                 </div>
-                <div className="finder-doc-paper-header">
-                  <span className="finder-doc-paper-title truncate">
-                    {artifact.title}
-                  </span>
-                  <span className="finder-doc-paper-slug font-mono">
-                    {artifact.slug}
-                  </span>
+                <div className="sheet-row">
+                  <div className="sheet-cell sheet-row-head">1</div>
+                  <div className="sheet-cell font-medium">Metric</div>
+                  <div className="sheet-cell font-mono">Q1</div>
+                  <div className="sheet-cell font-mono">Q2</div>
+                  <div className="sheet-cell font-mono">Q3</div>
                 </div>
-                <div className="finder-doc-paper-lines" aria-hidden="true">
-                  <div className="paper-line w-full" />
-                  <div className="paper-line w-4/5" />
-                  <div className="paper-line w-3/4" />
-                  <div className="paper-line w-1/2" />
+                <div className="sheet-row">
+                  <div className="sheet-cell sheet-row-head">2</div>
+                  <div className="sheet-cell">Revenue</div>
+                  <div className="sheet-cell font-mono text-emerald-500">$480k</div>
+                  <div className="sheet-cell font-mono text-emerald-500">$620k</div>
+                  <div className="sheet-cell font-mono text-emerald-500">$850k</div>
+                </div>
+                <div className="sheet-row">
+                  <div className="sheet-cell sheet-row-head">3</div>
+                  <div className="sheet-cell">Margin</div>
+                  <div className="sheet-cell font-mono">64.2%</div>
+                  <div className="sheet-cell font-mono">68.5%</div>
+                  <div className="sheet-cell font-mono">72.1%</div>
                 </div>
               </div>
-            )}
-            <div className="finder-doc-hover-overlay">
-              <span className="finder-doc-quicklook-pill">
-                <Eye size={13} /> Quick Look
-              </span>
+              <div className="finder-doc-hover-overlay">
+                <span className="finder-doc-quicklook-pill">
+                  <Eye size={13} /> Quick Look
+                </span>
+              </div>
             </div>
-          </div>
+          ) : format.type === 'html' ? (
+            <div className="inspector-app-preview">
+              <div className="app-preview-chrome">
+                <span className="app-preview-dot" />
+                <span className="app-preview-dot" />
+                <span className="app-preview-dot" />
+                <span className="app-preview-url truncate">{artifact.slug}</span>
+              </div>
+              <div className="app-preview-canvas">
+                <FileCode size={32} className="text-amber-500 mb-1" />
+                <span className="text-xs font-semibold text-foreground truncate max-w-[200px]">
+                  {artifact.title}
+                </span>
+                <span className="text-[10px] text-muted-foreground font-mono">
+                  {artifact.slug}
+                </span>
+              </div>
+              <div className="finder-doc-hover-overlay">
+                <span className="finder-doc-quicklook-pill">
+                  <Eye size={13} /> Quick Look
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="inspector-doc-preview">
+              <div className="doc-preview-content">
+                <div className="flex items-center gap-2 mb-2">
+                  <FileText size={18} className="text-blue-500" />
+                  <span className="text-xs font-semibold text-foreground truncate">
+                    {artifact.title}
+                  </span>
+                </div>
+                <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed mb-2">
+                  {artifact.description ||
+                    'Markdown documentation artifact created for review and team collaboration.'}
+                </p>
+                <div className="doc-preview-code font-mono text-[10px] text-muted-foreground">
+                  # {artifact.slug}
+                </div>
+              </div>
+              <div className="finder-doc-hover-overlay">
+                <span className="finder-doc-quicklook-pill">
+                  <Eye size={13} /> Quick Look
+                </span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* File Header Section */}
@@ -141,12 +196,7 @@ export function FinderInspectorPane({
               className="finder-preview-filename truncate"
               title={artifact.title}
             >
-              {artifact.slug}.
-              {format.type === 'sheet'
-                ? 'xlsx'
-                : format.type === 'html'
-                  ? 'html'
-                  : 'md'}
+              {artifact.title}
             </h2>
             <div className="finder-title-actions">
               <a

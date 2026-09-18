@@ -20,8 +20,6 @@ export interface FinderFileListProps {
   onSelectArtifact: (artifact: Artifact) => void
   onOpenArtifact: (artifact: Artifact) => void
   onQuickLook: (artifact: Artifact) => void
-  status: 'active' | 'archived'
-  onStatusChange: (status: 'active' | 'archived') => void
 }
 
 export function FinderFileList({
@@ -30,8 +28,6 @@ export function FinderFileList({
   onSelectArtifact,
   onOpenArtifact,
   onQuickLook,
-  status,
-  onStatusChange,
 }: FinderFileListProps) {
   const listRef = useRef<HTMLDivElement>(null)
 
@@ -81,28 +77,11 @@ export function FinderFileList({
 
   return (
     <div className="finder-file-list-pane" ref={listRef}>
-      {/* Sub-header with filter pills */}
+      {/* Clean list header */}
       <div className="finder-file-list-header">
-        <div className="finder-status-chips">
-          <button
-            type="button"
-            className={`view-chip ${status === 'active' ? 'active' : ''}`}
-            aria-pressed={status === 'active'}
-            onClick={() => onStatusChange('active')}
-          >
-            <CircleDot size={12} />
-            <span>Active</span>
-          </button>
-          <button
-            type="button"
-            className={`view-chip ${status === 'archived' ? 'active' : ''}`}
-            aria-pressed={status === 'archived'}
-            onClick={() => onStatusChange('archived')}
-          >
-            <Archive size={12} />
-            <span>Archived</span>
-          </button>
-        </div>
+        <span className="text-xs font-semibold tracking-wide text-foreground">
+          Artifacts
+        </span>
         <span className="finder-file-count-label">
           {artifacts.length} {artifacts.length === 1 ? 'item' : 'items'}
         </span>

@@ -336,42 +336,111 @@ export function ArtifactListPage({
         <AppHeader
           actions={
             <div className="artifact-toolbar" aria-label="Artifact controls">
-              <label className="artifact-search-field">
-                <Search className="artifact-search-icon" size={16} />
-                <Input
-                  type="search"
-                  placeholder="Search artifacts"
-                  value={query}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Escape') {
-                      event.preventDefault()
-                      event.currentTarget.blur()
-                    }
-                  }}
-                  onChange={(event) =>
-                    onSearchChange(
-                      { q: event.target.value || undefined, page: undefined },
-                      { replace: true },
-                    )
+              <div className="header-status-toggle">
+                <button
+                  type="button"
+                  className={`view-chip ${status === 'active' ? 'active' : ''}`}
+                  aria-pressed={status === 'active'}
+                  onClick={() =>
+                    onSearchChange({ status: undefined, page: undefined })
                   }
-                />
-              </label>
+                >
+                  <CircleDot size={12} />
+                  <span>Active</span>
+                </button>
+                <button
+                  type="button"
+                  className={`view-chip ${status === 'archived' ? 'active' : ''}`}
+                  aria-pressed={status === 'archived'}
+                  onClick={() =>
+                    onSearchChange({ status: 'archived', page: undefined })
+                  }
+                >
+                  <Archive size={12} />
+                  <span>Archived</span>
+                </button>
+              </div>
+
+              <Select
+                value={sort}
+                onValueChange={(value) =>
+                  onSearchChange({
+                    sort:
+                      value === 'az' || value === 'za' ? value : undefined,
+                    page: undefined,
+                  })
+                }
+              >
+                <SelectTrigger className="artifact-sort-trigger">
+                  <ArrowDownAZ size={14} />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent align="end">
+                  <SelectItem value="updated">Recently updated</SelectItem>
+                  <SelectItem value="az">Ascending (A–Z)</SelectItem>
+                  <SelectItem value="za">Descending (Z–A)</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <ToggleGroup
+                value={[view]}
+                onValueChange={(values) => {
+                  const next = values[0]
+                  if (
+                    next === 'columns' ||
+                    next === 'grid' ||
+                    next === 'list'
+                  ) {
+                    onSearchChange({
+                      view: next === 'columns' ? undefined : next,
+                    })
+                  }
+                }}
+                variant="outline"
+                spacing={0}
+                aria-label="Artifact layout"
+              >
+                <ToggleGroupItem
+                  value="columns"
+                  aria-label="Split preview"
+                  title="Split Preview"
+                >
+                  <Columns3 size={14} />
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="list"
+                  aria-label="List view"
+                  title="Linear Table"
+                >
+                  <ListIcon size={14} />
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="grid"
+                  aria-label="Grid view"
+                  title="Gallery Cards"
+                >
+                  <Grid2X2 size={14} />
+                </ToggleGroupItem>
+              </ToggleGroup>
+
               <Button
                 type="button"
                 variant="outline"
+                size="sm"
                 aria-label="Share space"
                 disabled={!activeOrganization}
                 onClick={() => setShareSpaceOpen(true)}
               >
-                <Users size={15} /> Collaborate
+                <Users size={14} /> Collaborate
               </Button>
               <Button
                 type="button"
+                size="sm"
                 aria-label="Upload artifact"
                 disabled={!activeOrganization}
                 onClick={() => setUploadOpen(true)}
               >
-                <Upload size={15} /> Upload
+                <Upload size={14} /> Upload
               </Button>
             </div>
           }
@@ -379,89 +448,6 @@ export function ArtifactListPage({
         <main className="artifact-home">
           <div className="artifact-body">
             <div className="artifact-main">
-              <div className="artifact-viewbar">
-                <button
-                  type="button"
-                  className="view-chip"
-                  aria-pressed={status === 'active'}
-                  onClick={() =>
-                    onSearchChange({ status: undefined, page: undefined })
-                  }
-                >
-                  <CircleDot /> Active
-                </button>
-                <button
-                  type="button"
-                  className="view-chip"
-                  aria-pressed={status === 'archived'}
-                  onClick={() =>
-                    onSearchChange({ status: 'archived', page: undefined })
-                  }
-                >
-                  <Archive /> Archived
-                </button>
-                <span className="artifact-viewbar-spacer" />
-                <Select
-                  value={sort}
-                  onValueChange={(value) =>
-                    onSearchChange({
-                      sort:
-                        value === 'az' || value === 'za' ? value : undefined,
-                      page: undefined,
-                    })
-                  }
-                >
-                  <SelectTrigger className="artifact-sort-trigger">
-                    <ArrowDownAZ size={16} />
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent align="end">
-                    <SelectItem value="updated">Recently updated</SelectItem>
-                    <SelectItem value="az">Ascending (A–Z)</SelectItem>
-                    <SelectItem value="za">Descending (Z–A)</SelectItem>
-                  </SelectContent>
-                </Select>
-                <ToggleGroup
-                  value={[view]}
-                  onValueChange={(values) => {
-                    const next = values[0]
-                    if (
-                      next === 'columns' ||
-                      next === 'grid' ||
-                      next === 'list'
-                    ) {
-                      onSearchChange({
-                        view: next === 'list' ? undefined : next,
-                      })
-                    }
-                  }}
-                  variant="outline"
-                  spacing={0}
-                  aria-label="Artifact layout"
-                >
-                  <ToggleGroupItem
-                    value="columns"
-                    aria-label="Columns view"
-                    title="macOS Finder Miller Columns"
-                  >
-                    <Columns3 size={15} />
-                  </ToggleGroupItem>
-                  <ToggleGroupItem
-                    value="list"
-                    aria-label="List view"
-                    title="Linear List View"
-                  >
-                    <ListIcon size={16} />
-                  </ToggleGroupItem>
-                  <ToggleGroupItem
-                    value="grid"
-                    aria-label="Grid view"
-                    title="Gallery Grid View"
-                  >
-                    <Grid2X2 size={15} />
-                  </ToggleGroupItem>
-                </ToggleGroup>
-              </div>
               <div className="artifact-scroll">
                 {error && (
                   <div className="empty-panel error-panel">
