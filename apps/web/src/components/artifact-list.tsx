@@ -180,7 +180,9 @@ export function ArtifactListPage({
       : {}),
     staleTime: 60_000,
   })
-  const artifacts = artifactsQuery.data ?? []
+  const artifacts = Array.isArray(artifactsQuery.data)
+    ? artifactsQuery.data
+    : []
   const noTeam = loaded && organizations.length === 0
   const loading = !noTeam && (!activeOrganization || artifactsQuery.isPending)
   const error =

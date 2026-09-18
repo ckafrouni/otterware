@@ -16,23 +16,36 @@ export function useOrganizations() {
   const queryKey = ['organizations', userId] as const
   const storageKey = `otterware:organizations:${userId ?? 'anonymous'}`
   const stored = readSessionCache<OrganizationSummary[]>(storageKey, 5 * 60_000)
+  const safeStored = stored && Array.isArray(stored.value) ? stored : undefined
   const organizationsQuery = useQuery({
     enabled: Boolean(userId),
     queryFn: async () => {
       const result = await authClient.organization.list()
       if (result.error) throw new Error(result.error.message)
+      const list = Array.isArray(result.data)
+        ? result.data
+        : Array.isArray((result.data as any)?.data)
+          ? (result.data as any).data
+          : []
       return writeSessionCache(
         storageKey,
-        (result.data ?? []) as OrganizationSummary[],
+        list as OrganizationSummary[],
       )
     },
-    ...(stored
-      ? { initialData: stored.value, initialDataUpdatedAt: stored.savedAt }
+    ...(safeStored
+      ? { initialData: safeStored.value, initialDataUpdatedAt: safeStored.savedAt }
       : {}),
     queryKey,
     staleTime: 5 * 60_000,
   })
-  const organizations = organizationsQuery.data ?? []
+  const rawOrgs = organizationsQuery.data
+  const organizations: OrganizationSummary[] = useMemo(() => {
+    if (Array.isArray(rawOrgs)) return rawOrgs as OrganizationSummary[]
+    if (rawOrgs && typeof rawOrgs === 'object' && Array.isArray((rawOrgs as any).data)) {
+      return (rawOrgs as any).data as OrganizationSummary[]
+    }
+    return []
+  }, [rawOrgs])
   const loaded = Boolean(userId) && !organizationsQuery.isPending
 
   useEffect(() => {
