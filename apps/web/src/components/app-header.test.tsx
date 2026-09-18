@@ -48,36 +48,24 @@ vi.mock('@/hooks/use-organizations', () => ({
 afterEach(cleanup)
 
 describe('AppHeader', () => {
-  it('keeps the page title centered without duplicating the team in the header', () => {
+  it('renders brand badge, active space switcher, and page title', () => {
     const { container } = render(<AppHeader />)
 
     expect(
       container.querySelector('.app-header .app-breadcrumb strong')
         ?.textContent,
     ).toBe('Artifacts')
-    expect(container.querySelector('.header-context')).toBeNull()
+    expect(screen.getAllByText('Otterware').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getByRole('button', { name: /Switch space/i })).not.toBeNull()
   })
 
-  it('puts search above the spaces and folds the account into one row', () => {
-    const { container } = render(<AppHeader />)
-    const sidebar = container.querySelector('.app-sidebar')!
-    const search = sidebar.querySelector('.sidebar-search')!
-    const spaces = sidebar.querySelector('.sidebar-spaces')!
+  it('provides quick search command trigger and user account menu', () => {
+    render(<AppHeader />)
 
-    expect(search.textContent).toContain('Search')
     expect(
-      search.compareDocumentPosition(spaces) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy()
-    expect(spaces.textContent).toContain('Spaces')
-    expect(
-      screen
-        .getByRole('button', { name: /Otterware/ })
-        .getAttribute('aria-current'),
-    ).toBe('true')
-    expect(sidebar.querySelector('.sidebar-account')?.textContent).toContain(
-      'chris@example.com',
-    )
-    expect(sidebar.querySelector('.sidebar-theme')).toBeNull()
-    expect(sidebar.querySelector('.sidebar-account')?.tagName).toBe('BUTTON')
+      screen.getByRole('button', { name: /Search artifacts/i }),
+    ).not.toBeNull()
+    expect(screen.getByText('⌘K')).not.toBeNull()
+    expect(screen.getByRole('button', { name: /Account menu/i })).not.toBeNull()
   })
 })

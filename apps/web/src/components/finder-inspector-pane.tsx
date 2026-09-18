@@ -44,7 +44,6 @@ export function FinderInspectorPane({
   onDelete,
   isOwner = false,
 }: FinderInspectorPaneProps) {
-  const [selectedTag, setSelectedTag] = useState<string | null>(null)
   const [copiedPrompt, setCopiedPrompt] = useState(false)
 
   if (!artifact) {
@@ -241,36 +240,6 @@ export function FinderInspectorPane({
               </div>
             )}
           </dl>
-        </div>
-
-        <div className="finder-preview-divider" />
-
-        {/* Tags Section */}
-        <div className="finder-tags-section">
-          <h3 className="finder-section-title">Tags</h3>
-          <div className="finder-tag-pills">
-            {[
-              { id: 'red', label: 'Critical', color: 'tag-red' },
-              { id: 'orange', label: 'In Progress', color: 'tag-orange' },
-              { id: 'yellow', label: 'Review', color: 'tag-yellow' },
-              { id: 'green', label: 'Approved', color: 'tag-green' },
-              { id: 'blue', label: 'Internal', color: 'tag-blue' },
-              { id: 'purple', label: 'AI Generated', color: 'tag-purple' },
-            ].map((tag) => {
-              const active = selectedTag === tag.id
-              return (
-                <button
-                  key={tag.id}
-                  type="button"
-                  className={`finder-tag-chip ${active ? 'active' : ''}`}
-                  onClick={() => setSelectedTag(active ? null : tag.id)}
-                >
-                  <span className={`tag-circle ${tag.color}`} />
-                  <span>{tag.label}</span>
-                </button>
-              )
-            })}
-          </div>
         </div>
 
         <div className="finder-preview-divider" />

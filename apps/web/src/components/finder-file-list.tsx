@@ -140,32 +140,18 @@ export function FinderFileList({
               >
                 <div className="finder-row-icon">
                   {format.type === 'sheet' && (
-                    <FileSpreadsheet
-                      size={17}
-                      className={isSelected ? 'text-white' : 'text-emerald-500'}
-                    />
+                    <FileSpreadsheet size={16} className="text-emerald-500" />
                   )}
                   {format.type === 'html' && (
-                    <FileCode
-                      size={17}
-                      className={isSelected ? 'text-white' : 'text-amber-500'}
-                    />
+                    <FileCode size={16} className="text-amber-500" />
                   )}
                   {format.type === 'doc' && (
-                    <FileText
-                      size={17}
-                      className={isSelected ? 'text-white' : 'text-blue-500'}
-                    />
+                    <FileText size={16} className="text-blue-500" />
                   )}
                   {format.type !== 'sheet' &&
                     format.type !== 'html' &&
                     format.type !== 'doc' && (
-                      <FileCode
-                        size={17}
-                        className={
-                          isSelected ? 'text-white' : 'text-muted-foreground'
-                        }
-                      />
+                      <FileCode size={16} className="text-muted-foreground" />
                     )}
                 </div>
 
@@ -181,16 +167,14 @@ export function FinderFileList({
                 <div className="finder-row-meta">
                   {isAgent ? (
                     <span
-                      className={`finder-row-agent-pill ${isSelected ? 'selected' : ''}`}
+                      className="finder-row-agent-pill"
                       title={`Created by AI Agent: ${creatorName}`}
                     >
                       <Bot size={11} />
                       <span>{creatorName}</span>
                     </span>
                   ) : null}
-                  <span
-                    className={`finder-row-version ${isSelected ? 'selected' : ''}`}
-                  >
+                  <span className="finder-row-version">
                     v{artifact.currentVersion?.number ?? 1}
                   </span>
                   <span className="finder-row-date">
