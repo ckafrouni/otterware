@@ -1,13 +1,8 @@
 name: Publish CLI to npm
 
+# Releases are manual: bump apps/cli/package.json, merge, then run this
+# workflow from the Actions tab (or `gh workflow run publish-cli.yml`).
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/publish-cli.yml'
-      - 'apps/cli/**'
-      - 'packages/contracts/**'
-      - 'pnpm-lock.yaml'
   workflow_dispatch:
 
 permissions:
