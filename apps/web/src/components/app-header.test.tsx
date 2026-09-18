@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import * as React from 'react'
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { cleanup, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { AppHeader } from './app-header'
 
@@ -57,19 +57,27 @@ describe('AppHeader', () => {
     expect(container.querySelector('.header-context')).toBeNull()
   })
 
-  it('merges teams and account actions into the workspace menu', async () => {
-    render(<AppHeader />)
+  it('unpacks teams, theme, settings and account into the sidebar', () => {
+    const { container } = render(<AppHeader />)
+    const sidebar = container.querySelector('.app-sidebar')!
 
-    fireEvent.click(
-      screen.getByRole('button', { name: /Select team|Otterware/ }),
+    expect(sidebar.querySelector('.sidebar-teams')?.textContent).toContain(
+      'Teams',
     )
-
-    expect(await screen.findByText('Chris Kafrouni')).not.toBeNull()
-    expect(screen.getByText('chris@example.com')).not.toBeNull()
-    expect(screen.getByText('Teams')).not.toBeNull()
-    expect(screen.getByRole('menuitem', { name: /Otterware/ })).not.toBeNull()
-    expect(screen.getByRole('menuitem', { name: 'Settings' })).not.toBeNull()
-    expect(screen.getByText('Theme')).not.toBeNull()
-    expect(screen.getByRole('menuitem', { name: 'Sign out' })).not.toBeNull()
+    expect(
+      screen
+        .getByRole('button', { name: /Otterware/ })
+        .getAttribute('aria-current'),
+    ).toBe('true')
+    expect(screen.getByRole('link', { name: 'Settings' })).not.toBeNull()
+    expect(
+      screen
+        .getByRole('button', { name: 'Dark theme' })
+        .getAttribute('aria-pressed'),
+    ).toBe('false')
+    expect(sidebar.querySelector('.sidebar-account')?.textContent).toContain(
+      'chris@example.com',
+    )
+    expect(screen.getByRole('button', { name: 'Sign out' })).not.toBeNull()
   })
 })

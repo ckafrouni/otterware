@@ -7,6 +7,7 @@ import {
   Copy,
   Download,
   ExternalLink,
+  FileBox,
   Grid2X2,
   List as ListIcon,
   MoreHorizontal,
@@ -348,197 +349,276 @@ export function ArtifactListPage({
           }
         />
         <main className="artifact-home">
-          <div className="artifact-scroll">
-            {error && (
-              <div className="empty-panel error-panel">
-                <strong>Could not load artifacts</strong>
-                <p>{error}</p>
-                {error.includes('organization') && (
-                  <Link to="/settings">Create an organization</Link>
+          <div className="artifact-body">
+            <div className="artifact-main">
+              <div className="artifact-scroll">
+                {error && (
+                  <div className="empty-panel error-panel">
+                    <strong>Could not load artifacts</strong>
+                    <p>{error}</p>
+                    {error.includes('organization') && (
+                      <Link to="/settings">Create an organization</Link>
+                    )}
+                  </div>
                 )}
-              </div>
-            )}
-            {noTeam && !error && (
-              <div className="empty-panel">
-                <h2>Create your first team</h2>
-                <p>
-                  Artifacts live in a team workspace. Create one in{' '}
-                  <Link to="/settings">Settings</Link> to get started.
-                </p>
-              </div>
-            )}
-            {!noTeam && !loading && !error && artifacts.length === 0 && (
-              <div className="empty-panel">
-                {status === 'archived' ? (
-                  <h2>No archived artifacts</h2>
-                ) : (
-                  <>
-                    <h2>No artifacts yet</h2>
+                {noTeam && !error && (
+                  <div className="empty-panel">
+                    <h2>Create your first team</h2>
                     <p>
-                      Install the CLI and run{' '}
-                      <code>otterware artifacts create</code>.
+                      Artifacts live in a team workspace. Create one in{' '}
+                      <Link to="/settings">Settings</Link> to get started.
                     </p>
-                  </>
+                  </div>
                 )}
-              </div>
-            )}
-            {!loading &&
-              !error &&
-              artifacts.length > 0 &&
-              visibleArtifacts.length === 0 && (
-                <div className="empty-panel compact-empty">
-                  {query
-                    ? `No ${status} artifacts match “${query}”.`
-                    : status === 'archived'
-                      ? 'No archived artifacts.'
-                      : 'No active artifacts.'}
-                </div>
-              )}
-            <section
-              className={
-                view === 'grid' ? 'artifact-grid' : 'artifact-list-view'
-              }
-              aria-label="Artifacts"
-            >
-              {loading ? (
-                <ArtifactCardSkeletons view={view} />
-              ) : (
-                pagedArtifacts.map((artifact) => (
-                  <Link
-                    key={artifact.id}
-                    to="/$organizationSlug/a/$slug"
-                    params={{
-                      organizationSlug: activeOrganization?.slug ?? 'team',
-                      slug: artifact.slug,
-                    }}
-                    className="artifact-card-link"
-                    onFocus={() => {
-                      if (activeOrganization)
-                        void queryClient.prefetchQuery(
-                          artifactBootstrapQuery(
-                            activeOrganization.id,
-                            artifact.slug,
-                          ),
-                        )
-                    }}
-                    onMouseEnter={() => {
-                      if (activeOrganization)
-                        void queryClient.prefetchQuery(
-                          artifactBootstrapQuery(
-                            activeOrganization.id,
-                            artifact.slug,
-                          ),
-                        )
-                    }}
-                  >
-                    <Card
-                      size="sm"
-                      className={
-                        view === 'grid'
-                          ? 'artifact-card'
-                          : 'artifact-card artifact-row'
-                      }
-                    >
-                      <ArtifactCardPreview artifact={artifact} />
-                      <div className="artifact-card-body">
-                        <h2>{artifact.title}</h2>
+                {!noTeam && !loading && !error && artifacts.length === 0 && (
+                  <div className="empty-panel">
+                    {status === 'archived' ? (
+                      <h2>No archived artifacts</h2>
+                    ) : (
+                      <>
+                        <h2>No artifacts yet</h2>
                         <p>
-                          {artifact.description || 'No description provided.'}
+                          Install the CLI and run{' '}
+                          <code>otterware artifacts create</code>.
                         </p>
-                      </div>
-                      <div className="artifact-card-meta">
-                        <span>
-                          v{artifact.currentVersion?.number ?? 1} ·{' '}
-                          {formatDate(artifact.updatedAt)}
-                        </span>
-                        <div className="artifact-card-actions">
-                          <Button
-                            variant="outline"
-                            size="icon-xs"
-                            type="button"
-                            aria-label="Copy artifact URL"
-                            onClick={(event) => {
-                              event.preventDefault()
-                              event.stopPropagation()
-                              void navigator.clipboard.writeText(artifact.url)
-                            }}
-                          >
-                            <Copy size={14} />
-                          </Button>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger
-                              render={
-                                <Button
-                                  variant="outline"
-                                  size="icon-xs"
-                                  type="button"
-                                  aria-label="Artifact actions"
-                                  disabled={changingId === artifact.id}
-                                  onClick={(event) => {
-                                    event.preventDefault()
-                                    event.stopPropagation()
-                                  }}
-                                />
-                              }
-                            >
-                              <MoreHorizontal size={14} />
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent
-                              align="end"
-                              className="artifact-actions-menu"
-                            >
-                              <DropdownMenuItem
-                                render={
-                                  <a
-                                    href={`/api/v1/artifacts/${encodeURIComponent(artifact.id)}/download`}
-                                    download
-                                    onClick={(event) => event.stopPropagation()}
-                                  />
-                                }
+                      </>
+                    )}
+                  </div>
+                )}
+                {!loading &&
+                  !error &&
+                  artifacts.length > 0 &&
+                  visibleArtifacts.length === 0 && (
+                    <div className="empty-panel compact-empty">
+                      {query
+                        ? `No ${status} artifacts match “${query}”.`
+                        : status === 'archived'
+                          ? 'No archived artifacts.'
+                          : 'No active artifacts.'}
+                    </div>
+                  )}
+                <section
+                  className={
+                    view === 'grid' ? 'artifact-grid' : 'artifact-list-view'
+                  }
+                  aria-label="Artifacts"
+                >
+                  {loading ? (
+                    <ArtifactCardSkeletons view={view} />
+                  ) : (
+                    pagedArtifacts.map((artifact) => (
+                      <Link
+                        key={artifact.id}
+                        to="/$organizationSlug/a/$slug"
+                        params={{
+                          organizationSlug: activeOrganization?.slug ?? 'team',
+                          slug: artifact.slug,
+                        }}
+                        className="artifact-card-link"
+                        onFocus={() => {
+                          if (activeOrganization)
+                            void queryClient.prefetchQuery(
+                              artifactBootstrapQuery(
+                                activeOrganization.id,
+                                artifact.slug,
+                              ),
+                            )
+                        }}
+                        onMouseEnter={() => {
+                          if (activeOrganization)
+                            void queryClient.prefetchQuery(
+                              artifactBootstrapQuery(
+                                activeOrganization.id,
+                                artifact.slug,
+                              ),
+                            )
+                        }}
+                      >
+                        <Card
+                          size="sm"
+                          className={
+                            view === 'grid'
+                              ? 'artifact-card'
+                              : 'artifact-card artifact-row'
+                          }
+                        >
+                          <ArtifactCardPreview artifact={artifact} />
+                          <div className="artifact-card-body">
+                            <h2>{artifact.title}</h2>
+                            <p>
+                              {artifact.description ||
+                                'No description provided.'}
+                            </p>
+                          </div>
+                          <div className="artifact-card-meta">
+                            <span>
+                              v{artifact.currentVersion?.number ?? 1} ·{' '}
+                              {formatDate(artifact.updatedAt)}
+                            </span>
+                            <div className="artifact-card-actions">
+                              <Button
+                                variant="outline"
+                                size="icon-xs"
+                                type="button"
+                                aria-label="Copy artifact URL"
+                                onClick={(event) => {
+                                  event.preventDefault()
+                                  event.stopPropagation()
+                                  void navigator.clipboard.writeText(
+                                    artifact.url,
+                                  )
+                                }}
                               >
-                                <Download size={14} /> Download
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                variant={
-                                  artifact.archivedAt
-                                    ? 'default'
-                                    : 'destructive'
-                                }
-                                onClick={() =>
-                                  void changeArchivedState(artifact)
-                                }
-                              >
-                                {artifact.archivedAt ? (
-                                  <RotateCcw size={14} />
-                                ) : (
-                                  <Archive size={14} />
-                                )}
-                                {artifact.archivedAt ? 'Restore' : 'Archive'}
-                              </DropdownMenuItem>
-                              {artifact.archivedAt && isOwner && (
-                                <>
-                                  <DropdownMenuSeparator />
+                                <Copy size={14} />
+                              </Button>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger
+                                  render={
+                                    <Button
+                                      variant="outline"
+                                      size="icon-xs"
+                                      type="button"
+                                      aria-label="Artifact actions"
+                                      disabled={changingId === artifact.id}
+                                      onClick={(event) => {
+                                        event.preventDefault()
+                                        event.stopPropagation()
+                                      }}
+                                    />
+                                  }
+                                >
+                                  <MoreHorizontal size={14} />
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent
+                                  align="end"
+                                  className="artifact-actions-menu"
+                                >
                                   <DropdownMenuItem
-                                    variant="destructive"
-                                    onClick={() =>
-                                      setDeletingArtifact(artifact)
+                                    render={
+                                      <a
+                                        href={`/api/v1/artifacts/${encodeURIComponent(artifact.id)}/download`}
+                                        download
+                                        onClick={(event) =>
+                                          event.stopPropagation()
+                                        }
+                                      />
                                     }
                                   >
-                                    <Trash2 size={14} />
-                                    Delete permanently
+                                    <Download size={14} /> Download
                                   </DropdownMenuItem>
-                                </>
-                              )}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </div>
-                    </Card>
-                  </Link>
-                ))
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    variant={
+                                      artifact.archivedAt
+                                        ? 'default'
+                                        : 'destructive'
+                                    }
+                                    onClick={() =>
+                                      void changeArchivedState(artifact)
+                                    }
+                                  >
+                                    {artifact.archivedAt ? (
+                                      <RotateCcw size={14} />
+                                    ) : (
+                                      <Archive size={14} />
+                                    )}
+                                    {artifact.archivedAt
+                                      ? 'Restore'
+                                      : 'Archive'}
+                                  </DropdownMenuItem>
+                                  {artifact.archivedAt && isOwner && (
+                                    <>
+                                      <DropdownMenuSeparator />
+                                      <DropdownMenuItem
+                                        variant="destructive"
+                                        onClick={() =>
+                                          setDeletingArtifact(artifact)
+                                        }
+                                      >
+                                        <Trash2 size={14} />
+                                        Delete permanently
+                                      </DropdownMenuItem>
+                                    </>
+                                  )}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          </div>
+                        </Card>
+                      </Link>
+                    ))
+                  )}
+                </section>
+              </div>
+              {!loading && !error && !noTeam && visibleArtifacts.length > 0 && (
+                <footer className="artifact-list-footer">
+                  <span>
+                    {visibleArtifacts.length}{' '}
+                    {visibleArtifacts.length === 1 ? 'artifact' : 'artifacts'}
+                  </span>
+                  {totalPages > 1 && (
+                    <Pagination className="artifact-pagination">
+                      <PaginationContent>
+                        <PaginationItem>
+                          <PaginationPrevious
+                            aria-disabled={currentPage === 1}
+                            className={
+                              currentPage === 1
+                                ? 'pagination-disabled'
+                                : undefined
+                            }
+                            onClick={() => {
+                              if (currentPage > 1) goToPage(currentPage - 1)
+                            }}
+                          />
+                        </PaginationItem>
+                        {paginationItems(currentPage, totalPages).map(
+                          (item, index) =>
+                            item === 'ellipsis' ? (
+                              <PaginationItem key={`ellipsis-${index}`}>
+                                <PaginationEllipsis />
+                              </PaginationItem>
+                            ) : (
+                              <PaginationItem key={item}>
+                                <PaginationLink
+                                  isActive={item === currentPage}
+                                  onClick={() => goToPage(item)}
+                                >
+                                  {item}
+                                </PaginationLink>
+                              </PaginationItem>
+                            ),
+                        )}
+                        <PaginationItem>
+                          <PaginationNext
+                            aria-disabled={currentPage === totalPages}
+                            className={
+                              currentPage === totalPages
+                                ? 'pagination-disabled'
+                                : undefined
+                            }
+                            onClick={() => {
+                              if (currentPage < totalPages)
+                                goToPage(currentPage + 1)
+                            }}
+                          />
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
+                  )}
+                </footer>
               )}
-            </section>
+            </div>
+            {!noTeam && !error && (
+              <ArtifactInsights
+                artifacts={artifacts}
+                visible={visibleArtifacts}
+                status={status}
+                loading={loading}
+                organizationName={activeOrganization?.name ?? 'Workspace'}
+                organizationSlug={activeOrganization?.slug ?? 'team'}
+              />
+            )}
           </div>
           <DeleteArtifactDialog
             artifact={deletingArtifact}
@@ -556,61 +636,6 @@ export function ArtifactListPage({
             }}
           />
         </main>
-        {!loading && !error && !noTeam && visibleArtifacts.length > 0 && (
-          <footer className="artifact-list-footer">
-            <span>
-              {visibleArtifacts.length}{' '}
-              {visibleArtifacts.length === 1 ? 'artifact' : 'artifacts'}
-            </span>
-            {totalPages > 1 && (
-              <Pagination className="artifact-pagination">
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious
-                      aria-disabled={currentPage === 1}
-                      className={
-                        currentPage === 1 ? 'pagination-disabled' : undefined
-                      }
-                      onClick={() => {
-                        if (currentPage > 1) goToPage(currentPage - 1)
-                      }}
-                    />
-                  </PaginationItem>
-                  {paginationItems(currentPage, totalPages).map(
-                    (item, index) =>
-                      item === 'ellipsis' ? (
-                        <PaginationItem key={`ellipsis-${index}`}>
-                          <PaginationEllipsis />
-                        </PaginationItem>
-                      ) : (
-                        <PaginationItem key={item}>
-                          <PaginationLink
-                            isActive={item === currentPage}
-                            onClick={() => goToPage(item)}
-                          >
-                            {item}
-                          </PaginationLink>
-                        </PaginationItem>
-                      ),
-                  )}
-                  <PaginationItem>
-                    <PaginationNext
-                      aria-disabled={currentPage === totalPages}
-                      className={
-                        currentPage === totalPages
-                          ? 'pagination-disabled'
-                          : undefined
-                      }
-                      onClick={() => {
-                        if (currentPage < totalPages) goToPage(currentPage + 1)
-                      }}
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
-            )}
-          </footer>
-        )}
       </div>
     </AuthGate>
   )
@@ -621,13 +646,20 @@ function ArtifactHomeLoadingState({ view }: { view: 'grid' | 'list' }) {
     <div className="app-shell app-frame" role="status">
       <AppHeader />
       <main className="artifact-home">
-        <div className="artifact-scroll">
-          <section
-            className={view === 'grid' ? 'artifact-grid' : 'artifact-list-view'}
-            aria-hidden="true"
-          >
-            <ArtifactCardSkeletons view={view} />
-          </section>
+        <div className="artifact-body">
+          <div className="artifact-main">
+            <div className="artifact-scroll">
+              <section
+                className={
+                  view === 'grid' ? 'artifact-grid' : 'artifact-list-view'
+                }
+                aria-hidden="true"
+              >
+                <ArtifactCardSkeletons view={view} />
+              </section>
+            </div>
+          </div>
+          <aside className="artifact-insights" aria-hidden="true" />
         </div>
       </main>
       <span className="sr-only">Loading artifacts…</span>
@@ -674,5 +706,120 @@ function ArtifactCardPreview({ artifact }: { artifact: Artifact }) {
         </div>
       )}
     </div>
+  )
+}
+
+function relativeTime(value: string): string {
+  const diff = Date.now() - new Date(value).getTime()
+  const minutes = Math.round(diff / 60_000)
+  if (minutes < 1) return 'just now'
+  if (minutes < 60) return `${minutes}m ago`
+  const hours = Math.round(minutes / 60)
+  if (hours < 24) return `${hours}h ago`
+  const days = Math.round(hours / 24)
+  if (days < 30) return `${days}d ago`
+  const months = Math.round(days / 30)
+  if (months < 12) return `${months}mo ago`
+  return `${Math.round(months / 12)}y ago`
+}
+function ArtifactInsights({
+  artifacts,
+  visible,
+  status,
+  loading,
+  organizationName,
+  organizationSlug,
+}: {
+  artifacts: Artifact[]
+  visible: Artifact[]
+  status: 'active' | 'archived'
+  loading: boolean
+  organizationName: string
+  organizationSlug: string
+}) {
+  const inStatus = artifacts.filter((artifact) =>
+    status === 'archived' ? artifact.archivedAt !== null : !artifact.archivedAt,
+  )
+  const versions = inStatus.reduce(
+    (total, artifact) => total + artifact.versionCount,
+    0,
+  )
+  const recent = [...inStatus]
+    .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))
+    .slice(0, 5)
+  const revised = [...inStatus]
+    .filter((artifact) => artifact.versionCount > 1)
+    .sort((left, right) => right.versionCount - left.versionCount)
+    .slice(0, 3)
+  const week = Date.now() - 7 * 24 * 60 * 60 * 1000
+  const updatedThisWeek = inStatus.filter(
+    (artifact) => new Date(artifact.updatedAt).getTime() >= week,
+  ).length
+
+  if (loading) return <aside className="artifact-insights" aria-hidden="true" />
+
+  return (
+    <aside className="artifact-insights" aria-label="Workspace overview">
+      <div className="insight-section insight-header">
+        <h3>{organizationName}</h3>
+        <p>
+          {status === 'archived'
+            ? 'Archived artifacts in this workspace.'
+            : 'Active artifacts in this workspace.'}
+        </p>
+      </div>
+      <div className="insight-section">
+        <div className="insight-row">
+          <span>Artifacts</span>
+          <strong>
+            {visible.length === inStatus.length
+              ? inStatus.length
+              : `${visible.length} of ${inStatus.length}`}
+          </strong>
+        </div>
+        <div className="insight-row">
+          <span>Versions</span>
+          <strong>{versions}</strong>
+        </div>
+        <div className="insight-row">
+          <span>Updated this week</span>
+          <strong>{updatedThisWeek}</strong>
+        </div>
+      </div>
+      {recent.length > 0 && (
+        <div className="insight-section">
+          <h4>Recently updated</h4>
+          {recent.map((artifact) => (
+            <Link
+              key={artifact.id}
+              className="insight-link"
+              to="/$organizationSlug/a/$slug"
+              params={{ organizationSlug, slug: artifact.slug }}
+            >
+              <FileBox />
+              <span>{artifact.title}</span>
+              <small>{relativeTime(artifact.updatedAt)}</small>
+            </Link>
+          ))}
+        </div>
+      )}
+      {revised.length > 0 && (
+        <div className="insight-section">
+          <h4>Most revised</h4>
+          {revised.map((artifact) => (
+            <Link
+              key={artifact.id}
+              className="insight-link"
+              to="/$organizationSlug/a/$slug"
+              params={{ organizationSlug, slug: artifact.slug }}
+            >
+              <FileBox />
+              <span>{artifact.title}</span>
+              <small>v{artifact.versionCount}</small>
+            </Link>
+          ))}
+        </div>
+      )}
+    </aside>
   )
 }
