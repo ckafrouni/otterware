@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
@@ -17,6 +17,7 @@ import {
   Search,
   Trash2,
   Upload,
+  X,
 } from 'lucide-react'
 import {
   artifactListResponseSchema,
@@ -30,7 +31,6 @@ import { useCurrentActor } from '@/hooks/use-current-actor'
 import { useOrganizations } from '@/hooks/use-organizations'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 import {
   Pagination,
   PaginationContent,
@@ -177,6 +177,7 @@ export function ArtifactListPage({
   )
   const queryClient = useQueryClient()
   const query = search.q ?? ''
+  const searchInput = useRef<HTMLInputElement>(null)
   const sort = search.sort ?? 'updated'
   const view = search.view ?? 'list'
   const status = search.status ?? 'active'
@@ -293,26 +294,6 @@ export function ArtifactListPage({
         <AppHeader
           actions={
             <div className="artifact-toolbar" aria-label="Document controls">
-              <label className="artifact-search-field">
-                <Search className="artifact-search-icon" size={16} />
-                <Input
-                  type="search"
-                  placeholder="Search documents"
-                  value={query}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Escape') {
-                      event.preventDefault()
-                      event.currentTarget.blur()
-                    }
-                  }}
-                  onChange={(event) =>
-                    onSearchChange(
-                      { q: event.target.value || undefined, page: undefined },
-                      { replace: true },
-                    )
-                  }
-                />
-              </label>
               <Button
                 type="button"
                 aria-label="Upload document"
@@ -349,6 +330,50 @@ export function ArtifactListPage({
                   <Archive /> Archived
                 </button>
                 <span className="artifact-viewbar-spacer" />
+                {/* Not a <label>: it would forward clicks to the clear button. */}
+                <div
+                  className="artifact-search-field"
+                  onClick={() => searchInput.current?.focus()}
+                >
+                  {query ? (
+                    <button
+                      type="button"
+                      className="artifact-search-clear"
+                      aria-label="Clear search"
+                      onClick={(event) => {
+                        event.preventDefault()
+                        onSearchChange(
+                          { q: undefined, page: undefined },
+                          { replace: true },
+                        )
+                        searchInput.current?.focus()
+                      }}
+                    >
+                      <X className="artifact-search-icon" />
+                    </button>
+                  ) : (
+                    <Search className="artifact-search-icon" />
+                  )}
+                  <input
+                    ref={searchInput}
+                    type="search"
+                    placeholder="Search"
+                    aria-label="Search documents"
+                    value={query}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Escape') {
+                        event.preventDefault()
+                        event.currentTarget.blur()
+                      }
+                    }}
+                    onChange={(event) =>
+                      onSearchChange(
+                        { q: event.target.value || undefined, page: undefined },
+                        { replace: true },
+                      )
+                    }
+                  />
+                </div>
                 <Select
                   value={sort}
                   onValueChange={(value) =>
@@ -414,7 +439,7 @@ export function ArtifactListPage({
                     <strong>Could not load documents</strong>
                     <p>{error}</p>
                     {error.includes('organization') && (
-                      <Link to="/settings">Create an organization</Link>
+                      <Link to="/settings">Create a team</Link>
                     )}
                   </div>
                 )}

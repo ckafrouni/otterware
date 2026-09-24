@@ -5,9 +5,9 @@ import { toast } from 'sonner'
 import {
   Archive,
   ChevronDown,
+  ChevronRight,
   Copy,
   Download,
-  Home,
   MoreHorizontal,
   MoveRight,
   Pencil,
@@ -29,6 +29,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { AccountMenu, BrandLink, TeamSwitcher } from './app-header'
 import { ArtifactLoadingState } from './artifact-loading-state'
 import { DeleteArtifactDialog } from './delete-artifact-dialog'
 
@@ -201,20 +202,9 @@ export function ArtifactViewer({
     <div className="viewer-shell">
       <header className="viewer-header">
         <div className="viewer-left">
-          <Button
-            render={<Link to="/home" />}
-            variant="outline"
-            size="icon-sm"
-            aria-label="Back to documents"
-          >
-            <Home size={15} />
-          </Button>
-          {artifact && (
-            <span className="viewer-team">
-              <strong>{artifactOrganization?.name ?? 'Team'}</strong>
-              <span aria-hidden="true">/</span>
-            </span>
-          )}
+          <BrandLink />
+          <TeamSwitcher current={artifactOrganization} />
+          <ChevronRight className="viewer-crumb-separator" aria-hidden="true" />
           {artifact && selected ? (
             <DropdownMenu>
               <DropdownMenuTrigger
@@ -361,6 +351,7 @@ export function ArtifactViewer({
           >
             <Copy size={14} /> Share
           </Button>
+          <AccountMenu />
         </div>
       </header>
       <main className="viewer-main">

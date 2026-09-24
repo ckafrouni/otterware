@@ -1,15 +1,8 @@
 import { useEffect, useState } from 'react'
-import { createFileRoute, Link } from '@tanstack/react-router'
-import {
-  ArrowLeft,
-  Building2,
-  Copy,
-  KeyRound,
-  Pencil,
-  Plus,
-  UserPlus,
-} from 'lucide-react'
+import { createFileRoute } from '@tanstack/react-router'
+import { Copy, Pencil, Plus } from 'lucide-react'
 import { authClient } from '#/lib/auth-client'
+import { AppHeader } from '#/components/app-header'
 import { AuthGate } from '#/components/auth-gate'
 import { useCurrentActor } from '@/hooks/use-current-actor'
 import { Button } from '@/components/ui/button'
@@ -80,11 +73,11 @@ export function SettingsPage() {
     if (result.error)
       setMessage({
         kind: 'error',
-        text: result.error.message ?? 'Could not create organization.',
+        text: result.error.message ?? 'Could not create the team.',
       })
     else {
       setOrgName('')
-      setMessage({ kind: 'success', text: 'Organization created.' })
+      setMessage({ kind: 'success', text: 'Team created.' })
       await refreshOrganizations()
       window.dispatchEvent(new Event('otterdrive:organizations-changed'))
     }
@@ -93,7 +86,7 @@ export function SettingsPage() {
   async function selectOrganization(organizationId: string) {
     await authClient.organization.setActive({ organizationId })
     await session.refetch()
-    setMessage({ kind: 'success', text: 'Active organization changed.' })
+    setMessage({ kind: 'success', text: 'Active team changed.' })
   }
 
   async function renameOrganization(event: React.FormEvent) {
@@ -155,28 +148,7 @@ export function SettingsPage() {
   return (
     <AuthGate>
       <div className="app-shell app-frame">
-        <aside className="app-sidebar">
-          <Link to="/home" className="settings-back">
-            <ArrowLeft /> Back to app
-          </Link>
-          <nav className="sidebar-nav" aria-label="Settings sections">
-            <span className="nav-label">Workspace</span>
-            <a href="#team">
-              <Building2 /> Team
-            </a>
-            <a href="#collaborators">
-              <UserPlus /> Collaborators
-            </a>
-            <a href="#agent-access">
-              <KeyRound /> Agent access
-            </a>
-          </nav>
-        </aside>
-        <header className="app-header settings-topbar">
-          <Link to="/home" className="settings-back">
-            <ArrowLeft /> Back to app
-          </Link>
-        </header>
+        <AppHeader />
         <main className="settings-page">
           <div className="settings-scroll">
             <h1>Settings</h1>
@@ -345,7 +317,7 @@ export function SettingsPage() {
                 <div className="settings-panel-heading">
                   <div>
                     <h2>Agent access</h2>
-                    <p>Create organization-scoped credentials for agents.</p>
+                    <p>Create team-scoped credentials for agents.</p>
                   </div>
                 </div>
                 <div className="settings-panel-body">
