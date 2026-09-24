@@ -205,10 +205,10 @@ export async function serveRawContent(
     .bind(versionId, path)
     .first<ContentFileRow>()
   if (!file)
-    throw new HttpError(404, 'file_not_found', 'Artifact file not found.')
+    throw new HttpError(404, 'file_not_found', 'Document file not found.')
   const object = await env.ARTIFACTS.get(file.r2_key)
   if (!object)
-    throw new HttpError(404, 'file_not_found', 'Artifact body not found.')
+    throw new HttpError(404, 'file_not_found', 'Document body not found.')
   const headers = new Headers({
     'content-type': file.content_type,
     'content-length': String(file.size),

@@ -66,7 +66,7 @@ export function DeleteArtifactDialog({
           <AlertDialogMedia className="text-destructive">
             <Trash2 />
           </AlertDialogMedia>
-          <AlertDialogTitle>Delete artifact permanently?</AlertDialogTitle>
+          <AlertDialogTitle>Delete document permanently?</AlertDialogTitle>
           <AlertDialogDescription>
             This permanently deletes every version and file for{' '}
             <strong>{artifact?.title}</strong>. This cannot be undone.

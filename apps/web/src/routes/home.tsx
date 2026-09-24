@@ -13,7 +13,7 @@ export const artifactListSearchSchema = z.object({
   page: z.number().int().min(1).optional().catch(undefined),
 })
 
-export const Route = createFileRoute('/artifacts')({
+export const Route = createFileRoute('/home')({
   validateSearch: artifactListSearchSchema,
   component: ArtifactListRoute,
 })

@@ -29,7 +29,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       },
       {
         name: 'description',
-        content: 'Private artifacts for people and agents.',
+        content: 'Private documents for people and agents.',
       },
       {
         name: 'theme-color',

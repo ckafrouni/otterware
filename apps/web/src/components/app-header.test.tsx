@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import * as React from 'react'
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { AppHeader } from './app-header'
 
@@ -20,7 +20,7 @@ vi.mock('@tanstack/react-router', () => ({
   }: {
     select?: (location: { pathname: string }) => unknown
   } = {}) => {
-    const location = { pathname: '/artifacts' }
+    const location = { pathname: '/home' }
     return select ? select(location) : location
   },
   useNavigate: () => vi.fn(),
@@ -54,8 +54,16 @@ describe('AppHeader', () => {
     expect(
       container.querySelector('.app-header .app-breadcrumb strong')
         ?.textContent,
-    ).toBe('Artifacts')
+    ).toBe('Documents')
     expect(container.querySelector('.header-context')).toBeNull()
+  })
+
+  it('opens the Documents account menu link at /home', async () => {
+    const { container } = render(<AppHeader />)
+    fireEvent.click(container.querySelector('.sidebar-account')!)
+    const link = await screen.findByRole('menuitem', { name: 'Documents' })
+    expect(link.getAttribute('href')).toBe('/home')
+    expect(screen.queryByRole('menuitem', { name: 'Artifacts' })).toBeNull()
   })
 
   it('puts search above the teams and folds the account into one row', () => {

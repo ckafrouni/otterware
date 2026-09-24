@@ -256,7 +256,7 @@ async function artifactRow(
     (!options.includeDraft && row.state !== 'published') ||
     (options.requireModify ? !canModify(row, actor) : !canRead(row, actor))
   ) {
-    throw new HttpError(404, 'artifact_not_found', 'Artifact not found.')
+    throw new HttpError(404, 'artifact_not_found', 'Document not found.')
   }
   return row
 }
@@ -301,7 +301,7 @@ export async function moveArtifact(
     throw new HttpError(
       403,
       'forbidden',
-      'Only organization owners and admins can move artifacts.',
+      'Only organization owners and admins can move documents.',
     )
   }
   const artifact = await artifactRow(env, actor, reference, {
@@ -312,7 +312,7 @@ export async function moveArtifact(
     throw new HttpError(
       400,
       'same_organization',
-      'The artifact is already in that organization.',
+      'The document is already in that organization.',
     )
   }
   const destination = await env.DB.prepare(
@@ -344,7 +344,7 @@ export async function moveArtifact(
     throw new HttpError(
       409,
       'slug_exists',
-      'That artifact slug already exists in the destination organization.',
+      'That document slug already exists in the destination organization.',
     )
   }
   const pending = await env.DB.prepare(
@@ -356,7 +356,7 @@ export async function moveArtifact(
     throw new HttpError(
       409,
       'upload_in_progress',
-      'Complete or abandon the pending upload before moving this artifact.',
+      'Complete or abandon the pending upload before moving this document.',
     )
   }
   const now = new Date().toISOString()
@@ -509,7 +509,7 @@ export async function createArtifact(
       throw new HttpError(
         409,
         'slug_exists',
-        'That artifact slug already exists in this organization.',
+        'That document slug already exists in this organization.',
       )
     }
     throw error
@@ -559,7 +559,7 @@ export async function updateArtifact(
       throw new HttpError(
         409,
         'slug_exists',
-        'That artifact slug already exists.',
+        'That document slug already exists.',
       )
     }
     throw error
@@ -627,7 +627,7 @@ export async function permanentlyDeleteArtifact(
     throw new HttpError(
       409,
       'artifact_not_archived',
-      'Archive the artifact before permanently deleting it.',
+      'Archive the document before permanently deleting it.',
     )
   }
 
@@ -678,7 +678,7 @@ export async function permanentlyDeleteArtifact(
   waitUntil(
     deleteArtifactStorage(env, objectKeys, uploads.results).catch(
       (error: unknown) => {
-        console.error('Artifact storage cleanup failed', row.id, error)
+        console.error('Document storage cleanup failed', row.id, error)
       },
     ),
   )
@@ -698,7 +698,7 @@ export async function deleteDraft(
     throw new HttpError(
       409,
       'not_a_draft',
-      'Published artifacts cannot be deleted.',
+      'Published documents cannot be deleted.',
     )
   }
   await env.DB.prepare('DELETE FROM artifact WHERE id = ?').bind(row.id).run()
@@ -823,7 +823,7 @@ export async function downloadArtifact(
               throw new HttpError(
                 404,
                 'file_not_found',
-                `Artifact file body not found: ${file.path}`,
+                `Document file body not found: ${file.path}`,
               )
             }
             const member = new ZipPassThrough(file.path)
@@ -871,7 +871,7 @@ export async function previewArtifact(
     .bind(version.id, version.entry_path)
     .first<{ content_type: string }>()
   if (!entryFile) {
-    throw new HttpError(404, 'file_not_found', 'Artifact entry file not found.')
+    throw new HttpError(404, 'file_not_found', 'Document entry file not found.')
   }
   const token = await signContentGrant(env, {
     artifactId: artifact.id,
@@ -916,7 +916,7 @@ export async function bootstrapArtifact(
     .bind(selected.id, selected.entry_path)
     .first<{ content_type: string }>()
   if (!entryFile)
-    throw new HttpError(404, 'file_not_found', 'Artifact entry file not found.')
+    throw new HttpError(404, 'file_not_found', 'Document entry file not found.')
   const versions = versionRows.results.map(mapVersion)
   const currentVersion =
     versions.find((version) => version.id === artifact.current_version_id) ??
@@ -1336,7 +1336,7 @@ export async function completeUpload(
   waitUntil(
     generateThumbnail(env, artifact.id, version.id, version.entry_path).catch(
       (error: unknown) => {
-        console.error('Artifact thumbnail generation failed', error)
+        console.error('Document thumbnail generation failed', error)
       },
     ),
   )

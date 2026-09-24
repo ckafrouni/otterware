@@ -113,7 +113,7 @@ export function CommandPalette() {
       <DialogContent className="command-palette">
         <DialogTitle className="sr-only">Search</DialogTitle>
         <Command
-          label="Search artifacts and commands"
+          label="Search documents and commands"
           loop
           filter={(value, search) =>
             value.toLowerCase().includes(search.trim().toLowerCase()) ? 1 : 0
@@ -125,7 +125,7 @@ export function CommandPalette() {
               autoFocus
               value={value}
               onValueChange={setValue}
-              placeholder="Search artifacts across teams…"
+              placeholder="Search documents across teams…"
             />
             <kbd>esc</kbd>
           </div>
@@ -164,16 +164,16 @@ export function CommandPalette() {
             )}
             <Command.Group heading="Commands">
               <Command.Item
-                value="upload artifact new"
+                value="upload document new"
                 onSelect={() => {
                   setOpen(false)
-                  void navigate({ to: '/artifacts' }).then(() =>
+                  void navigate({ to: '/home' }).then(() =>
                     window.dispatchEvent(new Event(UPLOAD_ARTIFACT_EVENT)),
                   )
                 }}
               >
                 <Upload />
-                <span className="command-item-title">Upload artifact</span>
+                <span className="command-item-title">Upload document</span>
               </Command.Item>
               {organizations
                 .filter(
@@ -186,7 +186,7 @@ export function CommandPalette() {
                     onSelect={() => {
                       setOpen(false)
                       void selectOrganization(organization.id).then(() =>
-                        navigate({ to: '/artifacts' }),
+                        navigate({ to: '/home' }),
                       )
                     }}
                   >

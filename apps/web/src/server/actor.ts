@@ -136,7 +136,7 @@ export async function authenticate(
     throw new HttpError(
       403,
       'organization_required',
-      'Select or create an organization before managing artifacts.',
+      'Select or create an organization before managing documents.',
     )
   }
 
@@ -172,7 +172,7 @@ export function assertCanWrite(
     throw new HttpError(
       403,
       'forbidden',
-      'Your organization role cannot modify artifacts.',
+      'Your organization role cannot modify documents.',
     )
   }
 }
@@ -202,7 +202,7 @@ export function assertCanPermanentlyDelete(actor: AuthenticatedActor): void {
     throw new HttpError(
       403,
       'forbidden',
-      'Only the workspace owner can permanently delete artifacts.',
+      'Only the workspace owner can permanently delete documents.',
     )
   }
 }

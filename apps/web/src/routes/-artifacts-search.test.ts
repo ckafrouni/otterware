@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { artifactListSearchSchema } from './artifacts'
+import { artifactListSearchSchema } from './home'
 
-describe('artifact list URL state', () => {
-  it('accepts shareable artifact controls', () => {
+describe('document list URL state', () => {
+  it('accepts shareable document controls', () => {
     expect(
       artifactListSearchSchema.parse({
         q: ' roadmap ',

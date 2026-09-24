@@ -180,7 +180,7 @@ export function UploadArtifactDialog({
           sha256: await sha256(file),
         })),
       )
-      setStatus('Creating artifact…')
+      setStatus('Creating document…')
       const created = artifactResponseSchema.parse(
         await api<unknown>('/api/v1/artifacts', {
           method: 'POST',
@@ -280,10 +280,10 @@ export function UploadArtifactDialog({
     <Dialog open={open} onOpenChange={(next) => !busy && onOpenChange(next)}>
       <DialogContent className="upload-dialog">
         <div className="upload-dialog-header">
-          <DialogTitle>Upload artifact</DialogTitle>
+          <DialogTitle>Upload document</DialogTitle>
           <DialogDescription>
             Upload a file or a folder. Every upload becomes version 1 of a new
-            artifact.
+            document.
           </DialogDescription>
         </div>
         <input

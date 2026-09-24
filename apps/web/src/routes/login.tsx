@@ -21,7 +21,7 @@ export const Route = createFileRoute('/login')({
 function safeCallback(value?: string): string {
   return value?.startsWith('/') && !value.startsWith('//')
     ? value
-    : '/artifacts'
+    : '/home'
 }
 
 interface AuthConfig {
