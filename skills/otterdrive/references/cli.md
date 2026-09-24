@@ -1,31 +1,31 @@
-# Otterware CLI reference
+# OtterDrive CLI reference
 
 ## Global options and environment
 
 ```text
-otterware --json <command>             Machine-readable output
-otterware --profile <name> <command>   Named local profile
-otterware -v, --version                Installed CLI version
+otterdrive --json <command>             Machine-readable output
+otterdrive --profile <name> <command>   Named local profile
+otterdrive -v, --version                Installed CLI version
 ```
 
 Environment overrides:
 
 ```text
-OTTERWARE_TOKEN          Device token or otw_ organization API key
-OTTERWARE_URL            Application base URL
-OTTERWARE_PROFILE        Active profile name
-OTTERWARE_ORGANIZATION   Active organization ID
+OTTERDRIVE_TOKEN          Device token or otw_ organization API key
+OTTERDRIVE_URL            Application base URL
+OTTERDRIVE_PROFILE        Active profile name
+OTTERDRIVE_ORGANIZATION   Active organization ID
 ```
 
-Stored credentials live at `${XDG_CONFIG_HOME:-~/.config}/otterware/config.json` with mode `0600`. Prefer environment injection for unattended agents. Never echo an environment variable containing a credential.
+Stored credentials live at `${XDG_CONFIG_HOME:-~/.config}/otterdrive/config.json` with mode `0600`. Prefer environment injection for unattended agents. Never echo an environment variable containing a credential.
 
 ## Authentication
 
 ```bash
-otterware auth login --url https://app.otterware.dev
-otterware --json auth status
-otterware auth logout
-otterware auth config-path
+otterdrive auth login --url https://drive.otterware.dev
+otterdrive --json auth status
+otterdrive auth logout
+otterdrive auth config-path
 ```
 
 `auth login` uses a browser device-authorization flow. `auth logout` removes locally stored credentials for the selected profile.
@@ -33,9 +33,9 @@ otterware auth config-path
 ## Organizations
 
 ```bash
-otterware --json organizations list
-otterware --json organizations create "Organization name" --slug organization-slug
-otterware organizations use <organization-id-or-slug>
+otterdrive --json organizations list
+otterdrive --json organizations create "Organization name" --slug organization-slug
+otterdrive organizations use <organization-id-or-slug>
 ```
 
 Organization creation and workspace selection are state-changing operations. Do them only when requested or clearly necessary to the user's task.
@@ -43,11 +43,11 @@ Organization creation and workspace selection are state-changing operations. Do 
 ## Artifact discovery and inspection
 
 ```bash
-otterware --json artifacts list
-otterware --json artifacts list --archived
-otterware --json artifacts show <artifact-id-or-slug>
-otterware --json artifacts versions <artifact>
-otterware --json artifacts files <artifact> --version <number>
+otterdrive --json artifacts list
+otterdrive --json artifacts list --archived
+otterdrive --json artifacts show <artifact-id-or-slug>
+otterdrive --json artifacts versions <artifact>
+otterdrive --json artifacts files <artifact> --version <number>
 ```
 
 `list` defaults to 50 results. Use `--limit <number>` when necessary.
@@ -57,7 +57,7 @@ otterware --json artifacts files <artifact> --version <number>
 Create an artifact and version 1 in the active organization:
 
 ```bash
-otterware --json artifacts create ./dist \
+otterdrive --json artifacts create ./dist \
   --slug product-demo \
   --title "Product demo" \
   --description "Interactive prototype" \
@@ -68,8 +68,8 @@ otterware --json artifacts create ./dist \
 Select the intended organization before creating an artifact:
 
 ```bash
-otterware organizations use <organization>
-otterware --json artifacts create ./dist \
+otterdrive organizations use <organization>
+otterdrive --json artifacts create ./dist \
   --slug shared-demo \
   --title "Shared demo"
 ```
@@ -77,14 +77,14 @@ otterware --json artifacts create ./dist \
 Push a concurrency-protected version:
 
 ```bash
-otterware --json artifacts push product-demo ./dist \
+otterdrive --json artifacts push product-demo ./dist \
   --label "Improve mobile layout" \
   --if-version 3
 ```
 
 The source may be one file or a directory. A directory uses `index.html` as its default entry. A single file uses itself. Otherwise provide `--entry <relative-path>`.
 
-Otterware renders the following single-file formats with dedicated previews:
+OtterDrive renders the following single-file formats with dedicated previews:
 
 - Markdown: `.md`, `.markdown`
 - Delimited spreadsheets: `.csv`, `.tsv`
@@ -95,12 +95,12 @@ Other static files remain available through the sandboxed raw preview and CLI re
 ## Metadata and lifecycle
 
 ```bash
-otterware --json artifacts update <artifact> --title "New title"
-otterware --json artifacts update <artifact> --description "New description"
-otterware --json artifacts move <artifact> <destination-organization>
-otterware --json artifacts promote <artifact> --version <number>
-otterware --json artifacts archive <artifact>
-otterware --json artifacts restore <artifact>
+otterdrive --json artifacts update <artifact> --title "New title"
+otterdrive --json artifacts update <artifact> --description "New description"
+otterdrive --json artifacts move <artifact> <destination-organization>
+otterdrive --json artifacts promote <artifact> --version <number>
+otterdrive --json artifacts archive <artifact>
+otterdrive --json artifacts restore <artifact>
 ```
 
 `update` does not create a content version. `move` preserves every immutable version and requires a user login with owner or admin access in both organizations. `promote` changes which immutable version is current.
@@ -110,27 +110,27 @@ otterware --json artifacts restore <artifact>
 Read the current entry file to standard output:
 
 ```bash
-otterware artifacts read <artifact>
+otterdrive artifacts read <artifact>
 ```
 
 Read a specific text file or save a binary file:
 
 ```bash
-otterware artifacts read <artifact> index.html --version 2
-otterware artifacts read <artifact> image.png --version 2 > image.png
+otterdrive artifacts read <artifact> index.html --version 2
+otterdrive artifacts read <artifact> image.png --version 2 > image.png
 ```
 
 Download a full version:
 
 ```bash
 destination="$(mktemp -d)"
-otterware --json artifacts pull <artifact> "$destination" --version 2
+otterdrive --json artifacts pull <artifact> "$destination" --version 2
 ```
 
 Open the current preview in a browser only when a browser action is useful:
 
 ```bash
-otterware artifacts open <artifact>
+otterdrive artifacts open <artifact>
 ```
 
 ## Failure handling

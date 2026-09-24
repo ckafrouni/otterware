@@ -5,12 +5,12 @@ describe('spreadsheet thumbnail rendering', () => {
   it('renders a sheet grid and safely escapes cell values', () => {
     const html = spreadsheetThumbnailHtml([
       ['Name', 'Status'],
-      ['Otterware <Admin>', 'Working'],
+      ['OtterDrive <Admin>', 'Working'],
     ])
 
     expect(html).toContain('<th>A</th>')
     expect(html).toContain('<th>1</th>')
-    expect(html).toContain('Otterware &lt;Admin&gt;')
-    expect(html).not.toContain('Otterware <Admin>')
+    expect(html).toContain('OtterDrive &lt;Admin&gt;')
+    expect(html).not.toContain('OtterDrive <Admin>')
   })
 })

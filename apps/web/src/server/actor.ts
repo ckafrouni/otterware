@@ -1,4 +1,4 @@
-import type { OtterwareAuth } from './auth'
+import type { OtterDriveAuth } from './auth'
 import { HttpError } from './http'
 import type { AuthenticatedActor, Env } from './types'
 
@@ -44,7 +44,9 @@ async function authenticateBearerUser(
 ): Promise<AuthenticatedActor | null> {
   const token = bearerSessionToken(request)
   if (!token) return null
-  const requestedOrganization = request.headers.get('x-otterware-organization')
+  const requestedOrganization =
+    request.headers.get('x-otterdrive-organization') ??
+    request.headers.get('x-otterware-organization')
   const statement = requestedOrganization
     ? env.DB.prepare(
         `SELECT u.id AS userId, u.name, u.email, s.expiresAt,
@@ -82,7 +84,7 @@ async function authenticateBearerUser(
 export async function authenticate(
   request: Request,
   env: Env,
-  auth: OtterwareAuth,
+  auth: OtterDriveAuth,
 ): Promise<AuthenticatedActor> {
   const apiKeyValue = request.headers.get('x-api-key')
   if (apiKeyValue) {
@@ -110,10 +112,12 @@ export async function authenticate(
     headers: request.headers,
   })) as SessionShape | null
   if (!session) {
-    throw new HttpError(401, 'unauthenticated', 'Please log in to Otterware.')
+    throw new HttpError(401, 'unauthenticated', 'Please log in to OtterDrive.')
   }
 
-  const requestedOrganization = request.headers.get('x-otterware-organization')
+  const requestedOrganization =
+    request.headers.get('x-otterdrive-organization') ??
+    request.headers.get('x-otterware-organization')
   const organizationId =
     requestedOrganization ?? session.session.activeOrganizationId ?? null
   const member = organizationId

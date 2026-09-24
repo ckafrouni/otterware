@@ -66,7 +66,7 @@ export function workbookData(
 ): Partial<IWorkbookData> {
   const sheetOrder = sheets.map((_, index) => `sheet-${index}`)
   return {
-    id: `otterware-${crypto.randomUUID()}`,
+    id: `otterdrive-${crypto.randomUUID()}`,
     appVersion: '3.0.0',
     locale: LocaleType.EN_US,
     name: entryPath,
@@ -96,7 +96,7 @@ export function workbookData(
 function documentData(entryPath: string, text: string): Partial<IDocumentData> {
   const dataStream = `${text.replaceAll('\r\n', '\n').replaceAll('\n', '\r')}\r\n`
   return {
-    id: `otterware-${crypto.randomUUID()}`,
+    id: `otterdrive-${crypto.randomUUID()}`,
     title: entryPath,
     body: { dataStream },
     documentStyle: {
@@ -182,7 +182,7 @@ async function publishVersion(input: {
     method: 'POST',
     organizationId: input.organizationId,
     body: JSON.stringify({
-      label: 'Edited in Otterware',
+      label: 'Edited in OtterDrive',
       entryPath: input.entryPath,
       expectedCurrentVersion: input.expectedCurrentVersion,
       files: [
@@ -374,9 +374,9 @@ export function UniverEditor(props: EditorProps) {
         slug: props.slug,
       })
       removeSessionCachePrefix(
-        `otterware:artifact:${props.organizationId}:${props.slug}`,
+        `otterdrive:artifact:${props.organizationId}:${props.slug}`,
       )
-      removeSessionCachePrefix(`otterware:artifacts:${props.organizationId}:`)
+      removeSessionCachePrefix(`otterdrive:artifacts:${props.organizationId}:`)
       setDirty(false)
       toast.success(`Published version ${nextVersion}.`)
       window.setTimeout(

@@ -35,7 +35,7 @@ export function createAuth(env: Env) {
       : {}
 
   return betterAuth({
-    appName: 'Otterware',
+    appName: 'OtterDrive',
     baseURL: env.APP_URL,
     basePath: '/api/auth',
     database: env.DB,
@@ -82,7 +82,7 @@ export function createAuth(env: Env) {
       },
     },
     advanced: {
-      cookiePrefix: 'otterware',
+      cookiePrefix: 'otterdrive',
       database: { generateId: 'uuid' },
       defaultCookieAttributes: {
         httpOnly: true,
@@ -106,7 +106,8 @@ export function createAuth(env: Env) {
       }),
       deviceAuthorization({
         verificationUri: '/device',
-        validateClient: (clientId) => clientId === 'otterware-cli',
+        validateClient: (clientId) =>
+          ['otterdrive-cli', 'otterware-cli'].includes(clientId),
       }),
       bearer(),
       apiKey({
@@ -131,4 +132,4 @@ export function createAuth(env: Env) {
   })
 }
 
-export type OtterwareAuth = ReturnType<typeof createAuth>
+export type OtterDriveAuth = ReturnType<typeof createAuth>

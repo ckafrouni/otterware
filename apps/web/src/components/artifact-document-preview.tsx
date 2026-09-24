@@ -55,7 +55,7 @@ async function loadContent(
   const response = await fetch(contentUrl(slug, version), {
     headers: {
       accept: '*/*',
-      'x-otterware-organization': organizationId,
+      'x-otterdrive-organization': organizationId,
     },
   })
   if (!response.ok)

@@ -12,7 +12,7 @@ export async function api<T>(
   const headers = new Headers(requestInit.headers)
   headers.set('accept', 'application/json')
   if (organizationId) {
-    headers.set('x-otterware-organization', organizationId)
+    headers.set('x-otterdrive-organization', organizationId)
   }
   if (requestInit.body && !headers.has('content-type')) {
     headers.set('content-type', 'application/json')

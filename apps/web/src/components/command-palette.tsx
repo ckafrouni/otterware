@@ -9,8 +9,8 @@ import { authClient } from '#/lib/auth-client'
 import { useOrganizations } from '@/hooks/use-organizations'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 
-export const COMMAND_PALETTE_EVENT = 'otterware:command-palette'
-export const UPLOAD_ARTIFACT_EVENT = 'otterware:upload-artifact'
+export const COMMAND_PALETTE_EVENT = 'otterdrive:command-palette'
+export const UPLOAD_ARTIFACT_EVENT = 'otterdrive:upload-artifact'
 
 export function openCommandPalette() {
   window.dispatchEvent(new Event(COMMAND_PALETTE_EVENT))

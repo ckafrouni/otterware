@@ -1,15 +1,15 @@
-# Otterware CLI
+# OtterDrive CLI
 
 ```bash
-npm install --global otterware
-otterware auth login
-otterware artifacts --help
+npm install --global otterdrive
+otterdrive auth login
+otterdrive artifacts --help
 ```
 
-Publish a website directory or a single Markdown, CSV, TSV, or Excel workbook file. Otterware detects the entry file and the web app provides a dedicated document preview:
+Publish a website directory or a single Markdown, CSV, TSV, or Excel workbook file. OtterDrive detects the entry file and the web app provides a dedicated document preview:
 
 ```bash
-otterware artifacts create ./report.xlsx \
+otterdrive artifacts create ./report.xlsx \
   --slug quarterly-report \
   --title "Quarterly report"
 ```

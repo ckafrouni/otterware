@@ -10,7 +10,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: publish-otterware-cli
+  group: publish-otterdrive-cli
   cancel-in-progress: false
 
 jobs:
@@ -34,12 +34,12 @@ jobs:
         run: |
           version="$(node -p "require('./apps/cli/package.json').version")"
           echo "version=$version" >> "$GITHUB_OUTPUT"
-          if npm view "otterware@$version" version >/dev/null 2>&1; then
+          if npm view "otterdrive@$version" version >/dev/null 2>&1; then
             echo "publish=false" >> "$GITHUB_OUTPUT"
-            echo "otterware@$version is already published."
+            echo "otterdrive@$version is already published."
           else
             echo "publish=true" >> "$GITHUB_OUTPUT"
-            echo "otterware@$version will be published."
+            echo "otterdrive@$version will be published."
           fi
 
       - uses: pnpm/action-setup@v6.0.9
@@ -67,15 +67,15 @@ jobs:
         run: |
           expected="${{ steps.version.outputs.version }}"
           for attempt in {1..12}; do
-            published="$(npm view "otterware@$expected" version 2>/dev/null || true)"
+            published="$(npm view "otterdrive@$expected" version 2>/dev/null || true)"
             if [ "$published" = "$expected" ]; then
-              echo "Verified otterware@$expected on npm."
+              echo "Verified otterdrive@$expected on npm."
               exit 0
             fi
-            echo "Registry has not propagated otterware@$expected yet (attempt $attempt/12)."
+            echo "Registry has not propagated otterdrive@$expected yet (attempt $attempt/12)."
             sleep 5
           done
-          echo "otterware@$expected was not visible on npm after 60 seconds." >&2
+          echo "otterdrive@$expected was not visible on npm after 60 seconds." >&2
           exit 1
 
       - name: Ensure GitHub release
@@ -84,13 +84,13 @@ jobs:
         shell: bash
         run: |
           version="${{ steps.version.outputs.version }}"
-          tag="cli-v$version"
+          tag="otterdrive-v$version"
           if gh release view "$tag" >/dev/null 2>&1; then
             echo "GitHub release $tag already exists."
             exit 0
           fi
           gh release create "$tag" \
             --target "$GITHUB_SHA" \
-            --title "Otterware CLI v$version" \
+            --title "OtterDrive CLI v$version" \
             --generate-notes \
             --latest

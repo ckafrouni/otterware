@@ -16,10 +16,12 @@ afterEach(async () => {
 
 describe('artifact file discovery', () => {
   it('walks a directory deterministically and hashes each file', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'otterware-cli-'))
+    const root = await mkdtemp(join(tmpdir(), 'otterdrive-cli-'))
     temporaryDirectories.push(root)
     await mkdir(join(root, 'assets'))
     await writeFile(join(root, 'index.html'), '<h1>Hello</h1>')
+    await writeFile(join(root, '.otterdrive.json'), '{}')
+    await writeFile(join(root, '.otterware.json'), '{}')
     await writeFile(join(root, 'assets', 'app.js'), 'console.log("hello")')
 
     const files = await discoverFiles(root)
@@ -33,7 +35,7 @@ describe('artifact file discovery', () => {
   })
 
   it('requires an entry for multi-file non-HTML content', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'otterware-cli-'))
+    const root = await mkdtemp(join(tmpdir(), 'otterdrive-cli-'))
     temporaryDirectories.push(root)
     await writeFile(join(root, 'a.txt'), 'a')
     await writeFile(join(root, 'b.txt'), 'b')
@@ -52,7 +54,7 @@ describe('artifact file discovery', () => {
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     ],
   ])('detects the MIME type for %s', async (name, contentType) => {
-    const root = await mkdtemp(join(tmpdir(), 'otterware-cli-'))
+    const root = await mkdtemp(join(tmpdir(), 'otterdrive-cli-'))
     temporaryDirectories.push(root)
     const path = join(root, name)
     await writeFile(path, 'content')

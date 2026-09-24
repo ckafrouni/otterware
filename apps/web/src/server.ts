@@ -4,10 +4,13 @@ import {
   hostNotFound,
   isAllowedHostPath,
   isApplicationAsset,
+  legacyAppRedirect,
 } from './server/host-policy'
 
 export default createServerEntry({
   fetch(request) {
+    const redirect = legacyAppRedirect(request, env)
+    if (redirect) return redirect
     if (!isAllowedHostPath(request, env)) return hostNotFound()
     if (isApplicationAsset(request, env)) return env.ASSETS.fetch(request)
     if (import.meta.env.DEV) {

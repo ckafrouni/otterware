@@ -14,7 +14,7 @@ export function useOrganizations() {
   const queryClient = useQueryClient()
   const userId = session.data?.user.id
   const queryKey = ['organizations', userId] as const
-  const storageKey = `otterware:organizations:${userId ?? 'anonymous'}`
+  const storageKey = `otterdrive:organizations:${userId ?? 'anonymous'}`
   const stored = readSessionCache<OrganizationSummary[]>(storageKey, 5 * 60_000)
   const organizationsQuery = useQuery({
     enabled: Boolean(userId),
@@ -37,9 +37,9 @@ export function useOrganizations() {
 
   useEffect(() => {
     const refresh = () => void queryClient.invalidateQueries({ queryKey })
-    window.addEventListener('otterware:organizations-changed', refresh)
+    window.addEventListener('otterdrive:organizations-changed', refresh)
     return () => {
-      window.removeEventListener('otterware:organizations-changed', refresh)
+      window.removeEventListener('otterdrive:organizations-changed', refresh)
     }
   }, [queryClient, userId])
 

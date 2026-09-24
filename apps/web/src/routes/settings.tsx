@@ -86,7 +86,7 @@ export function SettingsPage() {
       setOrgName('')
       setMessage({ kind: 'success', text: 'Organization created.' })
       await refreshOrganizations()
-      window.dispatchEvent(new Event('otterware:organizations-changed'))
+      window.dispatchEvent(new Event('otterdrive:organizations-changed'))
     }
   }
 
@@ -113,7 +113,7 @@ export function SettingsPage() {
     }
     setMessage({ kind: 'success', text: 'Team renamed.' })
     await refreshOrganizations()
-    window.dispatchEvent(new Event('otterware:organizations-changed'))
+    window.dispatchEvent(new Event('otterdrive:organizations-changed'))
   }
 
   async function invite(event: React.FormEvent) {

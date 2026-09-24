@@ -37,7 +37,7 @@ export function ForgotPasswordPage() {
     <main className="auth-page">
       <Card className="auth-card">
         <div className="auth-brand">
-          <Box size={19} /> Otterware
+          <Box size={19} /> OtterDrive
         </div>
         <div>
           <p className="eyebrow">Account recovery</p>

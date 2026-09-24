@@ -22,7 +22,7 @@ export function artifactBootstrapQuery(
   slug: string,
   version?: number,
 ) {
-  const storageKey = `otterware:artifact:${organizationId}:${slug}:${version ?? 'current'}`
+  const storageKey = `otterdrive:artifact:${organizationId}:${slug}:${version ?? 'current'}`
   const stored = readSessionCache<{
     artifact: Artifact
     versions: ArtifactVersion[]

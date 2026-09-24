@@ -219,7 +219,7 @@ export function UploadArtifactDialog({
         const headers = {
           'content-type': meta.contentType,
           'x-content-sha256': meta.sha256,
-          'x-otterware-organization': organizationId,
+          'x-otterdrive-organization': organizationId,
         }
         if (remote.multipart) {
           const partSize = remote.partSize ?? MULTIPART_PART_SIZE

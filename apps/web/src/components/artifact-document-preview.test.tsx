@@ -45,7 +45,7 @@ describe('ArtifactDocumentPreview', () => {
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue(
-        new Response('Name,Total\nOtterware,42', {
+        new Response('Name,Total\nOtterDrive,42', {
           headers: { 'content-type': 'text/csv' },
         }),
       ),
@@ -68,7 +68,7 @@ describe('ArtifactDocumentPreview', () => {
       {
         headers: {
           accept: '*/*',
-          'x-otterware-organization': 'org-chris',
+          'x-otterdrive-organization': 'org-chris',
         },
       },
     )
