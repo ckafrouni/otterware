@@ -5,8 +5,8 @@ import { registerAuthCommands } from './auth'
 import { registerOrganizationCommands } from './organizations'
 
 const program = new Command()
-  .name('otterware')
-  .description('Build and collaborate with Otterware')
+  .name('otterdrive')
+  .description('Build and collaborate with OtterDrive')
   .enablePositionalOptions()
   .version(packageJson.version, '-v, --version', 'Show the CLI version')
   .option('--json', 'Emit machine-readable JSON')

@@ -1,16 +1,17 @@
+import { legacyAppRedirect } from './host-policy'
 import { describe, expect, it } from 'vitest'
 import { isAllowedHostPath, isApplicationAsset } from './host-policy'
 import type { Env } from './types'
 
 const env = {
-  APP_URL: 'https://app.otterware.dev',
+  APP_URL: 'https://drive.otterware.dev',
   CONTENT_URL: 'https://usercontent.otterware.dev',
 } as Env
 
 describe('production host isolation', () => {
   it('serves application routes only on the app host', () => {
     expect(
-      isAllowedHostPath(new Request('https://app.otterware.dev/login'), env),
+      isAllowedHostPath(new Request('https://drive.otterware.dev/login'), env),
     ).toBe(true)
     expect(
       isAllowedHostPath(
@@ -35,7 +36,7 @@ describe('production host isolation', () => {
     ).toBe(true)
     expect(
       isAllowedHostPath(
-        new Request('https://app.otterware.dev/raw/session/grant'),
+        new Request('https://drive.otterware.dev/raw/session/grant'),
         env,
       ),
     ).toBe(false)
@@ -96,19 +97,19 @@ describe('production host isolation', () => {
   it('serves static application assets only on the app host', () => {
     expect(
       isApplicationAsset(
-        new Request('https://app.otterware.dev/assets/app.js'),
+        new Request('https://drive.otterware.dev/assets/app.js'),
         env,
       ),
     ).toBe(true)
     expect(
       isApplicationAsset(
-        new Request('https://app.otterware.dev/manifest.json'),
+        new Request('https://drive.otterware.dev/manifest.json'),
         env,
       ),
     ).toBe(true)
     expect(
       isApplicationAsset(
-        new Request('https://app.otterware.dev/favicon.svg'),
+        new Request('https://drive.otterware.dev/favicon.svg'),
         env,
       ),
     ).toBe(true)
@@ -118,5 +119,34 @@ describe('production host isolation', () => {
         env,
       ),
     ).toBe(false)
+  })
+})
+
+describe('legacy app links', () => {
+  it('redirects shared links with their path and query preserved', () => {
+    const response = legacyAppRedirect(
+      new Request('https://app.otterware.dev/a/report?version=2'),
+      env,
+    )
+    expect(response?.status).toBe(308)
+    expect(response?.headers.get('location')).toBe(
+      'https://drive.otterware.dev/a/report?version=2',
+    )
+  })
+  it.each([
+    'https://app.otterware.dev/raw/session/grant',
+    'https://app.otterware.dev/api/v1/me',
+    'https://usercontent.otterware.dev/login',
+    'https://drive.otterware.dev/login',
+  ])('does not redirect API, content, or unrelated requests: %s', (url) => {
+    expect(legacyAppRedirect(new Request(url), env)).toBeNull()
+  })
+  it('does not redirect mutations', () => {
+    expect(
+      legacyAppRedirect(
+        new Request('https://app.otterware.dev/login', { method: 'POST' }),
+        env,
+      ),
+    ).toBeNull()
   })
 })

@@ -28,7 +28,10 @@ async function hashFile(path: string): Promise<string> {
 async function walk(directory: string): Promise<string[]> {
   const output: string[] = []
   for (const entry of await readdir(directory, { withFileTypes: true })) {
-    if (entry.name === '.DS_Store' || entry.name === '.otterware.json') continue
+    if (
+      ['.DS_Store', '.otterdrive.json', '.otterware.json'].includes(entry.name)
+    )
+      continue
     const absolutePath = resolve(directory, entry.name)
     if (entry.isSymbolicLink()) {
       throw new Error(`Symbolic links are not supported: ${absolutePath}`)

@@ -7,7 +7,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       defaultTheme="system"
       enableSystem
       disableTransitionOnChange
-      storageKey="otterware-theme"
+      storageKey="otterdrive-theme"
     >
       {children}
     </NextThemesProvider>

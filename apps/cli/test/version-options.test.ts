@@ -30,7 +30,7 @@ describe('version options', () => {
 
     expect(result.status).toBe(0)
     expect(result.stdout).toContain(
-      'Usage: otterware artifacts files [options] <artifact>',
+      'Usage: otterdrive artifacts files [options] <artifact>',
     )
     expect(result.stdout).toContain('--version <number>')
     expect(result.stdout.trim()).not.toBe('0.1.4')

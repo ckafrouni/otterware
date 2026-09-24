@@ -61,8 +61,8 @@ import { UPLOAD_ARTIFACT_EVENT } from './command-palette'
 import { DeleteArtifactDialog } from './delete-artifact-dialog'
 import { UploadArtifactDialog } from './upload-artifact-dialog'
 
-const INSIGHTS_OPEN_KEY = 'otterware:insights-open'
-const INSIGHTS_WIDTH_KEY = 'otterware:insights-width'
+const INSIGHTS_OPEN_KEY = 'otterdrive:insights-open'
+const INSIGHTS_WIDTH_KEY = 'otterdrive:insights-width'
 const INSIGHTS_MIN_WIDTH = 220
 const INSIGHTS_MAX_WIDTH = 520
 const INSIGHTS_DEFAULT_WIDTH = 280
@@ -186,7 +186,7 @@ export function ArtifactListPage({
     activeOrganization?.id ?? 'none',
     status,
   ] as const
-  const artifactsStorageKey = `otterware:artifacts:${activeOrganization?.id ?? 'none'}:${status}`
+  const artifactsStorageKey = `otterdrive:artifacts:${activeOrganization?.id ?? 'none'}:${status}`
   const storedArtifacts = readSessionCache<Artifact[]>(
     artifactsStorageKey,
     60_000,
@@ -436,7 +436,7 @@ export function ArtifactListPage({
                         <h2>No artifacts yet</h2>
                         <p>
                           Install the CLI and run{' '}
-                          <code>otterware artifacts create</code>.
+                          <code>otterdrive artifacts create</code>.
                         </p>
                       </>
                     )}

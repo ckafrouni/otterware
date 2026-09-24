@@ -1,7 +1,7 @@
 import '@tanstack/react-start'
 
 declare global {
-  interface OtterwareEnv {
+  interface OtterDriveEnv {
     APP_URL: string
     CONTENT_URL: string
     ADMIN_EMAIL: string
@@ -17,9 +17,9 @@ declare global {
     BROWSER: BrowserRun
   }
 
-  interface Env extends OtterwareEnv {}
+  interface Env extends OtterDriveEnv {}
 
   namespace Cloudflare {
-    interface Env extends OtterwareEnv {}
+    interface Env extends OtterDriveEnv {}
   }
 }

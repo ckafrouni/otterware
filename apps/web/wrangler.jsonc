@@ -16,14 +16,16 @@
     "binding": "BROWSER",
   },
   "routes": [
+    { "pattern": "drive.otterware.dev", "custom_domain": true },
+    // Retained only to redirect existing shared links to OtterDrive.
     { "pattern": "app.otterware.dev", "custom_domain": true },
     { "pattern": "usercontent.otterware.dev", "custom_domain": true },
   ],
   "vars": {
-    "APP_URL": "https://app.otterware.dev",
+    "APP_URL": "https://drive.otterware.dev",
     "CONTENT_URL": "https://usercontent.otterware.dev",
     "ADMIN_EMAIL": "chris.kafrouni@gmail.com",
-    "EMAIL_FROM": "Otterware <noreply@otterware.dev>",
+    "EMAIL_FROM": "OtterDrive <noreply@otterware.dev>",
   },
   "d1_databases": [
     {

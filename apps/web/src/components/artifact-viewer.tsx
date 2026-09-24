@@ -103,7 +103,7 @@ export function ArtifactViewer({
     try {
       const response = await fetch(
         `/api/v1/artifacts/${encodeURIComponent(artifact.id)}/download?version=${selected.number}`,
-        { headers: { 'x-otterware-organization': organizationId } },
+        { headers: { 'x-otterdrive-organization': organizationId } },
       )
       if (!response.ok) throw new Error(`Download failed (${response.status}).`)
       const disposition = response.headers.get('content-disposition')
@@ -137,8 +137,8 @@ export function ArtifactViewer({
             ),
       )
       setArtifactOverride(result.data)
-      removeSessionCachePrefix(`otterware:artifact:${organizationId}:${slug}`)
-      removeSessionCachePrefix(`otterware:artifacts:${organizationId}:`)
+      removeSessionCachePrefix(`otterdrive:artifact:${organizationId}:${slug}`)
+      removeSessionCachePrefix(`otterdrive:artifacts:${organizationId}:`)
       await queryClient.invalidateQueries({
         queryKey: ['artifacts', organizationId],
       })
@@ -181,9 +181,9 @@ export function ArtifactViewer({
           },
         ),
       )
-      removeSessionCachePrefix(`otterware:artifact:${organizationId}:`)
-      removeSessionCachePrefix(`otterware:artifacts:${organizationId}:`)
-      removeSessionCachePrefix(`otterware:artifacts:${destination.id}:`)
+      removeSessionCachePrefix(`otterdrive:artifact:${organizationId}:`)
+      removeSessionCachePrefix(`otterdrive:artifacts:${organizationId}:`)
+      removeSessionCachePrefix(`otterdrive:artifacts:${destination.id}:`)
       location.assign(`/${destination.slug}/a/${result.data.slug}/`)
     } catch (reason) {
       setActionError(reason instanceof Error ? reason.message : String(reason))
@@ -259,7 +259,7 @@ export function ArtifactViewer({
               )}
             </DropdownMenu>
           ) : (
-            <strong>Otterware Artifact</strong>
+            <strong>OtterDrive Artifact</strong>
           )}
           {selected && versions.length > 1 && (
             <Badge variant="outline">v{selected.number}</Badge>
@@ -332,7 +332,7 @@ export function ArtifactViewer({
               aria-label="Copy edit prompt"
               onClick={() =>
                 void copy(
-                  `Edit my Otterware artifact at ${artifact.url}. Read the current version first and publish a new immutable version with the Otterware CLI.`,
+                  `Edit my OtterDrive artifact at ${artifact.url}. Read the current version first and publish a new immutable version with the OtterDrive CLI.`,
                   'Edit prompt copied.',
                 )
               }

@@ -1,7 +1,7 @@
 {
-  "name": "otterware",
+  "name": "otterdrive",
   "version": "0.1.4",
-  "description": "The CLI for Otterware",
+  "description": "The CLI for OtterDrive",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ckafrouni/otterware.git",
@@ -19,7 +19,7 @@
   },
   "type": "module",
   "bin": {
-    "otterware": "dist/index.mjs"
+    "otterdrive": "dist/index.mjs"
   },
   "files": [
     "dist",

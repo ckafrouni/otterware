@@ -33,7 +33,7 @@ export function registerAuthCommands(program: Command): void {
     .command('login')
     .description('Log in using a browser or an API key')
     .option('--api-key <key>', 'Use an existing agent API key')
-    .option('--url <url>', 'Otterware application URL')
+    .option('--url <url>', 'OtterDrive application URL')
     .option('--no-open', 'Do not open the browser automatically')
     .action(async (options: LoginOptions, command: Command) => {
       const globals = globalOptions(command)
@@ -59,7 +59,7 @@ export function registerAuthCommands(program: Command): void {
       const client = new ApiClient(profile)
       const code = deviceCodeResponseSchema.parse(
         await client.post('/api/auth/device/code', {
-          client_id: 'otterware-cli',
+          client_id: 'otterdrive-cli',
           scope: 'openid profile email offline_access',
         }),
       )
@@ -81,7 +81,7 @@ export function registerAuthCommands(program: Command): void {
             await client.post('/api/auth/device/token', {
               grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
               device_code: code.device_code,
-              client_id: 'otterware-cli',
+              client_id: 'otterdrive-cli',
             }),
           )
           await updateProfile(name, {

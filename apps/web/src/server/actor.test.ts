@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { assertCanPermanentlyDelete, authenticate } from './actor'
 import type { AuthenticatedActor, Env } from './types'
-import type { OtterwareAuth } from './auth'
+import type { OtterDriveAuth } from './auth'
 
 describe('bearer authentication fast path', () => {
   it('loads the user and requested membership in one D1 query', async () => {
@@ -18,14 +18,14 @@ describe('bearer authentication fast path', () => {
     const prepare = vi.fn(() => ({ bind }))
     const getSession = vi.fn()
     const actor = await authenticate(
-      new Request('https://app.otterware.dev/api/v1/me', {
+      new Request('https://drive.otterware.dev/api/v1/me', {
         headers: {
           authorization: 'Bearer raw-session.signed-value',
-          'x-otterware-organization': 'organization-1',
+          'x-otterdrive-organization': 'organization-1',
         },
       }),
       { DB: { prepare } as unknown as D1Database } as Env,
-      { api: { getSession } } as unknown as OtterwareAuth,
+      { api: { getSession } } as unknown as OtterDriveAuth,
     )
 
     expect(bind).toHaveBeenCalledWith('organization-1', 'raw-session')

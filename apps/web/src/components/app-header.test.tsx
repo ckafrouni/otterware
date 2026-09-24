@@ -39,8 +39,8 @@ vi.mock('#/lib/auth-client', () => ({
 
 vi.mock('@/hooks/use-organizations', () => ({
   useOrganizations: () => ({
-    activeOrganization: { id: 'org-1', name: 'Otterware', slug: 'otterware' },
-    organizations: [{ id: 'org-1', name: 'Otterware', slug: 'otterware' }],
+    activeOrganization: { id: 'org-1', name: 'OtterDrive', slug: 'otterware' },
+    organizations: [{ id: 'org-1', name: 'OtterDrive', slug: 'otterware' }],
     selectOrganization: vi.fn(),
   }),
 }))
@@ -71,7 +71,7 @@ describe('AppHeader', () => {
     expect(teams.textContent).toContain('Teams')
     expect(
       screen
-        .getByRole('button', { name: /Otterware/ })
+        .getByRole('button', { name: /OtterDrive/ })
         .getAttribute('aria-current'),
     ).toBe('true')
     expect(sidebar.querySelector('.sidebar-account')?.textContent).toContain(

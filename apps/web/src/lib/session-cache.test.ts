@@ -16,23 +16,23 @@ describe('session cache', () => {
   it('returns fresh values and expires stale values', () => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date('2026-07-11T20:00:00Z'))
-    writeSessionCache('otterware:test', { value: 42 })
+    writeSessionCache('otterdrive:test', { value: 42 })
     expect(
-      readSessionCache<{ value: number }>('otterware:test', 1_000)?.value,
+      readSessionCache<{ value: number }>('otterdrive:test', 1_000)?.value,
     ).toEqual({ value: 42 })
     vi.setSystemTime(new Date('2026-07-11T20:00:02Z'))
-    expect(readSessionCache('otterware:test', 1_000)).toBeUndefined()
+    expect(readSessionCache('otterdrive:test', 1_000)).toBeUndefined()
   })
 
   it('removes only the requested cache namespace', () => {
-    writeSessionCache('otterware:artifact:one', 1)
-    writeSessionCache('otterware:artifact:two', 2)
-    writeSessionCache('otterware:organizations:user', 3)
-    removeSessionCachePrefix('otterware:artifact:')
-    expect(sessionStorage.getItem('otterware:artifact:one')).toBeNull()
-    expect(sessionStorage.getItem('otterware:artifact:two')).toBeNull()
+    writeSessionCache('otterdrive:artifact:one', 1)
+    writeSessionCache('otterdrive:artifact:two', 2)
+    writeSessionCache('otterdrive:organizations:user', 3)
+    removeSessionCachePrefix('otterdrive:artifact:')
+    expect(sessionStorage.getItem('otterdrive:artifact:one')).toBeNull()
+    expect(sessionStorage.getItem('otterdrive:artifact:two')).toBeNull()
     expect(
-      sessionStorage.getItem('otterware:organizations:user'),
+      sessionStorage.getItem('otterdrive:organizations:user'),
     ).not.toBeNull()
   })
 })

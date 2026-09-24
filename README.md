@@ -1,6 +1,6 @@
-# Otterware
+# OtterDrive
 
-Otterware is a private, organization-aware artifact platform for people and agents. It provides a TanStack Start web app, immutable artifact versioning on Cloudflare, and the `otterware` CLI.
+OtterDrive is a private, organization-aware artifact platform for people and agents. It provides a TanStack Start web app, immutable artifact versioning on Cloudflare, and the `otterdrive` CLI.
 
 ## What is included
 
@@ -46,8 +46,8 @@ pnpm build
 With Node.js 24 LTS installed:
 
 ```bash
-npm install --global otterware
-otterware --version
+npm install --global otterdrive
+otterdrive --version
 ```
 
 To build and install from a source checkout instead:
@@ -58,44 +58,44 @@ cd otterware
 pnpm install --frozen-lockfile
 pnpm --dir apps/cli build
 npm install --global ./apps/cli
-otterware --version
-otterware --help
+otterdrive --version
+otterdrive --help
 ```
 
 ## Install the agent skill
 
-The repository includes the `otterware-artifacts` skill for Codex, Claude Code, OpenClaw, Hermes, and other agents supported by skills.sh. Install it with:
+The repository includes the `otterdrive` skill for Codex, Claude Code, OpenClaw, Hermes, and other agents supported by skills.sh. Install it with:
 
 ```bash
 npx skills@latest add ckafrouni/otterware \
-  --skill otterware-artifacts
+  --skill otterdrive
 ```
 
 The installer detects available agents and lets you select the targets. To install directly for Codex without prompts:
 
 ```bash
 npx skills@latest add ckafrouni/otterware \
-  --skill otterware-artifacts \
+  --skill otterdrive \
   --agent codex \
   --yes
 ```
 
-From a local clone, use `npx skills@latest add . --skill otterware-artifacts`. The skill teaches agents to inspect before mutating, publish curated output directories, protect credentials, and push immutable versions with concurrency checks.
+From a local clone, use `npx skills@latest add . --skill otterdrive`. The skill teaches agents to inspect before mutating, publish curated output directories, protect credentials, and push immutable versions with concurrency checks.
 
 Authenticate a human-controlled machine with the browser device flow:
 
 ```bash
-otterware auth login --url https://app.otterware.dev
-otterware auth status
-otterware organizations list
-otterware organizations use <organization-id>
+otterdrive auth login --url https://drive.otterware.dev
+otterdrive auth status
+otterdrive organizations list
+otterdrive organizations use <organization-id>
 ```
 
 For an unattended organization agent, create a scoped key in the web settings and provide it through the environment rather than placing it in a prompt:
 
 ```bash
-export OTTERWARE_TOKEN='otw_...'
-otterware artifacts list
+export OTTERDRIVE_TOKEN='otw_...'
+otterdrive artifacts list
 ```
 
 Device login represents a user and can access artifacts in all of their organizations. Organization API keys can only access artifacts in their organization.
@@ -119,45 +119,45 @@ npm trusted publishing; the repository does not store an npm token.
    ```
 
    The workflow verifies, builds, publishes with provenance, and creates the
-   `cli-v<version>` GitHub release. If the version already exists on npm it
+   `otterdrive-v<version>` GitHub release. If the version already exists on npm it
    exits without publishing.
 
 3. Verify the registry version:
 
    ```bash
-   npm view otterware version
-   npm install --global otterware@latest
-   otterware --version
+   npm view otterdrive version
+   npm install --global otterdrive@latest
+   otterdrive --version
    ```
 
 ## Artifact commands
 
 ```bash
 # Create an artifact and immutable version 1
-otterware artifacts create ./dist \
+otterdrive artifacts create ./dist \
   --slug product-demo \
   --title "Product demo" \
   --description "Interactive prototype" \
   --label "Initial version"
 
 # Publish version 2, failing if another actor already published a version
-otterware artifacts push product-demo ./dist \
+otterdrive artifacts push product-demo ./dist \
   --label "Added mobile layout" \
   --if-version 1
 
-otterware artifacts list
-otterware artifacts show product-demo
-otterware artifacts versions product-demo
-otterware artifacts files product-demo --version 2
-otterware artifacts read product-demo index.html --version 2
-otterware artifacts pull product-demo ./download --version 2
-otterware artifacts promote product-demo --version 1
-otterware artifacts move product-demo destination-team
-otterware artifacts archive product-demo
-otterware artifacts restore product-demo
+otterdrive artifacts list
+otterdrive artifacts show product-demo
+otterdrive artifacts versions product-demo
+otterdrive artifacts files product-demo --version 2
+otterdrive artifacts read product-demo index.html --version 2
+otterdrive artifacts pull product-demo ./download --version 2
+otterdrive artifacts promote product-demo --version 1
+otterdrive artifacts move product-demo destination-team
+otterdrive artifacts archive product-demo
+otterdrive artifacts restore product-demo
 ```
 
-Every command supports `--json` at the root for automation. Configuration is stored with mode `0600` under `${XDG_CONFIG_HOME:-~/.config}/otterware/config.json`. `OTTERWARE_TOKEN`, `OTTERWARE_URL`, `OTTERWARE_PROFILE`, and `OTTERWARE_ORGANIZATION` override stored values.
+Every command supports `--json` at the root for automation. Configuration is stored with mode `0600` under `${XDG_CONFIG_HOME:-~/.config}/otterdrive/config.json`. `OTTERDRIVE_TOKEN`, `OTTERDRIVE_URL`, `OTTERDRIVE_PROFILE`, and `OTTERDRIVE_ORGANIZATION` override stored values.
 
 ## Cloudflare setup
 
@@ -201,7 +201,7 @@ pnpm exec wrangler secret put GOOGLE_CLIENT_SECRET
 The Google OAuth redirect URI is:
 
 ```text
-https://app.otterware.dev/api/auth/callback/google
+https://drive.otterware.dev/api/auth/callback/google
 ```
 
 Apply schema changes to the production database before merging a migration:
@@ -215,12 +215,22 @@ this repository and builds and deploys every push to `main` (it reports as the
 `Workers Builds: otterware` check on each commit). `pnpm deploy` remains for a
 manual deploy from an authenticated checkout.
 
-Attach `app.otterware.dev` and `usercontent.otterware.dev` as Worker custom domains. The raw-content handlers reject production requests that do not arrive on the configured content hostname.
+Attach `drive.otterware.dev`, `app.otterware.dev` (legacy link redirects), and `usercontent.otterware.dev` as Worker custom domains. The raw-content handlers reject production requests that do not arrive on the configured content hostname.
 
 The seeded administrator signs in normally and creates the first organization from Settings. Later users must follow an organization invitation link and authenticate as the invited identity; arbitrary public signup is rejected by the server even if a client calls the authentication endpoint directly.
 
 ## Production trust boundary
 
-Artifact agents receive only Otterware device tokens or scoped API keys. They must not have Cloudflare API tokens, R2 credentials, production deployment credentials, or unreviewed access to the protected deployment branch.
+Artifact agents receive only OtterDrive device tokens or scoped API keys. They must not have Cloudflare API tokens, R2 credentials, production deployment credentials, or unreviewed access to the protected deployment branch.
 
 Production deployment runs from Cloudflare Workers Builds on the protected `main` branch.
+
+## OtterDrive migration
+
+The public app URL is `https://drive.otterware.dev`; the CLI package and executable are `otterdrive`, and the agent skill is `/otterdrive` (`$otterdrive` in Codex). Artifact commands and versioning behavior are unchanged.
+
+The CLI copies existing `~/.config/otterware/config.json` profiles into the new `otterdrive` config directory on first use (respecting `XDG_CONFIG_HOME`). Saved production URLs move to the new domain; custom server URLs and credentials are preserved. `OTTERDRIVE_*` variables take precedence over the supported legacy `OTTERWARE_*` variables. Existing `otw_` API keys remain valid. Uploads exclude both `.otterdrive.json` and the legacy `.otterware.json` metadata file.
+
+For rollout, register `https://drive.otterware.dev/api/auth/callback/google` in the Google OAuth client and update its consent-screen product name to OtterDrive. Deploy the Worker with the new custom domain, then publish the `otterdrive` npm package and configure its trusted publisher for this repository's release workflow. The new npm package needs its own publishing setup; the old package's configuration does not transfer. Reinstall the renamed skill and remove the old `otterware-artifacts` installation. Browser users sign in again on the new domain.
+
+The existing Worker name, D1 database, R2 bucket, repository URL, and private `@otterware` workspace package scope are retained to preserve deployment wiring and stored data. Raw files continue to use the cookie-isolated `usercontent.otterware.dev` origin.

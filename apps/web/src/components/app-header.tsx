@@ -80,7 +80,7 @@ export function AppHeader({ actions }: { actions?: React.ReactNode }) {
           <span className="brand-mark">
             <Box />
           </span>
-          <strong>Otterware</strong>
+          <strong>OtterDrive</strong>
         </div>
 
         <button

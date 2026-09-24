@@ -46,17 +46,38 @@ const defaultConfig = (): ConfigFile => ({
 
 export function configPath(): string {
   const root = process.env.XDG_CONFIG_HOME ?? join(homedir(), '.config')
-  return join(root, 'otterware', 'config.json')
+  return join(root, 'otterdrive', 'config.json')
 }
 
 export async function readConfig(): Promise<ConfigFile> {
   try {
     return JSON.parse(await readFile(configPath(), 'utf8')) as ConfigFile
   } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error
+  }
+  // Copy legacy profiles once; subsequent logout must not resurrect old tokens.
+  const legacyPath = join(
+    dirname(dirname(configPath())),
+    'otterware',
+    'config.json',
+  )
+  let config: ConfigFile
+  try {
+    config = JSON.parse(await readFile(legacyPath, 'utf8')) as ConfigFile
+  } catch (error) {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT')
       return defaultConfig()
     throw error
   }
+  for (const profile of Object.values(config.profiles)) {
+    profile.apiUrl = migrateApiUrl(profile.apiUrl)
+  }
+  await writeConfig(config)
+  return config
+}
+
+function migrateApiUrl(url: string): string {
+  return /^https:\/\/app\.otterware\.dev\/?$/.test(url) ? DEFAULT_API_URL : url
 }
 
 async function writeConfig(config: ConfigFile): Promise<void> {
@@ -76,19 +97,28 @@ export async function getProfile(name?: string): Promise<{
 }> {
   const config = await readConfig()
   const profileName =
-    name ?? process.env.OTTERWARE_PROFILE ?? config.activeProfile
+    name ??
+    process.env.OTTERDRIVE_PROFILE ??
+    process.env.OTTERWARE_PROFILE ??
+    config.activeProfile
   const stored = config.profiles[profileName] ?? { apiUrl: DEFAULT_API_URL }
   const profile: Profile = {
     ...stored,
-    apiUrl: process.env.OTTERWARE_URL ?? stored.apiUrl,
+    apiUrl: migrateApiUrl(
+      process.env.OTTERDRIVE_URL ?? process.env.OTTERWARE_URL ?? stored.apiUrl,
+    ),
   }
-  const token = process.env.OTTERWARE_TOKEN
+  const token = process.env.OTTERDRIVE_TOKEN ?? process.env.OTTERWARE_TOKEN
   if (token) {
+    delete profile.apiKey
+    delete profile.accessToken
     if (token.startsWith('otw_')) profile.apiKey = token
     else profile.accessToken = token
   }
-  if (process.env.OTTERWARE_ORGANIZATION) {
-    profile.organizationId = process.env.OTTERWARE_ORGANIZATION
+  const organization =
+    process.env.OTTERDRIVE_ORGANIZATION ?? process.env.OTTERWARE_ORGANIZATION
+  if (organization) {
+    profile.organizationId = organization
   }
   return { name: profileName, profile }
 }

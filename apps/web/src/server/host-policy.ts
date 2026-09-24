@@ -1,5 +1,20 @@
 import type { Env } from './types'
 
+// Keep existing shared links working without serving app cookies or raw content
+// on the retired origin. API clients should migrate their configured base URL.
+export function legacyAppRedirect(request: Request, env: Env): Response | null {
+  const url = new URL(request.url)
+  if (
+    url.origin !== 'https://app.otterware.dev' ||
+    env.APP_URL !== 'https://drive.otterware.dev' ||
+    !['GET', 'HEAD'].includes(request.method) ||
+    url.pathname.startsWith('/raw/') ||
+    url.pathname.startsWith('/api/')
+  )
+    return null
+  return Response.redirect(`${env.APP_URL}${url.pathname}${url.search}`, 308)
+}
+
 /**
  * Version preview URLs (wrangler versions upload / Workers Builds PR
  * previews) serve this worker as
