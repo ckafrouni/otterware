@@ -330,7 +330,11 @@ export function ArtifactListPage({
                   <Archive /> Archived
                 </button>
                 <span className="artifact-viewbar-spacer" />
-                <label className="artifact-search-field">
+                {/* Not a <label>: it would forward clicks to the clear button. */}
+                <div
+                  className="artifact-search-field"
+                  onClick={() => searchInput.current?.focus()}
+                >
                   {query ? (
                     <button
                       type="button"
@@ -369,7 +373,7 @@ export function ArtifactListPage({
                       )
                     }
                   />
-                </label>
+                </div>
                 <Select
                   value={sort}
                   onValueChange={(value) =>

@@ -33,30 +33,36 @@ export function NewTeamDialog({
     if (!trimmed) return
     setBusy(true)
     setError(null)
-    // Team slugs are global; fall back to a suffixed slug when taken.
-    let result = await authClient.organization.create({
-      name: trimmed,
-      slug: base,
-      keepCurrentActiveOrganization: true,
-    })
-    if (result.error) {
-      result = await authClient.organization.create({
+    try {
+      // Team slugs are global; fall back to a suffixed slug when taken.
+      let result = await authClient.organization.create({
         name: trimmed,
-        slug: `${base}-${crypto.randomUUID().slice(0, 6)}`,
+        slug: base,
         keepCurrentActiveOrganization: true,
       })
-    }
-    if (result.error || !result.data) {
+      if (result.error) {
+        result = await authClient.organization.create({
+          name: trimmed,
+          slug: `${base}-${crypto.randomUUID().slice(0, 6)}`,
+          keepCurrentActiveOrganization: true,
+        })
+      }
+      if (result.error || !result.data) {
+        setError(result.error?.message ?? 'Could not create the team.')
+        return
+      }
+      window.dispatchEvent(new Event('otterdrive:organizations-changed'))
+      await selectOrganization(result.data.id)
+      setName('')
+      onOpenChange(false)
+      await navigate({ to: '/home' })
+    } catch (reason) {
+      setError(
+        reason instanceof Error ? reason.message : 'Could not create the team.',
+      )
+    } finally {
       setBusy(false)
-      setError(result.error?.message ?? 'Could not create the team.')
-      return
     }
-    window.dispatchEvent(new Event('otterdrive:organizations-changed'))
-    await selectOrganization(result.data.id)
-    setBusy(false)
-    setName('')
-    onOpenChange(false)
-    await navigate({ to: '/home' })
   }
 
   return (

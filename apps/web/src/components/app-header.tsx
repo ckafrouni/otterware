@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from '@tanstack/react-router'
+import { toast } from 'sonner'
 import {
   Box,
   Check,
@@ -65,7 +66,14 @@ export function TeamSwitcher({
   const team = hydrated ? (current ?? activeOrganization) : undefined
 
   async function openTeam(organizationId: string) {
-    await selectOrganization(organizationId)
+    try {
+      await selectOrganization(organizationId)
+    } catch (reason) {
+      toast.error(
+        reason instanceof Error ? reason.message : 'Could not switch teams.',
+      )
+      return
+    }
     if (pathname !== '/home') await navigate({ to: '/home' })
   }
 
