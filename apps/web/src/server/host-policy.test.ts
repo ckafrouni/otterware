@@ -1,4 +1,3 @@
-import { legacyAppRedirect } from './host-policy'
 import { describe, expect, it } from 'vitest'
 import { isAllowedHostPath, isApplicationAsset } from './host-policy'
 import type { Env } from './types'
@@ -119,34 +118,5 @@ describe('production host isolation', () => {
         env,
       ),
     ).toBe(false)
-  })
-})
-
-describe('legacy app links', () => {
-  it('redirects shared links with their path and query preserved', () => {
-    const response = legacyAppRedirect(
-      new Request('https://app.otterware.dev/a/report?version=2'),
-      env,
-    )
-    expect(response?.status).toBe(308)
-    expect(response?.headers.get('location')).toBe(
-      'https://drive.otterware.dev/a/report?version=2',
-    )
-  })
-  it.each([
-    'https://app.otterware.dev/raw/session/grant',
-    'https://app.otterware.dev/api/v1/me',
-    'https://usercontent.otterware.dev/login',
-    'https://drive.otterware.dev/login',
-  ])('does not redirect API, content, or unrelated requests: %s', (url) => {
-    expect(legacyAppRedirect(new Request(url), env)).toBeNull()
-  })
-  it('does not redirect mutations', () => {
-    expect(
-      legacyAppRedirect(
-        new Request('https://app.otterware.dev/login', { method: 'POST' }),
-        env,
-      ),
-    ).toBeNull()
   })
 })

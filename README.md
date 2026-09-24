@@ -215,7 +215,7 @@ this repository and builds and deploys every push to `main` (it reports as the
 `Workers Builds: otterware` check on each commit). `pnpm deploy` remains for a
 manual deploy from an authenticated checkout.
 
-Attach `drive.otterware.dev`, `app.otterware.dev` (legacy link redirects), and `usercontent.otterware.dev` as Worker custom domains. The raw-content handlers reject production requests that do not arrive on the configured content hostname.
+Attach `drive.otterware.dev` and `usercontent.otterware.dev` as Worker custom domains. The raw-content handlers reject production requests that do not arrive on the configured content hostname.
 
 The seeded administrator signs in normally and creates the first organization from Settings. Later users must follow an organization invitation link and authenticate as the invited identity; arbitrary public signup is rejected by the server even if a client calls the authentication endpoint directly.
 
