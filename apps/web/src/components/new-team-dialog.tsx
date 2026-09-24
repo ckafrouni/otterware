@@ -11,7 +11,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { slugify } from './upload-artifact-dialog'
+import { slugify } from '#/lib/upload-document'
 
 export function NewTeamDialog({
   open,
