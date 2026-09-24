@@ -17,8 +17,6 @@
   },
   "routes": [
     { "pattern": "drive.otterware.dev", "custom_domain": true },
-    // Retained only to redirect existing shared links to OtterDrive.
-    { "pattern": "app.otterware.dev", "custom_domain": true },
     { "pattern": "usercontent.otterware.dev", "custom_domain": true },
   ],
   "vars": {
