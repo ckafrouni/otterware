@@ -2033,6 +2033,64 @@ body.is-resizing * {
   color: var(--ink-muted);
 }
 
+/* Drop to upload ----------------------------------------------------------- */
+.drop-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: color-mix(in srgb, var(--bg) 70%, transparent);
+  backdrop-filter: blur(2px);
+  pointer-events: none;
+  animation: drop-overlay-in 120ms ease-out;
+}
+
+.drop-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 12px;
+  border: 2px dashed color-mix(in srgb, var(--primary) 75%, transparent);
+  border-radius: 12px;
+}
+
+.drop-overlay-card {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 24px 32px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 12%);
+  text-align: center;
+}
+
+.drop-overlay-card svg {
+  width: 22px;
+  height: 22px;
+  margin-bottom: 4px;
+  color: var(--primary);
+}
+
+.drop-overlay-card strong {
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 550;
+}
+
+.drop-overlay-card span {
+  color: var(--ink-muted);
+  font-size: 12px;
+}
+
+@keyframes drop-overlay-in {
+  from {
+    opacity: 0;
+  }
+}
+
 /* Upload dialog ------------------------------------------------------------ */
 .upload-dialog {
   max-width: 480px;

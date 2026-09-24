@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
+import { toast } from 'sonner'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   Archive,
@@ -26,7 +27,13 @@ import {
 } from '@otterware/contracts'
 import { api, formatDate } from '#/lib/api'
 import { artifactBootstrapQuery } from '#/lib/artifact-query'
+import {
+  hasDraggedFiles,
+  readDroppedItems,
+  type DroppedItem,
+} from '#/lib/dropped-files'
 import { readSessionCache, writeSessionCache } from '#/lib/session-cache'
+import { slugify, titleFromName, uploadDocument } from '#/lib/upload-document'
 import { useCurrentActor } from '@/hooks/use-current-actor'
 import { useOrganizations } from '@/hooks/use-organizations'
 import { Button } from '@/components/ui/button'
@@ -162,6 +169,8 @@ export function ArtifactListPage({
     null,
   )
   const [uploadOpen, setUploadOpen] = useState(false)
+  const [dragging, setDragging] = useState(false)
+  const dragDepth = useRef(0)
   const insights = useInsightsPanel()
   const navigate = useNavigate()
   const { activeOrganization, loaded, organizations } = useOrganizations()
@@ -288,9 +297,116 @@ export function ArtifactListPage({
     }
   }
 
+  // Anything dragged onto home uploads straight away: each file becomes a
+  // document, and a folder becomes one multi-file document.
+  function acceptsDrop(event: React.DragEvent) {
+    return (
+      hasDraggedFiles(event.dataTransfer) &&
+      !uploadOpen &&
+      Boolean(activeOrganization)
+    )
+  }
+
+  function onDragEnter(event: React.DragEvent) {
+    if (!acceptsDrop(event)) return
+    event.preventDefault()
+    dragDepth.current += 1
+    setDragging(true)
+  }
+
+  function onDragOver(event: React.DragEvent) {
+    if (!acceptsDrop(event)) return
+    event.preventDefault()
+    event.dataTransfer.dropEffect = 'copy'
+  }
+
+  function onDragLeave(event: React.DragEvent) {
+    if (!acceptsDrop(event)) return
+    dragDepth.current = Math.max(0, dragDepth.current - 1)
+    if (dragDepth.current === 0) setDragging(false)
+  }
+
+  function onDrop(event: React.DragEvent) {
+    if (!acceptsDrop(event) || !activeOrganization) return
+    event.preventDefault()
+    dragDepth.current = 0
+    setDragging(false)
+    const organization = activeOrganization
+    void readDroppedItems(event.dataTransfer).then((items) => {
+      if (items.length === 0) {
+        toast.error('Nothing to upload', {
+          description: 'The dropped folders were empty.',
+        })
+        return
+      }
+      for (const item of items) void uploadDropped(item, organization)
+    })
+  }
+
+  async function uploadDropped(
+    item: DroppedItem,
+    organization: { id: string; slug: string },
+  ) {
+    const title = titleFromName(item.name) || item.name
+    const heading = `Uploading ${title}`
+    const toastId = toast.loading(heading, { description: 'Preparing files…' })
+    try {
+      const uploaded = await uploadDocument({
+        organizationId: organization.id,
+        files: item.files,
+        title,
+        slug: slugify(title) || 'document',
+        retryTakenSlug: true,
+        onStatus: (description) =>
+          toast.loading(heading, { id: toastId, description }),
+      })
+      setArtifacts((current) => [
+        uploaded,
+        ...current.filter((artifact) => artifact.id !== uploaded.id),
+      ])
+      toast.success(`Uploaded ${uploaded.title}`, {
+        id: toastId,
+        description: undefined,
+        action: {
+          label: 'Open',
+          onClick: () =>
+            void navigate({
+              to: '/$organizationSlug/a/$slug',
+              params: {
+                organizationSlug: organization.slug,
+                slug: uploaded.slug,
+              },
+            }),
+        },
+      })
+    } catch (reason) {
+      toast.error(`Could not upload ${title}`, {
+        id: toastId,
+        description: reason instanceof Error ? reason.message : String(reason),
+      })
+    }
+  }
+
   return (
     <AuthGate fallback={<ArtifactHomeLoadingState view={view} />}>
-      <div className="app-shell app-frame">
+      <div
+        className="app-shell app-frame"
+        onDragEnter={onDragEnter}
+        onDragOver={onDragOver}
+        onDragLeave={onDragLeave}
+        onDrop={onDrop}
+      >
+        {dragging && (
+          <div className="drop-overlay" aria-hidden="true">
+            <div className="drop-overlay-card">
+              <Upload />
+              <strong>Drop to upload to {activeOrganization?.name}</strong>
+              <span>
+                Each file becomes a document. A folder becomes one document.
+              </span>
+            </div>
+          </div>
+        )}
         <AppHeader
           actions={
             <div className="artifact-toolbar" aria-label="Document controls">
