@@ -42,7 +42,7 @@ export function AppHeader({ actions }: { actions?: React.ReactNode }) {
   const user = hydrated ? session.data?.user : undefined
   const teamName = hydrated ? activeOrganization?.name : undefined
   const pathname = useLocation({ select: (location) => location.pathname })
-  const pageTitle = pathname.startsWith('/settings') ? 'Settings' : 'Artifacts'
+  const pageTitle = pathname.startsWith('/settings') ? 'Settings' : 'Documents'
   const initials = user?.name?.slice(0, 2).toUpperCase() ?? 'OT'
 
   const accountMenu = (
@@ -55,8 +55,8 @@ export function AppHeader({ actions }: { actions?: React.ReactNode }) {
       </DropdownMenuGroup>
       <DropdownMenuSeparator />
       <DropdownMenuGroup>
-        <DropdownMenuItem render={<Link to="/artifacts" />}>
-          <FileBox /> Artifacts
+        <DropdownMenuItem render={<Link to="/home" />}>
+          <FileBox /> Documents
         </DropdownMenuItem>
         <DropdownMenuItem render={<Link to="/settings" />}>
           <Settings /> Settings

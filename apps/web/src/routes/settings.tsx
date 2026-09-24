@@ -156,7 +156,7 @@ export function SettingsPage() {
     <AuthGate>
       <div className="app-shell app-frame">
         <aside className="app-sidebar">
-          <Link to="/artifacts" className="settings-back">
+          <Link to="/home" className="settings-back">
             <ArrowLeft /> Back to app
           </Link>
           <nav className="sidebar-nav" aria-label="Settings sections">
@@ -173,7 +173,7 @@ export function SettingsPage() {
           </nav>
         </aside>
         <header className="app-header settings-topbar">
-          <Link to="/artifacts" className="settings-back">
+          <Link to="/home" className="settings-back">
             <ArrowLeft /> Back to app
           </Link>
         </header>
@@ -367,7 +367,7 @@ export function SettingsPage() {
                       </Button>
                     </div>
                     <p className="settings-help">
-                      Keys can access artifacts in this organization.
+                      Keys can access documents in this organization.
                     </p>
                   </form>
                   {createdKey && (

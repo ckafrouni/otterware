@@ -202,10 +202,10 @@ export function ArtifactViewer({
       <header className="viewer-header">
         <div className="viewer-left">
           <Button
-            render={<Link to="/artifacts" />}
+            render={<Link to="/home" />}
             variant="outline"
             size="icon-sm"
-            aria-label="Back to artifacts"
+            aria-label="Back to documents"
           >
             <Home size={15} />
           </Button>
@@ -259,7 +259,7 @@ export function ArtifactViewer({
               )}
             </DropdownMenu>
           ) : (
-            <strong>OtterDrive Artifact</strong>
+            <strong>OtterDrive Document</strong>
           )}
           {selected && versions.length > 1 && (
             <Badge variant="outline">v{selected.number}</Badge>
@@ -279,7 +279,7 @@ export function ArtifactViewer({
                     variant="outline"
                     size="icon-sm"
                     type="button"
-                    aria-label="Artifact actions"
+                    aria-label="Document actions"
                     disabled={changingArchivedState}
                   />
                 }
@@ -306,8 +306,8 @@ export function ArtifactViewer({
                     <Archive size={14} />
                   )}
                   {artifact.archivedAt
-                    ? 'Restore artifact'
-                    : 'Archive artifact'}
+                    ? 'Restore document'
+                    : 'Archive document'}
                 </DropdownMenuItem>
                 {artifact.archivedAt && isOwner && (
                   <>
@@ -332,7 +332,7 @@ export function ArtifactViewer({
               aria-label="Copy edit prompt"
               onClick={() =>
                 void copy(
-                  `Edit my OtterDrive artifact at ${artifact.url}. Read the current version first and publish a new immutable version with the OtterDrive CLI.`,
+                  `Edit my OtterDrive document at ${artifact.url}. Read the current version first and publish a new immutable version with the OtterDrive CLI.`,
                   'Edit prompt copied.',
                 )
               }
@@ -356,7 +356,7 @@ export function ArtifactViewer({
             size="sm"
             type="button"
             onClick={() =>
-              artifact && void copy(artifact.url, 'Artifact link copied.')
+              artifact && void copy(artifact.url, 'Document link copied.')
             }
           >
             <Copy size={14} /> Share
@@ -399,7 +399,7 @@ export function ArtifactViewer({
         artifact={deleteDialogOpen ? artifact : null}
         organizationId={organizationId}
         onOpenChange={setDeleteDialogOpen}
-        onDeleted={() => location.assign('/artifacts')}
+        onDeleted={() => location.assign('/home')}
       />
     </div>
   )

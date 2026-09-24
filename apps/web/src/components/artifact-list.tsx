@@ -292,12 +292,12 @@ export function ArtifactListPage({
       <div className="app-shell app-frame">
         <AppHeader
           actions={
-            <div className="artifact-toolbar" aria-label="Artifact controls">
+            <div className="artifact-toolbar" aria-label="Document controls">
               <label className="artifact-search-field">
                 <Search className="artifact-search-icon" size={16} />
                 <Input
                   type="search"
-                  placeholder="Search artifacts"
+                  placeholder="Search documents"
                   value={query}
                   onKeyDown={(event) => {
                     if (event.key === 'Escape') {
@@ -315,7 +315,7 @@ export function ArtifactListPage({
               </label>
               <Button
                 type="button"
-                aria-label="Upload artifact"
+                aria-label="Upload document"
                 disabled={!activeOrganization}
                 onClick={() => setUploadOpen(true)}
               >
@@ -381,7 +381,7 @@ export function ArtifactListPage({
                   }}
                   variant="outline"
                   spacing={0}
-                  aria-label="Artifact layout"
+                  aria-label="Document layout"
                 >
                   <ToggleGroupItem value="list" aria-label="List view">
                     <ListIcon size={17} />
@@ -411,7 +411,7 @@ export function ArtifactListPage({
               <div className="artifact-scroll">
                 {error && (
                   <div className="empty-panel error-panel">
-                    <strong>Could not load artifacts</strong>
+                    <strong>Could not load documents</strong>
                     <p>{error}</p>
                     {error.includes('organization') && (
                       <Link to="/settings">Create an organization</Link>
@@ -422,7 +422,7 @@ export function ArtifactListPage({
                   <div className="empty-panel">
                     <h2>Create your first team</h2>
                     <p>
-                      Artifacts live in a team workspace. Create one in{' '}
+                      Documents live in a team workspace. Create one in{' '}
                       <Link to="/settings">Settings</Link> to get started.
                     </p>
                   </div>
@@ -430,14 +430,11 @@ export function ArtifactListPage({
                 {!noTeam && !loading && !error && artifacts.length === 0 && (
                   <div className="empty-panel">
                     {status === 'archived' ? (
-                      <h2>No archived artifacts</h2>
+                      <h2>No archived documents</h2>
                     ) : (
                       <>
-                        <h2>No artifacts yet</h2>
-                        <p>
-                          Install the CLI and run{' '}
-                          <code>otterdrive artifacts create</code>.
-                        </p>
+                        <h2>No documents yet</h2>
+                        <p>Upload your first document to get started.</p>
                       </>
                     )}
                   </div>
@@ -448,17 +445,17 @@ export function ArtifactListPage({
                   visibleArtifacts.length === 0 && (
                     <div className="empty-panel compact-empty">
                       {query
-                        ? `No ${status} artifacts match “${query}”.`
+                        ? `No ${status} documents match “${query}”.`
                         : status === 'archived'
-                          ? 'No archived artifacts.'
-                          : 'No active artifacts.'}
+                          ? 'No archived documents.'
+                          : 'No active documents.'}
                     </div>
                   )}
                 <section
                   className={
                     view === 'grid' ? 'artifact-grid' : 'artifact-list-view'
                   }
-                  aria-label="Artifacts"
+                  aria-label="Documents"
                 >
                   {loading ? (
                     <ArtifactCardSkeletons view={view} />
@@ -521,7 +518,7 @@ export function ArtifactListPage({
                                 variant="outline"
                                 size="icon-xs"
                                 type="button"
-                                aria-label="Copy artifact URL"
+                                aria-label="Copy document URL"
                                 onClick={(event) => {
                                   event.preventDefault()
                                   event.stopPropagation()
@@ -539,7 +536,7 @@ export function ArtifactListPage({
                                       variant="outline"
                                       size="icon-xs"
                                       type="button"
-                                      aria-label="Artifact actions"
+                                      aria-label="Document actions"
                                       disabled={changingId === artifact.id}
                                       onClick={(event) => {
                                         event.preventDefault()
@@ -615,7 +612,7 @@ export function ArtifactListPage({
                 <footer className="artifact-list-footer">
                   <span>
                     {visibleArtifacts.length}{' '}
-                    {visibleArtifacts.length === 1 ? 'artifact' : 'artifacts'}
+                    {visibleArtifacts.length === 1 ? 'document' : 'documents'}
                   </span>
                   {totalPages > 1 && (
                     <Pagination className="artifact-pagination">
@@ -742,7 +739,7 @@ function ArtifactHomeLoadingState({ view }: { view: 'grid' | 'list' }) {
           <aside className="artifact-insights" aria-hidden="true" />
         </div>
       </main>
-      <span className="sr-only">Loading artifacts…</span>
+      <span className="sr-only">Loading documents…</span>
     </div>
   )
 }
@@ -870,7 +867,7 @@ function ArtifactInsights({
       />
       <div className="insight-section">
         <div className="insight-row">
-          <span>Artifacts</span>
+          <span>Documents</span>
           <strong>
             {visible.length === inStatus.length
               ? inStatus.length

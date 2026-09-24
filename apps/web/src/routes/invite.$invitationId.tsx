@@ -20,7 +20,7 @@ function InvitePage() {
           setStatus(result.error.message ?? 'Could not accept invitation.')
         else {
           setStatus('Invitation accepted. Redirecting…')
-          setTimeout(() => location.assign('/artifacts'), 700)
+          setTimeout(() => location.assign('/home'), 700)
         }
       })
   }, [invitationId])

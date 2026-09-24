@@ -38,7 +38,7 @@ describe('bearer authentication fast path', () => {
   })
 })
 
-describe('permanent artifact deletion permissions', () => {
+describe('permanent document deletion permissions', () => {
   const actor = (roles: string[], type: 'user' | 'api_key' = 'user') =>
     ({
       type,

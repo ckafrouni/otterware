@@ -15,7 +15,7 @@ export function ArtifactLoadingState() {
       <main className="viewer-main">
         <ArtifactContentLoadingState />
       </main>
-      <span className="sr-only">Loading artifact…</span>
+      <span className="sr-only">Loading document…</span>
     </div>
   )
 }
