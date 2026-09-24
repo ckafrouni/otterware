@@ -10,6 +10,7 @@ export function ArtifactLoadingState() {
           <div className="viewer-loading-control" />
           <div className="viewer-loading-control" />
           <div className="viewer-loading-share" />
+          <div className="viewer-loading-control" />
         </div>
       </header>
       <main className="viewer-main">

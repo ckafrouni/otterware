@@ -19,6 +19,9 @@ vi.mock('@tanstack/react-router', () => ({
     </a>
   ),
 }))
+vi.mock('#/components/app-header', () => ({
+  AppHeader: () => <header />,
+}))
 vi.mock('#/components/auth-gate', () => ({
   AuthGate: ({ children }: { children: React.ReactNode }) => children,
 }))

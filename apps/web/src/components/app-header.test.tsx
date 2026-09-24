@@ -39,53 +39,72 @@ vi.mock('#/lib/auth-client', () => ({
 
 vi.mock('@/hooks/use-organizations', () => ({
   useOrganizations: () => ({
-    activeOrganization: { id: 'org-1', name: 'OtterDrive', slug: 'otterware' },
-    organizations: [{ id: 'org-1', name: 'OtterDrive', slug: 'otterware' }],
+    activeOrganization: {
+      id: 'org-1',
+      name: 'OtterDrive Team',
+      slug: 'otterware',
+    },
+    organizations: [
+      { id: 'org-1', name: 'OtterDrive Team', slug: 'otterware' },
+      { id: 'org-2', name: 'Zentio', slug: 'zentio' },
+    ],
     selectOrganization: vi.fn(),
   }),
 }))
 
+vi.mock('#/lib/session-cache', () => ({ useHydrated: () => true }))
+
 afterEach(cleanup)
 
 describe('AppHeader', () => {
-  it('keeps the page title centered without duplicating the team in the header', () => {
+  it('shows the brand then the team crumb, with no page title on home', () => {
     const { container } = render(<AppHeader />)
+    const start = container.querySelector('.app-header-start')!
 
-    expect(
-      container.querySelector('.app-header .app-breadcrumb strong')
-        ?.textContent,
-    ).toBe('Documents')
-    expect(container.querySelector('.header-context')).toBeNull()
-  })
-
-  it('opens the Documents account menu link at /home', async () => {
-    const { container } = render(<AppHeader />)
-    fireEvent.click(container.querySelector('.sidebar-account')!)
-    const link = await screen.findByRole('menuitem', { name: 'Documents' })
-    expect(link.getAttribute('href')).toBe('/home')
-    expect(screen.queryByRole('menuitem', { name: 'Artifacts' })).toBeNull()
-  })
-
-  it('puts search above the teams and folds the account into one row', () => {
-    const { container } = render(<AppHeader />)
-    const sidebar = container.querySelector('.app-sidebar')!
-    const search = sidebar.querySelector('.sidebar-search')!
-    const teams = sidebar.querySelector('.sidebar-teams')!
-
-    expect(search.textContent).toContain('Search')
-    expect(
-      search.compareDocumentPosition(teams) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy()
-    expect(teams.textContent).toContain('Teams')
-    expect(
-      screen
-        .getByRole('button', { name: /OtterDrive/ })
-        .getAttribute('aria-current'),
-    ).toBe('true')
-    expect(sidebar.querySelector('.sidebar-account')?.textContent).toContain(
-      'chris@example.com',
+    expect(start.querySelector('.topbar-brand')?.textContent).toBe('OtterDrive')
+    expect(start.querySelector('.team-switcher')?.textContent).toBe(
+      'OtterDrive Team',
     )
-    expect(sidebar.querySelector('.sidebar-theme')).toBeNull()
-    expect(sidebar.querySelector('.sidebar-account')?.tagName).toBe('BUTTON')
+    expect(start.querySelector('.app-breadcrumb strong')).toBeNull()
+    expect(container.querySelector('.app-sidebar')).toBeNull()
+  })
+
+  it('keeps the account button as the last item in the top bar', () => {
+    const { container } = render(
+      <AppHeader actions={<button>Upload</button>} />,
+    )
+    const header = container.querySelector('.app-header')!
+    const account = header.querySelector('.account-button')!
+
+    expect(account.textContent).toBe('CH')
+    expect(header.querySelector('.app-header-end')?.lastElementChild).toBe(
+      account,
+    )
+    expect(
+      header
+        .querySelector('.app-header-actions')!
+        .compareDocumentPosition(account) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+  })
+
+  it('opens an account menu with settings but no Documents link', async () => {
+    const { container } = render(<AppHeader />)
+    fireEvent.click(container.querySelector('.account-button')!)
+    const settings = await screen.findByRole('menuitem', { name: 'Settings' })
+    expect(settings.getAttribute('href')).toBe('/settings')
+    expect(screen.queryByRole('menuitem', { name: 'Documents' })).toBeNull()
+    expect(screen.getByText('chris@example.com')).toBeTruthy()
+  })
+
+  it('lists teams in the switcher with a new team action', async () => {
+    const { container } = render(<AppHeader />)
+    fireEvent.click(container.querySelector('.team-switcher')!)
+
+    const active = await screen.findByRole('menuitem', {
+      name: 'OtterDrive Team',
+    })
+    expect(active.getAttribute('aria-current')).toBe('true')
+    expect(screen.getByRole('menuitem', { name: 'Zentio' })).toBeTruthy()
+    expect(screen.getByRole('menuitem', { name: 'New team' })).toBeTruthy()
   })
 })
